@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Risk Manager E-PO-PM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class'
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease; }
+      body.dark { background-color: #0f172a; color: #f8fafc; }
+      body:not(.dark) { background-color: #f3f4f6; color: #1e293b; }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      .dark ::-webkit-scrollbar-track { background: #1e293b; }
+      ::-webkit-scrollbar-track { background: #f1f1f1; }
+      .dark ::-webkit-scrollbar-thumb { background: #334155; }
+      ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "firebase/app": "https://aistudiocdn.com/firebase@^12.6.0/app",
+    "firebase/firestore": "https://aistudiocdn.com/firebase@^12.6.0/firestore",
+    "firebase/auth": "https://aistudiocdn.com/firebase@^12.6.0/auth",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "papaparse": "https://aistudiocdn.com/papaparse@^5.4.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

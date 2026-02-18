@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คู่มือการใช้งาน ProRisk Manager E-PO-PM</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      color: #333;
+      background: #fff;
+    }
+
+    h1 {
+      color: #1e3a5f;
+      border-bottom: 3px solid #3b82f6;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+
+    h2 {
+      color: #1e3a5f;
+      border-left: 4px solid #3b82f6;
+      padding-left: 12px;
+      margin-top: 40px;
+    }
+
+    h3 {
+      color: #374151;
+      margin-top: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    th,
+    td {
+      border: 1px solid #d1d5db;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    blockquote {
+      border-left: 4px solid #fbbf24;
+      background: #fef9c3;
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 32px 0;
+    }
+
+    strong {
+      color: #1e3a5f;
+    }
+
+    ol,
+    ul {
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        font-size: 11pt;
+      }
+
+      h2 {
+        page-break-before: auto;
+        margin-top: 24px;
+      }
+
+      table {
+        font-size: 10pt;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📘 คู่มือการใช้งาน ProRisk Manager E-PO-PM</h1>
+
+  <h2>📖 ภาพรวม</h2>
+  <p><strong>ProRisk Manager E-PO-PM</strong> เป็นระบบบริหารความเสี่ยงสำหรับโครงการ EPC (Engineering, Procurement,
+    Construction) พัฒนาด้วย React และ Firebase พร้อมระบบ AI สำหรับแนะนำกลยุทธ์การจัดการความเสี่ยง</p>
+
+  <hr>
+
+  <h2>🔐 การเข้าสู่ระบบ</h2>
+
+  <h3>การ Login</h3>
+  <ol>
+    <li>เปิดเว็บแอปพลิเคชัน</li>
+    <li>กรอก <strong>Email</strong> และ <strong>Password</strong></li>
+    <li>คลิกปุ่ม <strong>"Sign In"</strong></li>
+  </ol>
+
+  <h3>การเปลี่ยนรหัสผ่าน</h3>
+  <ul>
+    <li>ผู้ใช้ใหม่ที่ใช้รหัสผ่านเริ่มต้น จะถูกบังคับให้เปลี่ยนรหัสผ่านในการ login ครั้งแรก</li>
+    <li>สามารถเปลี่ยนรหัสผ่านได้ภายหลังจากหน้า <strong>User Account</strong></li>
+  </ul>
+
+  <hr>
+
+  <h2>🏠 หน้าหลัก (Dashboard)</h2>
+
+  <h3>ส่วนประกอบหลัก</h3>
+  <table>
+    <tr>
+      <th>ส่วน</th>
+      <th>คำอธิบาย</th>
+    </tr>
+    <tr>
+      <td><strong>Project Filter</strong></td>
+      <td>เลือกดูข้อมูลเฉพาะโครงการ หรือ "All Projects"</td>
+    </tr>
+    <tr>
+      <td><strong>Risk Matrix</strong></td>
+      <td>แผนภูมิ 5x5 แสดงระดับความเสี่ยง (Impact x Likelihood)</td>
+    </tr>
+    <tr>
+      <td><strong>Status Overview</strong></td>
+      <td>กราฟแท่งแสดงจำนวน Risk ตามสถานะ (Open/In Progress/Closed)</td>
+    </tr>
+    <tr>
+      <td><strong>Risk Distribution</strong></td>
+      <td>กราฟแท่งแสดงการกระจายตามระดับความเสี่ยง</td>
+    </tr>
+    <tr>
+      <td><strong>Risk Table</strong></td>
+      <td>ตารางแสดงรายการความเสี่ยงทั้งหมด</td>
+    </tr>
+  </table>
+
+  <h3>การค้นหาและจัดเรียง</h3>
+  <ul>
+    <li>ใช้ช่อง <strong>Search</strong> เพื่อค้นหาตาม Risk ID, Description หรือ Owner</li>
+    <li>คลิกหัวตาราง <strong>Risk ID</strong> เพื่อเรียงลำดับ (ขึ้น/ลง)</li>
+  </ul>
+
+  <hr>
+
+  <h2>➕ การสร้างโครงการใหม่</h2>
+  <ol>
+    <li>คลิกปุ่ม <strong>"New Project"</strong> (ไอคอน 📁+)</li>
+    <li>กรอกข้อมูลโครงการ:
+      <ul>
+        <li><strong>Project Number</strong>: หมายเลขโครงการ (ต้องไม่ซ้ำ)</li>
+        <li><strong>Project Name</strong>: ชื่อโครงการ</li>
+        <li><strong>PM Name</strong>: ชื่อ Project Manager</li>
+        <li><strong>Email</strong>: อีเมล PM</li>
+        <li><strong>Industry Type</strong>: ประเภทอุตสาหกรรม</li>
+      </ul>
+    </li>
+    <li>เลือก <strong>Project Modifiers</strong> (Weighting Factors) ที่เกี่ยวข้อง</li>
+    <li>เลือก <strong>"Generate Baseline Risks"</strong> หากต้องการให้ระบบสร้างความเสี่ยงพื้นฐานอัตโนมัติ (31 รายการ)
+    </li>
+    <li>คลิก <strong>"Create Project"</strong></li>
+  </ol>
+
+  <hr>
+
+  <h2>📝 การเพิ่มความเสี่ยง (Risk)</h2>
+  <ol>
+    <li>คลิกปุ่ม <strong>"Add Risk"</strong> (ไอคอน +)</li>
+    <li>กรอกข้อมูลความเสี่ยง:
+      <ul>
+        <li><strong>Project</strong>: เลือกโครงการ</li>
+        <li><strong>Risk Category</strong>: หมวดหมู่ความเสี่ยง</li>
+        <li><strong>Description</strong>: รายละเอียดความเสี่ยง</li>
+        <li><strong>Owner</strong>: ผู้รับผิดชอบ</li>
+        <li><strong>Status</strong>: สถานะ (Open, In Progress, Closed)</li>
+        <li><strong>Impact</strong> (1-5): ระดับผลกระทบ</li>
+        <li><strong>Likelihood</strong> (1-5): โอกาสเกิด</li>
+        <li><strong>Possible Effect</strong>: ผลกระทบที่อาจเกิด (C/T/Q/HSE)</li>
+        <li><strong>Mitigation Strategy</strong>: กลยุทธ์การจัดการ (A/T/M/AC)</li>
+        <li><strong>Action Plan</strong>: แผนการดำเนินการ</li>
+        <li><strong>Target Date</strong>: วันที่เป้าหมาย</li>
+      </ul>
+    </li>
+    <li>คลิก <strong>"Save Risk"</strong></li>
+  </ol>
+
+  <h3>AI Suggest (ถ้าเปิดใช้งาน)</h3>
+  <ul>
+    <li>คลิกปุ่ม <strong>"AI Suggest"</strong> เพื่อให้ระบบแนะนำ Mitigation Strategy และ Action Plan อัตโนมัติ</li>
+    <li>ต้องมีการตั้งค่า Groq API Key ใน <code>.env.local</code></li>
+    <li>AI ใช้โมเดล <strong>Llama 3.3 70B</strong> จาก Groq (ฟรี)</li>
+  </ul>
+
+  <hr>
+
+  <h2>✏️ การแก้ไข/ลบความเสี่ยง</h2>
+
+  <h3>แก้ไข</h3>
+  <ol>
+    <li>คลิกไอคอน <strong>✏️ (Edit)</strong> ที่แถวของ Risk ที่ต้องการ</li>
+    <li>แก้ไขข้อมูล</li>
+    <li>คลิก <strong>"Save Risk"</strong></li>
+  </ol>
+
+  <h3>ลบ</h3>
+  <ol>
+    <li>คลิกไอคอน <strong>🗑️ (Delete)</strong> ที่แถวของ Risk</li>
+    <li>ยืนยันการลบ</li>
+  </ol>
+
+  <blockquote>
+    <strong>หมายเหตุ</strong>: การแก้ไขจะถูกบันทึกเป็น History โดยอัตโนมัติ
+  </blockquote>
+
+  <hr>
+
+  <h2>📊 ดูประวัติการเปลี่ยนแปลง</h2>
+  <ol>
+    <li>คลิกไอคอน <strong>📜 (History)</strong> ที่แถวของ Risk</li>
+    <li>ดู Timeline การเปลี่ยนแปลงทั้งหมด พร้อมรายละเอียด:
+      <ul>
+        <li>วันที่/เวลา</li>
+        <li>ผู้แก้ไข</li>
+        <li>ฟิลด์ที่เปลี่ยน</li>
+        <li>ค่าเก่า → ค่าใหม่</li>
+      </ul>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h2>📄 Risk Summary Report</h2>
+  <ol>
+    <li>คลิกปุ่ม <strong>"Summary"</strong> (ไอคอน 📄)</li>
+    <li>ดูรายงานสรุป:
+      <ul>
+        <li>สถิติความเสี่ยงตามระดับ</li>
+        <li>รายการความเสี่ยงที่ยังเปิดอยู่</li>
+        <li>ความเสี่ยงที่เกินกำหนด (Overdue)</li>
+      </ul>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h2>📥 Import ข้อมูลจาก CSV</h2>
+  <ol>
+    <li>คลิกปุ่ม <strong>"Import"</strong> (ไอคอน ☁️↑)</li>
+    <li>เลือกไฟล์ CSV</li>
+    <li>ตรวจสอบ Preview</li>
+    <li>คลิก <strong>"Import"</strong></li>
+  </ol>
+
+  <h3>รูปแบบ CSV ที่รองรับ</h3>
+  <pre><code>riskId,projectNo,projectName,category,description,owner,impact,likelihood,status
+R-001,P001,Project A,Technical,Risk description,John,4,3,Open</code></pre>
+
+  <hr>
+
+  <h2>⚖️ Industry Benchmark Comparison</h2>
+  <ol>
+    <li>เลือกโครงการที่ต้องการเปรียบเทียบ (ไม่ใช่ "All Projects")</li>
+    <li>คลิกปุ่ม <strong>"Benchmark"</strong></li>
+    <li>ดู Heatmap เปรียบเทียบ:
+      <ul>
+        <li><strong>Actual</strong>: ความเสี่ยงจริงของโครงการ</li>
+        <li><strong>Baseline</strong>: ค่ามาตรฐานอุตสาหกรรม</li>
+      </ul>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h2>👤 User Account</h2>
+
+  <h3>เข้าถึง</h3>
+  <p>คลิกไอคอน <strong>User</strong> ที่มุมขวาบน</p>
+
+  <h3>ฟังก์ชัน</h3>
+  <ul>
+    <li>ดูข้อมูลบัญชี (Email, Role)</li>
+    <li>เปลี่ยนรหัสผ่าน</li>
+    <li>ออกจากระบบ</li>
+  </ul>
+
+  <hr>
+
+  <h2>🛡️ Admin Panel (สำหรับ Admin)</h2>
+
+  <h3>เข้าถึง</h3>
+  <ol>
+    <li>Login ด้วยบัญชี Admin</li>
+    <li>คลิกปุ่ม <strong>"Admin"</strong> (ไอคอน 🛡️)</li>
+  </ol>
+
+  <h3>ฟังก์ชัน</h3>
+  <table>
+    <tr>
+      <th>ฟังก์ชัน</th>
+      <th>คำอธิบาย</th>
+    </tr>
+    <tr>
+      <td><strong>Manage Users</strong></td>
+      <td>ดูรายชื่อผู้ใช้, แก้ไข Role, กำหนดโครงการที่อนุญาต</td>
+    </tr>
+    <tr>
+      <td><strong>Register New User</strong></td>
+      <td>เพิ่มผู้ใช้ใหม่ด้วย Email</td>
+    </tr>
+    <tr>
+      <td><strong>System Backup</strong></td>
+      <td>ดาวน์โหลดข้อมูลทั้งหมดเป็น JSON</td>
+    </tr>
+    <tr>
+      <td><strong>Delete User</strong></td>
+      <td>ลบบัญชีผู้ใช้</td>
+    </tr>
+  </table>
+
+  <h3>User Roles</h3>
+  <table>
+    <tr>
+      <th>Role</th>
+      <th>สิทธิ์</th>
+    </tr>
+    <tr>
+      <td><strong>Admin</strong></td>
+      <td>เข้าถึงทุกโครงการ, จัดการผู้ใช้</td>
+    </tr>
+    <tr>
+      <td><strong>User</strong></td>
+      <td>เข้าถึงเฉพาะโครงการที่ Assign</td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <h2>🌙 Dark Mode</h2>
+  <ul>
+    <li>คลิกไอคอน <strong>🌙/☀️</strong> ที่มุมขวาบน เพื่อสลับธีม</li>
+    <li>ระบบจะจำการตั้งค่าไว้</li>
+  </ul>
+
+  <hr>
+
+  <h2>⚠️ การแก้ไขปัญหาเบื้องต้น</h2>
+  <table>
+    <tr>
+      <th>ปัญหา</th>
+      <th>วิธีแก้ไข</th>
+    </tr>
+    <tr>
+      <td>ไม่สามารถ Login ได้</td>
+      <td>ตรวจสอบ Email/Password, ลอง Reset Password</td>
+    </tr>
+    <tr>
+      <td>ไม่เห็นข้อมูล Risk</td>
+      <td>ตรวจสอบ Project Filter, รีเฟรชหน้าเว็บ</td>
+    </tr>
+    <tr>
+      <td>Permission Denied</td>
+      <td>ติดต่อ Admin เพื่อขอสิทธิ์เข้าถึงโครงการ</td>
+    </tr>
+    <tr>
+      <td>AI Suggest ไม่ทำงาน</td>
+      <td>ตรวจสอบว่า Groq API Key ถูกตั้งค่าใน <code>.env.local</code> แล้ว</td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <h2>📞 Contact Support</h2>
+  <p>หากพบปัญหาหรือต้องการความช่วยเหลือ กรุณาติดต่อ Admin ของระบบ</p>
+
+  <hr>
+
+  <p style="text-align: center; color: #6b7280; font-size: 0.9em;">
+    <em>คู่มือนี้สร้างเมื่อ: กุมภาพันธ์ 2026</em><br>
+    ProRisk Manager E-PO-PM v0.2
+  </p>
+
+</body>
+
+</html>

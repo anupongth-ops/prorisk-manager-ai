@@ -1,7 +1,7 @@
 {
-  "name": "prorisk-manager-ai-v_02_20260128",
+  "name": "prorisk-manager-ai-0-2-20260401",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.2.20260401",
   "type": "module",
   "scripts": {
     "dev": "vite",

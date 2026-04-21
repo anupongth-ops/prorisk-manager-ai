@@ -137,9 +137,18 @@ export const resetUserPassword = async (email: string) => {
 
 export const fetchUserProfile = async (uid: string): Promise<UserProfile | null> => {
   if (!db) return null;
-  const docSnap = await getDoc(doc(db, USERS_COLLECTION, uid));
+  const docRef = doc(db, USERS_COLLECTION, uid);
+  const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
-    return { id: docSnap.id, ...(docSnap.data() as any) } as UserProfile;
+    const data = docSnap.data() as any;
+
+    // Auto-promote default admin if they were just a 'User'
+    if (data.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() && data.role !== 'Admin') {
+      await updateDoc(docRef, { role: 'Admin', updatedAt: new Date().toISOString() });
+      return { id: docSnap.id, ...data, role: 'Admin' } as UserProfile;
+    }
+
+    return { id: docSnap.id, ...data } as UserProfile;
   }
   return null;
 };

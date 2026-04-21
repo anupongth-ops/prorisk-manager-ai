@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProRisk Manager AI — ขั้นตอนการทำงานและคู่มือการใช้งาน</title>
+  <style>
+    /* ===== FONTS ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1e40af;
+      --primary-light: #dbeafe;
+      --accent:    #f59e0b;
+      --accent-light: #fef3c7;
+      --danger:    #dc2626;
+      --success:   #16a34a;
+      --text:      #1e293b;
+      --text-muted:#64748b;
+      --border:    #e2e8f0;
+      --bg:        #f8fafc;
+      --white:     #ffffff;
+
+      --risk-vlow:  #34d399;
+      --risk-low:   #fbbf24;
+      --risk-sig:   #f97316;
+      --risk-crit:  #ef4444;
+      --risk-ext:   #7f1d1d;
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    /* ===== COVER PAGE ===== */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+      color: white;
+      text-align: center;
+      padding: 60px 40px;
+      page-break-after: always;
+      break-after: page;
+    }
+    .cover-logo {
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 32px;
+      font-size: 40px;
+    }
+    .cover h1 { font-size: 36px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
+    .cover h2 { font-size: 20px; font-weight: 400; opacity: 0.85; margin-bottom: 40px; }
+    .cover-meta {
+      display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      width: 100%; max-width: 600px;
+    }
+    .cover-meta div { text-align: center; }
+    .cover-meta .label { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .cover-meta .value { font-size: 16px; font-weight: 600; }
+    .cover-badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 100px;
+      padding: 6px 20px;
+      font-size: 13px;
+      margin-bottom: 24px;
+      display: inline-block;
+    }
+
+    /* ===== TOC ===== */
+    .toc-page {
+      padding: 60px 60px;
+      page-break-after: always;
+      break-after: page;
+    }
+    .toc-page h2 { font-size: 24px; font-weight: 700; margin-bottom: 24px; color: var(--primary); }
+    .toc-list { list-style: none; }
+    .toc-list li {
+      display: flex; align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 14px;
+    }
+    .toc-list li .num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--primary-light); color: var(--primary);
+      font-weight: 700; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      margin-right: 16px; flex-shrink: 0;
+    }
+    .toc-list li span { flex: 1; }
+
+    /* ===== LAYOUT ===== */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 60px;
+    }
+
+    /* ===== SECTION HEADER ===== */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      margin-top: 40px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--primary);
+    }
+    .section-header:first-child { margin-top: 0; }
+    .section-num {
+      width: 40px; height: 40px;
+      background: var(--primary);
+      color: white;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 20px; font-weight: 700; color: var(--primary); }
+
+    h3 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; color: var(--text); }
+    h4 { font-size: 14px; font-weight: 700; margin: 16px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    p { margin-bottom: 12px; }
+
+    /* ===== FLOW BOXES ===== */
+    .flow-box {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 16px 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+
+    /* ===== CARDS ===== */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 16px 0; }
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .card h4 { margin-top: 0; color: var(--primary); font-size: 13px; }
+    .card p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+    /* ===== TABLES ===== */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: var(--primary); color: white; }
+    thead th { padding: 10px 14px; text-align: left; font-weight: 600; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody tr:hover { background: var(--primary-light); }
+    tbody td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+
+    /* ===== RISK MATRIX ===== */
+    .matrix-wrap { overflow-x: auto; margin: 20px 0; }
+    .risk-matrix { border-collapse: collapse; width: 100%; font-size: 12px; }
+    .risk-matrix th, .risk-matrix td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: center; font-weight: 600; }
+    .risk-matrix thead th { background: #334155; color: white; }
+    .risk-matrix td.impact-label { background: #f1f5f9; font-weight: 700; text-align: left; color: var(--text); white-space: nowrap; }
+    .rv  { background: #34d399; color: white; border-radius: 4px; }
+    .rl  { background: #fbbf24; color: #78350f; border-radius: 4px; }
+    .rs  { background: #f97316; color: white; border-radius: 4px; }
+    .rc  { background: #ef4444; color: white; border-radius: 4px; }
+    .re  { background: #7f1d1d; color: white; border-radius: 4px; }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 100px;
+      font-size: 11px; font-weight: 700; vertical-align: middle;
+    }
+    .badge-blue  { background: #dbeafe; color: #1d4ed8; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-yellow{ background: #fef9c3; color: #a16207; }
+    .badge-red   { background: #fee2e2; color: #b91c1c; }
+    .badge-dark  { background: #450a0a; color: white; }
+    .badge-orange{ background: #ffedd5; color: #c2410c; }
+    .badge-gray  { background: #f1f5f9; color: #475569; }
+
+    /* ===== STEP LIST ===== */
+    .step-list { list-style: none; counter-reset: step; margin: 16px 0; }
+    .step-list li {
+      counter-increment: step;
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-list li::before {
+      content: counter(step);
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--primary); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0; margin-top: 2px;
+    }
+
+    /* ===== ALERTS ===== */
+    .alert {
+      border-left: 4px solid;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .alert-info  { border-color: var(--primary); background: var(--primary-light); color: #1e40af; }
+    .alert-warn  { border-color: var(--accent); background: var(--accent-light); color: #92400e; }
+    .alert-danger{ border-color: var(--danger); background: #fee2e2; color: #991b1b; }
+    .alert-success{border-color: var(--success); background: #dcfce7; color: #14532d; }
+
+    /* ===== PERM TABLE ===== */
+    .check { color: #16a34a; font-size: 16px; }
+    .cross  { color: #dc2626; font-size: 16px; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+    }
+
+    /* ===== PAGE BREAKS ===== */
+    .pb { page-break-before: always; break-before: page; margin-top: 0 !important; }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: white; font-size: 12px; }
+      .cover { min-height: 100vh; }
+      .no-print { display: none !important; }
+      .flow-box { font-size: 11px; }
+      a { text-decoration: none; color: inherit; }
+      @page { margin: 15mm 20mm; size: A4; }
+      thead { display: table-header-group; }
+      tr { page-break-inside: avoid; }
+    }
+
+    /* ===== PRINT BUTTON ===== */
+    .print-btn {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      background: var(--primary); color: white;
+      border: none; border-radius: 50px;
+      padding: 12px 24px; font-size: 14px; font-weight: 600;
+      cursor: pointer; box-shadow: 0 4px 20px rgba(30,64,175,0.4);
+      font-family: 'Sarabun', sans-serif;
+    }
+    .print-btn:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ พิมพ์ / Save PDF</button>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <div class="cover-logo">🛡️</div>
+  <div class="cover-badge">WORKFLOW DOCUMENTATION</div>
+  <h1>ProRisk Manager AI</h1>
+  <h2>ขั้นตอนการทำงานและคู่มือการใช้งาน</h2>
+  <div class="cover-meta">
+    <div><div class="label">Version</div><div class="value">0.2</div></div>
+    <div><div class="label">อัปเดตล่าสุด</div><div class="value">มีนาคม 2026</div></div>
+    <div><div class="label">ระบบ</div><div class="value">EPC Risk Management</div></div>
+  </div>
+</div>
+
+<!-- ===== TOC ===== -->
+<div class="toc-page">
+  <h2>📋 สารบัญ</h2>
+  <ul class="toc-list">
+    <li><span class="num">1</span><span>การเข้าสู่ระบบ (Authentication)</span></li>
+    <li><span class="num">2</span><span>หน้าหลัก Dashboard</span></li>
+    <li><span class="num">3</span><span>การสร้างโครงการใหม่ (New Project)</span></li>
+    <li><span class="num">4</span><span>การจัดการความเสี่ยง (Risk Management)</span></li>
+    <li><span class="num">5</span><span>ระบบ AI (Groq AI Suggestion)</span></li>
+    <li><span class="num">6</span><span>การวิเคราะห์และรายงาน (Analytics)</span></li>
+    <li><span class="num">7</span><span>ประวัติการเปลี่ยนแปลง (Risk History)</span></li>
+    <li><span class="num">8</span><span>การนำเข้าข้อมูล (CSV Import)</span></li>
+    <li><span class="num">9</span><span>การจัดการผู้ใช้ (Admin Panel)</span></li>
+    <li><span class="num">10</span><span>สรุปสิทธิ์และการแก้ไขปัญหา</span></li>
+  </ul>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="page">
+
+  <!-- OVERVIEW -->
+  <div class="section-header">
+    <div class="section-num">📌</div>
+    <h2>ภาพรวมระบบ (System Overview)</h2>
+  </div>
+  <p><strong>ProRisk Manager AI</strong> เป็นเว็บแอปพลิเคชันสำหรับบริหารจัดการความเสี่ยงของโครงการ EPC (Engineering, Procurement, Construction) พัฒนาด้วย React + TypeScript บน Firebase โดยมีระบบ AI (Groq Llama-3) ช่วยแนะนำแผนการจัดการความเสี่ยงอัตโนมัติ</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🛡️ Admin</h4>
+      <p>เข้าถึงทุกโครงการ, จัดการผู้ใช้, สร้าง/แก้ไข/ลบ Risk ทุกโครงการ</p>
+    </div>
+    <div class="card">
+      <h4>👤 User</h4>
+      <p>เข้าถึงเฉพาะโครงการที่ Admin กำหนดให้ ไม่สามารถจัดการผู้ใช้ได้</p>
+    </div>
+  </div>
+
+  <h3>Main Workflow</h3>
+  <div class="flow-box">เข้าสู่ระบบ  ──▶  สร้างโครงการ  ──▶  เพิ่ม/จัดการ Risk  ──▶  วิเคราะห์รายงาน
+   (Login)        (New Project)    (Risk Register)        (Dashboard)
+                                         │
+                              ┌──────────┴──────────┐
+                              │     AI Suggest       │
+                              │   (Groq Llama-3)     │
+                              └─────────────────────┘</div>
+
+  <!-- SECTION 1 -->
+  <div class="section-header pb">
+    <div class="section-num">1</div>
+    <h2>การเข้าสู่ระบบ (Authentication)</h2>
+  </div>
+
+  <div class="flow-box">เปิดเว็บแอป
+     │
+     ▼
+กรอก Email + Password  ──▶  คลิก "Sign In"
+     │
+     ▼
+Firebase Authentication ตรวจสอบ
+     │
+     ├──▶ [ครั้งแรก / รหัสผ่านเริ่มต้น]
+     │         │
+     │         ▼
+     │     บังคับเปลี่ยนรหัสผ่าน (ChangePasswordScreen)
+     │         │
+     │         ▼
+     └──▶ [ปกติ]  เข้าสู่หน้า Dashboard</div>
+
+  <div class="alert alert-info">
+    💡 <strong>หมายเหตุ:</strong> ผู้ใช้ใหม่จะได้รับรหัสผ่านเริ่มต้นจาก Admin และต้องเปลี่ยนทันทีใน Login ครั้งแรก
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section-header pb">
+    <div class="section-num">2</div>
+    <h2>หน้าหลัก Dashboard</h2>
+  </div>
+
+  <h3>เลย์เอาต์หน้าหลัก</h3>
+  <div class="flow-box">┌───────────────────────────────────────────────────────┐
+│  NAVBAR:  Logo | Import | Summary | Admin | User | 🌙  │
+├─────────────────────┬─────────────────────────────────┤
+│  Dashboard Stats    │     Risk Bar Chart               │
+│  • ความเสี่ยงรวม    │  (กราฟแท่งการกระจายความเสี่ยง)  │
+│  • Open / Closed    │                                  │
+│  • โครงการทั้งหมด   │                                  │
+├──────────────────────┬──────────────────────────────────┤
+│  Status Bar Chart    │  Overdue Risk Chart              │
+│  (Open/InProgress/   │  (ความเสี่ยงที่เกินกำหนด)       │
+│   Closed)            │                                  │
+├──────────────────────┬──────────────────────────────────┤
+│  Initial Risk Matrix │  Residual Risk Matrix            │
+│  (ก่อน Mitigation)   │  (หลัง Mitigation)               │
+├────────────────────────────────────────────────────────┤
+│    Dashboard Controls:  Project Filter | Benchmark | Search │
+├────────────────────────────────────────────────────────┤
+│              Risk Table (ตารางรายการความเสี่ยง)          │
+└────────────────────────────────────────────────────────┘</div>
+
+  <h3>ปุ่มและไอคอนบน Navbar</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ปุ่ม / ไอคอน</th><th>ฟังก์ชัน</th></tr></thead>
+      <tbody>
+        <tr><td>➕ Add Risk</td><td>เพิ่มความเสี่ยงใหม่เข้าระบบ</td></tr>
+        <tr><td>📁+ New Project</td><td>สร้างโครงการใหม่</td></tr>
+        <tr><td>☁️↑ Import</td><td>นำเข้าข้อมูลจากไฟล์ CSV</td></tr>
+        <tr><td>📄 Summary</td><td>ดูรายงานสรุปความเสี่ยง</td></tr>
+        <tr><td>🛡️ Admin</td><td>จัดการผู้ใช้ (เฉพาะ Admin)</td></tr>
+        <tr><td>👤 User Icon</td><td>ข้อมูลบัญชีผู้ใช้ / เปลี่ยนรหัสผ่าน</td></tr>
+        <tr><td>🌙 / ☀️</td><td>สลับ Dark / Light Mode</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section-header pb">
+    <div class="section-num">3</div>
+    <h2>การสร้างโครงการใหม่ (New Project)</h2>
+  </div>
+
+  <ol class="step-list">
+    <li>คลิกปุ่ม <strong>"📁+ New Project"</strong> ที่ Navbar</li>
+    <li>กรอก <strong>Project Number</strong> (ห้ามซ้ำกับโครงการที่มีอยู่), <strong>Project Name</strong>, <strong>PM Name</strong>, <strong>Email</strong></li>
+    <li>เลือก <strong>Industry Type</strong>: Power Plants / Petrochemical Plants / Oil &amp; Gas / Data Centres</li>
+    <li>เลือก <strong>Project Modifiers</strong> (Weighting Factors ที่เกี่ยวข้อง)</li>
+    <li>เปิด <strong>"Generate Baseline Risks"</strong> หากต้องการให้ระบบสร้างความเสี่ยงพื้นฐาน 31 รายการอัตโนมัติ</li>
+    <li>คลิก <strong>"Create Project"</strong> — ระบบจะเปิดฟอร์ม Add Risk ให้ทันที</li>
+  </ol>
+
+  <!-- SECTION 4 -->
+  <div class="section-header pb">
+    <div class="section-num">4</div>
+    <h2>การจัดการความเสี่ยง (Risk Management)</h2>
+  </div>
+
+  <h3>4.1 เพิ่มความเสี่ยงใหม่</h3>
+  <ol class="step-list">
+    <li>คลิกปุ่ม <strong>"➕ Add Risk"</strong></li>
+    <li>เลือก <strong>Project</strong> และ <strong>Risk Category</strong> (ระบบสร้าง Risk ID อัตโนมัติ เช่น R-001)</li>
+    <li>กรอก <strong>Description</strong> (รายละเอียดความเสี่ยง), <strong>Possible Effect</strong>, <strong>Owner</strong></li>
+    <li>ประเมิน <strong>Initial Risk</strong>: Impact (1–5) × Likelihood (1–5)</li>
+    <li>กำหนด <strong>Mitigation Strategy</strong> และ <strong>Action Plan</strong> (หรือใช้ 🤖 AI Suggest)</li>
+    <li>ประเมิน <strong>Residual Risk</strong> หลังดำเนินแผน</li>
+    <li>กรอก <strong>Status</strong>, <strong>Deadline</strong>, <strong>Comment</strong> แล้วคลิก <strong>"Save Risk"</strong></li>
+  </ol>
+
+  <h3>4.2 ตาราง Risk Matrix 5×5</h3>
+  <div class="matrix-wrap">
+    <table class="risk-matrix">
+      <thead>
+        <tr>
+          <th>Impact \ Likelihood</th>
+          <th>Rarely (1)</th>
+          <th>Unlikely (2)</th>
+          <th>Occasional (3)</th>
+          <th>Likely (4)</th>
+          <th>Most Likely (5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="impact-label">Severe (5)</td><td class="rl">Low</td><td class="rs">Significant</td><td class="rc">Critical</td><td class="re">Extreme</td><td class="re">Extreme</td></tr>
+        <tr><td class="impact-label">Major (4)</td><td class="rl">Low</td><td class="rs">Significant</td><td class="rc">Critical</td><td class="rc">Critical</td><td class="re">Extreme</td></tr>
+        <tr><td class="impact-label">Moderate (3)</td><td class="rl">Low</td><td class="rl">Low</td><td class="rs">Significant</td><td class="rc">Critical</td><td class="rc">Critical</td></tr>
+        <tr><td class="impact-label">Minor (2)</td><td class="rv">Very Low</td><td class="rl">Low</td><td class="rl">Low</td><td class="rs">Significant</td><td class="rs">Significant</td></tr>
+        <tr><td class="impact-label">Insignificant (1)</td><td class="rv">Very Low</td><td class="rv">Very Low</td><td class="rl">Low</td><td class="rl">Low</td><td class="rl">Low</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4.3 กลยุทธ์การจัดการความเสี่ยง</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>รหัส</th><th>กลยุทธ์</th><th>ความหมาย</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-red">A</span></td><td>Avoid</td><td>หลีกเลี่ยงความเสี่ยง — ยกเลิกกิจกรรมหรือเปลี่ยนแผนงาน</td></tr>
+        <tr><td><span class="badge badge-blue">T</span></td><td>Transfer</td><td>ถ่ายโอนความเสี่ยง — ประกันภัย หรือสัญญาว่าจ้าง</td></tr>
+        <tr><td><span class="badge badge-orange">M</span></td><td>Mitigate</td><td>ลดความเสี่ยง — ดำเนินมาตรการควบคุม</td></tr>
+        <tr><td><span class="badge badge-green">AC</span></td><td>Accept</td><td>ยอมรับความเสี่ยง — เฝ้าระวังตามปกติ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4.4 ผลกระทบที่อาจเกิด (Possible Effect)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>รหัส</th><th>ความหมาย</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-blue">C</span></td><td>Cost — ต้นทุน / งบประมาณ</td></tr>
+        <tr><td><span class="badge badge-orange">T</span></td><td>Time — ระยะเวลา / กำหนดการ</td></tr>
+        <tr><td><span class="badge badge-green">Q</span></td><td>Quality — คุณภาพงาน</td></tr>
+        <tr><td><span class="badge badge-red">HSE</span></td><td>Health, Safety &amp; Environment</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section-header pb">
+    <div class="section-num">5</div>
+    <h2>ระบบ AI (Groq AI Suggestion)</h2>
+  </div>
+
+  <div class="flow-box">เปิดฟอร์ม Add / Edit Risk
+     │
+     ▼
+กรอก: Description + Impact + Likelihood + Possible Effect
+     │
+     ▼
+คลิกปุ่ม "🤖 AI Suggest"
+     │
+     ▼
+ระบบส่งข้อมูลไปยัง Groq API (Llama-3.3-70B)
+     │
+     ▼
+AI ประมวลผลและส่งกลับ JSON:
+  { "strategy": "Mitigate", "action": "1. ดำเนินการ...\n2. ติดตาม..." }
+     │
+     ▼
+ระบบเติม Mitigation Strategy + Action Plan อัตโนมัติ
+     │
+     ▼
+ผู้ใช้ตรวจสอบและแก้ไขเพิ่มเติมได้</div>
+
+  <div class="alert alert-warn">
+    ⚠️ <strong>ต้องการ:</strong> ตั้งค่า <code>GROQ_API_KEY</code> ใน <code>.env.local</code> ก่อนใช้งาน AI<br>
+    <strong>โมเดล:</strong> llama-3.3-70b-versatile (ใช้ได้ฟรี)
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section-header pb">
+    <div class="section-num">6</div>
+    <h2>การวิเคราะห์และรายงาน (Analytics)</h2>
+  </div>
+
+  <h3>6.1 Risk Matrix Heatmap</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>Initial Risk Matrix</h4>
+      <p>แสดงความเสี่ยง <strong>ก่อน</strong>มีแผนรับมือ (Pre-Mitigation)</p>
+    </div>
+    <div class="card">
+      <h4>Residual Risk Matrix</h4>
+      <p>แสดงความเสี่ยง <strong>หลัง</strong>ดำเนินแผนแล้ว (Post-Mitigation)</p>
+    </div>
+  </div>
+  <div class="alert alert-info">
+    💡 คลิกที่เซลล์ใด ๆ ในตาราง Heatmap เพื่อกรองดูเฉพาะ Risk ที่อยู่ในระดับนั้น
+  </div>
+
+  <h3>6.2 Industry Benchmark Comparison</h3>
+  <ol class="step-list">
+    <li>เลือก Project เฉพาะ (ต้องไม่เลือก "All Projects")</li>
+    <li>คลิกปุ่ม <strong>"Benchmark"</strong></li>
+    <li>ดู Heatmap 2 แผงเปรียบเทียบ: <strong>Actual</strong> (จริง) vs <strong>Baseline</strong> (มาตรฐานอุตสาหกรรม)</li>
+  </ol>
+
+  <h3>6.3 Risk Summary Report</h3>
+  <ol class="step-list">
+    <li>คลิก <strong>"📄 Summary"</strong> ที่ Navbar</li>
+    <li>ดูรายงานสรุป: สถิติตามระดับความเสี่ยง, Open Risks, Overdue Risks</li>
+    <li>พิมพ์ หรือ Export เป็น PDF ได้</li>
+  </ol>
+
+  <!-- SECTION 7 -->
+  <div class="section-header pb">
+    <div class="section-num">7</div>
+    <h2>ประวัติการเปลี่ยนแปลง (Risk History)</h2>
+  </div>
+
+  <ol class="step-list">
+    <li>คลิกไอคอน <strong>📜 (History)</strong> ที่แถว Risk ในตาราง</li>
+    <li>ดู Timeline การเปลี่ยนแปลงทั้งหมด: วันที่/เวลา, ผู้แก้ไข (Email), ฟิลด์ที่เปลี่ยน, ค่าเก่า → ค่าใหม่</li>
+  </ol>
+
+  <div class="alert alert-success">
+    ✅ ระบบจะบันทึก History อัตโนมัติ <strong>ทุกครั้ง</strong>ที่มีการแก้ไข Risk โดยไม่ต้องกดบันทึกแยก
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section-header pb">
+    <div class="section-num">8</div>
+    <h2>การนำเข้าข้อมูล (CSV Import)</h2>
+  </div>
+
+  <ol class="step-list">
+    <li>คลิก <strong>"☁️↑ Import"</strong> ที่ Navbar</li>
+    <li>เลือกไฟล์ CSV จากเครื่อง</li>
+    <li>ตรวจสอบ Preview ข้อมูลและ Mapping คอลัมน์</li>
+    <li>คลิก <strong>"Import"</strong> เพื่อบันทึกลงฐานข้อมูล</li>
+  </ol>
+
+  <h3>รูปแบบ CSV ที่รองรับ</h3>
+  <div class="flow-box">riskId,projectNo,projectName,category,description,owner,impact,likelihood,status
+R-001,P001,โครงการ A,Engineering,รายละเอียดความเสี่ยง,John,4,3,Open
+R-002,P001,โครงการ A,Construction,ความเสี่ยงที่ 2,Jane,3,2,In Progress</div>
+
+  <!-- SECTION 9 -->
+  <div class="section-header pb">
+    <div class="section-num">9</div>
+    <h2>การจัดการผู้ใช้ (Admin Panel)</h2>
+  </div>
+
+  <p>เข้าถึงโดยคลิกปุ่ม <strong>"🛡️ Admin"</strong> (เฉพาะ Admin เท่านั้น)</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>เมนู</th><th>ฟังก์ชัน</th></tr></thead>
+      <tbody>
+        <tr><td>👥 Manage Users</td><td>ดูรายชื่อผู้ใช้, แก้ไข Role, กำหนดโครงการที่อนุญาต, รีเซ็ตรหัสผ่าน</td></tr>
+        <tr><td>➕ Register New User</td><td>เพิ่มผู้ใช้ใหม่ด้วย Email + Role เริ่มต้น</td></tr>
+        <tr><td>💾 System Backup</td><td>ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ JSON</td></tr>
+        <tr><td>🗑️ Delete User</td><td>ลบบัญชีผู้ใช้ออกจากระบบ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 10 -->
+  <div class="section-header pb">
+    <div class="section-num">10</div>
+    <h2>สรุปสิทธิ์และการแก้ไขปัญหา</h2>
+  </div>
+
+  <h3>ตารางสรุปสิทธิ์การใช้งาน</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>การกระทำ</th>
+          <th>Admin</th>
+          <th>User (มีสิทธิ์โครงการ)</th>
+          <th>User (ไม่มีสิทธิ์)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ดู Dashboard</td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td></tr>
+        <tr><td>สร้างโครงการ</td><td class="check">✅</td><td class="cross">❌</td><td class="cross">❌</td></tr>
+        <tr><td>เพิ่ม Risk</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td></tr>
+        <tr><td>แก้ไข Risk</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td></tr>
+        <tr><td>ลบ Risk</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td></tr>
+        <tr><td>Import CSV</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td></tr>
+        <tr><td>ดู Summary Report</td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td></tr>
+        <tr><td>Admin Panel</td><td class="check">✅</td><td class="cross">❌</td><td class="cross">❌</td></tr>
+        <tr><td>จัดการผู้ใช้</td><td class="check">✅</td><td class="cross">❌</td><td class="cross">❌</td></tr>
+        <tr><td>System Backup</td><td class="check">✅</td><td class="cross">❌</td><td class="cross">❌</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>การแก้ไขปัญหาเบื้องต้น</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ปัญหา</th><th>สาเหตุ</th><th>วิธีแก้ไข</th></tr></thead>
+      <tbody>
+        <tr><td>Login ไม่ได้</td><td>Email/Password ผิด</td><td>ตรวจสอบข้อมูล หรือ Reset Password</td></tr>
+        <tr><td>ไม่เห็น Risk</td><td>Project Filter ผิด</td><td>ตรวจสอบการเลือก Project Filter</td></tr>
+        <tr><td>Permission Denied</td><td>Firestore Rules / ไม่มีสิทธิ์โครงการ</td><td>ติดต่อ Admin เพื่อขอสิทธิ์</td></tr>
+        <tr><td>AI Suggest ไม่ทำงาน</td><td>Groq API Key ผิดหรือหมด</td><td>ตรวจสอบ <code>.env.local</code></td></tr>
+        <tr><td>ข้อมูลไม่อัปเดต</td><td>Browser Cache</td><td>รีเฟรชหน้าเว็บ (F5)</td></tr>
+        <tr><td>Import ล้มเหลว</td><td>รูปแบบ CSV ผิด</td><td>ตรวจสอบ column headers ให้ถูกต้อง</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Data Flow Diagram</h3>
+  <div class="flow-box">User Browser
+    │
+    ├──▶ Firebase Authentication  (Login / Logout)
+    │
+    ├──▶ Cloud Firestore (NoSQL Database)
+    │        ├── /risks          ← ข้อมูลความเสี่ยง
+    │        ├── /users          ← User profiles & roles
+    │        └── /projects       ← Project metadata
+    │
+    └──▶ Groq API  (AI Suggestions)
+              └── llama-3.3-70b-versatile</div>
+
+  <div class="footer">
+    <p><strong>ProRisk Manager AI</strong> — Workflow &amp; Usage Documentation v0.2</p>
+    <p>สร้าง: มีนาคม 2026 | EPC Risk Management System</p>
+  </div>
+
+</div><!-- end .page -->
+
+</body>
+</html>

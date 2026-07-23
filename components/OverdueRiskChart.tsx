@@ -65,10 +65,10 @@ export const OverdueRiskChart: React.FC<OverdueRiskChartProps> = ({ risks }) => 
 
       {totalOverdue === 0 ? (
         <div className="mt-6 pt-4 border-t border-gray-50 dark:border-slate-800 text-center">
-          <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center justify-center gap-1">
+          <div className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center justify-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             All deadlines on track
-          </p>
+          </div>
         </div>
       ) : (
         <div className="mt-6 pt-4 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between">

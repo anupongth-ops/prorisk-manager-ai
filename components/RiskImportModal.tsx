@@ -12,10 +12,19 @@ interface RiskImportModalProps {
 export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [updateExisting, setUpdateExisting] = useState<boolean>(true); // Default to Update Existing so dates in CSV get synced
   const [logs, setLogs] = useState<string[]>([]);
   const [summary, setSummary] = useState<{ success: number; skipped: number; failed: number } | null>(null);
 
-  // 1. Generate Blank CSV Template
+  // Helper for flexible column matching
+  const getRowVal = (row: any, keySubstring: string) => {
+    if (!row) return undefined;
+    const keys = Object.keys(row);
+    const matchingKey = keys.find(k => k.toLowerCase().trim().includes(keySubstring.toLowerCase().trim()));
+    return matchingKey ? row[matchingKey] : undefined;
+  };
+
+  // 1. Generate Blank CSV Template with UTF-8 BOM for Excel
   const handleDownloadTemplate = () => {
     const headers = [
       "Project No",
@@ -27,27 +36,32 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
       "Description",
       "Initial Impact (1-5)",
       "Initial Likelihood (1-5)",
-      "Possible Effect (C/T/Q/HSE)",
+      "Possible Effect (C/T/Q/HS/E/R e.g. C+T+HS)",
       "Strategy (A/T/M/AC)",
       "Action Plan",
+      "Cost to Mitigate (H/M/L)",
+      "Probability of Success (H/M/L)",
       "Residual Impact (1-5)",
       "Residual Likelihood (1-5)",
       "Owner",
       "Raised Date (DD-MMM-YYYY)",
       "Deadline Date (DD-MMM-YYYY)",
       "Finished Date (DD-MMM-YYYY)",
+      "Next Review Date (DD-MMM-YYYY)",
       "Status (Open/In Progress/Closed)",
       "Comment"
     ];
 
-    const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
-    const encodedUri = encodeURI(csvContent);
+    const csvString = headers.join(",");
+    const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.href = url;
     link.setAttribute("download", "blank_risk_template.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,86 +84,141 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
       skipEmptyLines: true,
       complete: async (results) => {
         const rows = results.data as any[];
-        const newRisks: RiskItem[] = [];
-        const projectCache = new Map<string, Set<string>>(); // Cache existing Risk IDs per project
+        const risksToSave: RiskItem[] = [];
+        const projectCache = new Map<string, Map<string, RiskItem>>(); // projectNo -> (riskIdUpper -> RiskItem)
 
         let successCount = 0;
+        let updatedCount = 0;
+        let newCount = 0;
         let skippedCount = 0;
         let failCount = 0;
         const tempLogs: string[] = [];
 
         try {
           // Group rows by project first to minimize DB calls
-          const uniqueProjects = Array.from(new Set(rows.map(r => r['Project No']?.trim()).filter(Boolean)));
+          const uniqueProjects = Array.from(new Set(rows.map(r => (getRowVal(r, 'Project No') || '')?.trim()).filter(Boolean)));
 
-          // Pre-fetch existing Risk IDs for all involved projects
+          // Pre-fetch existing Risk items for all involved projects
           for (const proj of uniqueProjects) {
             tempLogs.push(`Checking existing risks for Project: ${proj}...`);
             const existingRisks = await fetchRisksByProject(proj);
-            const existingIds = new Set(existingRisks.map(r => r.riskId.toUpperCase())); // Normalize case
-            projectCache.set(proj, existingIds);
+            const riskMap = new Map<string, RiskItem>();
+            existingRisks.forEach(r => riskMap.set(r.riskId.toUpperCase(), r));
+            projectCache.set(proj, riskMap);
           }
 
           for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
             const rowNum = i + 2; // Accounting for header
 
+            const pNo = getRowVal(row, 'Project No');
+            const rId = getRowVal(row, 'Risk ID');
+            const desc = getRowVal(row, 'Description');
+
             // Basic Validation
-            if (!row['Project No'] || !row['Risk ID'] || !row['Description']) {
+            if (!pNo || !rId || !desc) {
               tempLogs.push(`Row ${rowNum}: Missing mandatory fields (Project No, Risk ID, or Description). Skipped.`);
               failCount++;
               continue;
             }
 
-            const projectNo = row['Project No'].trim();
-            const riskId = row['Risk ID'].trim();
-            const description = row['Description'];
+            const projectNo = String(pNo).trim();
+            const riskId = String(rId).trim();
+            const description = String(desc);
 
-            // DUPLICATE CHECK RULE
-            const existingIds = projectCache.get(projectNo);
-            if (existingIds && existingIds.has(riskId.toUpperCase())) {
-              tempLogs.push(`Row ${rowNum}: Risk ID "${riskId}" already exists in Project "${projectNo}". Preserving Database version. Skipped.`);
-              skippedCount++;
-              continue;
-            }
+            const existingMap = projectCache.get(projectNo);
+            const existingRisk = existingMap?.get(riskId.toUpperCase());
 
-            // Add to new list
+            const raisedDateStr = parseDate(getRowVal(row, 'Raised Date'));
+            const deadlineDateStr = parseDate(getRowVal(row, 'Deadline Date'));
+            const finishedDateStr = parseDate(getRowVal(row, 'Finished Date'));
+            const nextReviewDateStr = parseDate(getRowVal(row, 'Next Review Date'));
+
             try {
-              const riskItem: RiskItem = {
-                id: crypto.randomUUID(),
-                riskId: riskId,
-                projectNo: projectNo,
-                projectName: row['Project Name'] || '',
-                pmName: row['PM Name'] || '',
-                email: row['Email'] || '',
-                riskCategory: validateCategory(row['Risk Category']),
-                description: description,
-                initialRisk: {
-                  impact: parseLevel(row['Initial Impact (1-5)']),
-                  likelihood: parseLevel(row['Initial Likelihood (1-5)'])
-                },
-                possibleEffect: parseEffect(row['Possible Effect (C/T/Q/HSE)']),
-                mitigationStrategy: parseStrategy(row['Strategy (A/T/M/AC)']),
-                actionToControl: row['Action Plan'] || '',
-                residualRisk: {
-                  impact: parseLevel(row['Residual Impact (1-5)']),
-                  likelihood: parseLevel(row['Residual Likelihood (1-5)'])
-                },
-                owner: row['Owner'] || '',
-                raisedDate: parseDate(row['Raised Date (DD-MMM-YYYY)']) || new Date().toISOString().split('T')[0],
-                deadlineDate: parseDate(row['Deadline Date (DD-MMM-YYYY)']) || '',
-                finishedDate: parseDate(row['Finished Date (DD-MMM-YYYY)']) || '',
-                status: parseStatus(row['Status (Open/In Progress/Closed)']),
-                comment: row['Comment'] || '',
-                updatedAt: new Date().toISOString(),
-                history: [] // New import has no history
-              };
+              if (existingRisk) {
+                if (!updateExisting) {
+                  // Mode: Skip Existing
+                  tempLogs.push(`Row ${rowNum}: Risk ID "${riskId}" already exists in Project "${projectNo}". Preserving Database version. Skipped.`);
+                  skippedCount++;
+                  continue;
+                }
 
-              newRisks.push(riskItem);
-              // Temporarily add to cache so we don't duplicate within the same CSV
-              existingIds?.add(riskId.toUpperCase());
-              successCount++;
+                // Mode: Update Existing (UPSERT)
+                const updatedRisk: RiskItem = {
+                  ...existingRisk,
+                  projectName: getRowVal(row, 'Project Name') || existingRisk.projectName,
+                  pmName: getRowVal(row, 'PM Name') || existingRisk.pmName,
+                  email: getRowVal(row, 'Email') || existingRisk.email,
+                  riskCategory: validateCategory(getRowVal(row, 'Risk Category') || existingRisk.riskCategory),
+                  description: description,
+                  initialRisk: {
+                    impact: parseLevel(getRowVal(row, 'Initial Impact')) || existingRisk.initialRisk.impact,
+                    likelihood: parseLevel(getRowVal(row, 'Initial Likelihood')) || existingRisk.initialRisk.likelihood
+                  },
+                  possibleEffect: parseEffects(getRowVal(row, 'Possible Effect')),
+                  mitigationStrategy: parseStrategy(getRowVal(row, 'Strategy')) || existingRisk.mitigationStrategy,
+                  actionToControl: getRowVal(row, 'Action Plan') || existingRisk.actionToControl,
+                  costToMitigate: parseHML(getRowVal(row, 'Cost to Mitigate')) || existingRisk.costToMitigate,
+                  probabilityOfSuccess: parseHML(getRowVal(row, 'Probability of Success')) || existingRisk.probabilityOfSuccess,
+                  residualRisk: {
+                    impact: parseLevel(getRowVal(row, 'Residual Impact')) || existingRisk.residualRisk.impact,
+                    likelihood: parseLevel(getRowVal(row, 'Residual Likelihood')) || existingRisk.residualRisk.likelihood
+                  },
+                  owner: getRowVal(row, 'Owner') || existingRisk.owner,
+                  raisedDate: raisedDateStr || existingRisk.raisedDate,
+                  deadlineDate: deadlineDateStr || existingRisk.deadlineDate,
+                  finishedDate: finishedDateStr || existingRisk.finishedDate,
+                  nextReviewDate: nextReviewDateStr || existingRisk.nextReviewDate,
+                  status: parseStatus(getRowVal(row, 'Status')) || existingRisk.status,
+                  comment: getRowVal(row, 'Comment') || existingRisk.comment,
+                  updatedAt: new Date().toISOString()
+                };
 
+                risksToSave.push(updatedRisk);
+                tempLogs.push(`Row ${rowNum}: Risk ID "${riskId}" in Project "${projectNo}" updated with CSV dates (Raised: ${updatedRisk.raisedDate}, Deadline: ${updatedRisk.deadlineDate || '-'}).`);
+                successCount++;
+                updatedCount++;
+              } else {
+                // Mode: Create New Item
+                const newRiskItem: RiskItem = {
+                  id: crypto.randomUUID(),
+                  riskId: riskId,
+                  projectNo: projectNo,
+                  projectName: getRowVal(row, 'Project Name') || '',
+                  pmName: getRowVal(row, 'PM Name') || '',
+                  email: getRowVal(row, 'Email') || '',
+                  riskCategory: validateCategory(getRowVal(row, 'Risk Category') || ''),
+                  description: description,
+                  initialRisk: {
+                    impact: parseLevel(getRowVal(row, 'Initial Impact')),
+                    likelihood: parseLevel(getRowVal(row, 'Initial Likelihood'))
+                  },
+                  possibleEffect: parseEffects(getRowVal(row, 'Possible Effect')),
+                  mitigationStrategy: parseStrategy(getRowVal(row, 'Strategy')),
+                  actionToControl: getRowVal(row, 'Action Plan') || '',
+                  costToMitigate: parseHML(getRowVal(row, 'Cost to Mitigate')),
+                  probabilityOfSuccess: parseHML(getRowVal(row, 'Probability of Success')),
+                  residualRisk: {
+                    impact: parseLevel(getRowVal(row, 'Residual Impact')),
+                    likelihood: parseLevel(getRowVal(row, 'Residual Likelihood'))
+                  },
+                  owner: getRowVal(row, 'Owner') || '',
+                  raisedDate: raisedDateStr || new Date().toISOString().split('T')[0],
+                  deadlineDate: deadlineDateStr || '',
+                  finishedDate: finishedDateStr || '',
+                  nextReviewDate: nextReviewDateStr || '',
+                  status: parseStatus(getRowVal(row, 'Status')),
+                  comment: getRowVal(row, 'Comment') || '',
+                  updatedAt: new Date().toISOString(),
+                  history: []
+                };
+
+                risksToSave.push(newRiskItem);
+                existingMap?.set(riskId.toUpperCase(), newRiskItem);
+                tempLogs.push(`Row ${rowNum}: New Risk ID "${riskId}" added.`);
+                successCount++;
+                newCount++;
+              }
             } catch (e) {
               tempLogs.push(`Row ${rowNum}: Data format error. Skipped.`);
               failCount++;
@@ -157,12 +226,12 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
           }
 
           // Batch Upload
-          if (newRisks.length > 0) {
-            tempLogs.push(`Uploading ${newRisks.length} valid records to Firebase...`);
-            await batchSaveRisks(newRisks);
-            tempLogs.push("Upload complete.");
+          if (risksToSave.length > 0) {
+            tempLogs.push(`Saving ${risksToSave.length} records (${updatedCount} updated, ${newCount} new) to Database...`);
+            await batchSaveRisks(risksToSave);
+            tempLogs.push("Import and sync complete!");
           } else {
-            tempLogs.push("No new valid records found to upload.");
+            tempLogs.push("No valid records found to upload.");
           }
 
           setSummary({ success: successCount, skipped: skippedCount, failed: failCount });
@@ -178,9 +247,80 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
   };
 
   // --- Parsing Helpers ---
-  const parseLevel = (val: any): any => {
-    const num = parseInt(val);
-    return (num >= 1 && num <= 5) ? num : 1;
+  const parseLevel = (val: any, defaultVal = 1): number => {
+    if (val === undefined || val === null || String(val).trim() === '') return defaultVal;
+    const v = String(val).trim().toUpperCase();
+    if (!v) return defaultVal;
+
+    // 1. Direct number check (e.g. "3" -> 3, 3 -> 3)
+    const num = parseInt(v, 10);
+    if (!isNaN(num) && num >= 1 && num <= 5) return num;
+
+    // 2. Extract leading digit if present (e.g. "3 - Moderate", "4. Major", "2-Low", "5 (Extreme)")
+    const matchDigit = v.match(/^([1-5])[\s\.\-_]/);
+    if (matchDigit) {
+      return parseInt(matchDigit[1], 10);
+    }
+
+    // 3. Exact matching first for labels (IMPACT_LABELS & LIKELIHOOD_LABELS)
+    if (v === 'INSIGNIFICANT' || v === 'RARELY' || v === 'RARE') return 1;
+    if (v === 'MINOR' || v === 'UNLIKELY') return 2;
+    if (v === 'MODERATE' || v === 'OCCASIONAL' || v === 'MEDIUM' || v === 'MED') return 3;
+    if (v === 'MAJOR' || v === 'LIKELY' || v === 'HIGH') return 4;
+    if (v === 'SEVERE' || v === 'MOST LIKELY' || v === 'EXTREME' || v === 'VERY HIGH' || v === 'VERYHIGH' || v === 'VH') return 5;
+
+    // 4. Substring checks in correct priority order (Compound/Longer terms first)
+
+    // Check Level 1 compound terms
+    if (
+      v.includes('INSIGNIFICANT') || v.includes('NEGLIGIBLE') || v.includes('IMPROBABLE') ||
+      v.includes('VERY LOW') || v.includes('VERYLOW') || v === 'VL' || v.includes('MINIMAL') ||
+      v === 'ต่ำมาก' || v === 'น้อยมาก' || v === 'น้อยที่สุด'
+    ) {
+      return 1;
+    }
+
+    // Check Level 5 compound terms
+    if (
+      v.includes('MOST LIKELY') || v.includes('VERY HIGH') || v.includes('VERYHIGH') ||
+      v.includes('EXTREME') || v.includes('CATASTROPHIC') || v.includes('ALMOST CERTAIN') ||
+      v === 'E' || v === 'สูงมาก' || v === 'มากที่สุด'
+    ) {
+      return 5;
+    }
+
+    // Check Level 2 compound terms
+    if (
+      v.includes('UNLIKELY') || v.includes('MINOR') || v.includes('REMOTE') ||
+      v.includes('SELDOM') || v.includes('SLIGHT') || v === 'L' || v === 'ต่ำ' || v === 'น้อย'
+    ) {
+      return 2;
+    }
+
+    // Check Level 4 compound terms
+    if (
+      v.includes('MAJOR') || v.includes('CRITICAL') || v.includes('SEVERE') ||
+      v.includes('FREQUENT') || v.includes('LIKELY') || v.includes('HIGH') ||
+      v === 'H' || v === 'สูง' || v === 'มาก'
+    ) {
+      return 4;
+    }
+
+    // Check Level 3 compound terms
+    if (
+      v.includes('MODERATE') || v.includes('MEDIUM') || v.includes('POSSIBLE') ||
+      v.includes('OCCASIONAL') || v.includes('PROBABLE') || v.includes('SIGNIFICANT') ||
+      v === 'M' || v === 'ปานกลาง'
+    ) {
+      return 3;
+    }
+
+    // Check remaining single-word "LOW" for Level 2
+    if (v.includes('LOW')) {
+      return 2;
+    }
+
+    return defaultVal;
   };
 
   const validateCategory = (val: string): string => {
@@ -188,13 +328,26 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
     return RISK_CATEGORIES[0];
   };
 
-  const parseEffect = (val: string): PossibleEffect => {
-    const v = val?.trim().toUpperCase();
+  const parseOneEffect = (v: string): PossibleEffect => {
     if (v === 'C' || v === 'COST') return PossibleEffect.Cost;
     if (v === 'T' || v === 'TIME') return PossibleEffect.Time;
     if (v === 'Q' || v === 'QUALITY') return PossibleEffect.Quality;
-    return PossibleEffect.HSE;
+    if (v === 'HS' || v === 'HSE' || v === 'SAFETY' || v === 'HEALTH') return PossibleEffect.HealthSafety;
+    if (v === 'E' || v === 'ENVIRONMENT' || v === 'ENV') return PossibleEffect.Environment;
+    if (v === 'R' || v === 'REPUTATION' || v === 'REP') return PossibleEffect.Reputation;
+    return PossibleEffect.HealthSafety;
   };
+
+  // Parse single or multi-value effects: "C", "C+T", "C,T", "Cost+Time"
+  const parseEffects = (val: string): PossibleEffect[] => {
+    if (!val) return [PossibleEffect.Cost];
+    const parts = val.split(/[+,;]/).map(s => s.trim().toUpperCase()).filter(Boolean);
+    const mapped = parts.map(p => parseOneEffect(p));
+    return mapped.length > 0 ? mapped : [PossibleEffect.Cost];
+  };
+
+  // Keep legacy single-effect parse for old CSVs
+  const parseEffect = (val: string): PossibleEffect => parseOneEffect(val?.trim().toUpperCase() ?? '');
 
   const parseStrategy = (val: string): MitigationStrategy => {
     const v = val?.trim().toUpperCase();
@@ -202,6 +355,14 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
     if (v === 'T') return MitigationStrategy.Transfer;
     if (v === 'AC') return MitigationStrategy.Accept;
     return MitigationStrategy.Mitigate;
+  };
+
+  const parseHML = (val: string): 'H' | 'M' | 'L' | '' => {
+    const v = val?.trim().toUpperCase();
+    if (v === 'H' || v === 'HIGH') return 'H';
+    if (v === 'M' || v === 'MEDIUM') return 'M';
+    if (v === 'L' || v === 'LOW') return 'L';
+    return '';
   };
 
   const parseStatus = (val: string): any => {
@@ -216,43 +377,67 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
     'JUL': '07', 'AUG': '08', 'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
   };
 
-  const parseDate = (val: string): string => {
-    if (!val) return '';
-    const v = val.trim();
+  const parseDate = (val: any): string => {
+    if (val === undefined || val === null || val === '') return '';
+    const v = String(val).trim();
+    if (!v || v === '#' || v === 'N/A' || v.startsWith('#')) return '';
 
-    // 1. Try DD-MMM-YYYY (e.g., 04-Jun-2023 or 4-JUN-2023)
-    // Regex looks for 1-2 digits, then hyphen/slash, then 3 letters, then hyphen/slash, then 4 digits
-    const ddmmmyyyy = /^(\d{1,2})[-/]([a-zA-Z]{3})[-/](\d{4})$/;
-    const matchMMM = v.match(ddmmmyyyy);
-    if (matchMMM) {
-      const day = matchMMM[1].padStart(2, '0');
-      const mStr = matchMMM[2].toUpperCase();
-      const year = matchMMM[3];
-      const month = MONTH_MAP[mStr];
-
-      if (month) {
-        return `${year}-${month}-${day}`;
+    // 1. Try Excel numeric serial date (e.g., 45967 -> 2025-11-06)
+    if (/^\d{5}(\.\d+)?$/.test(v)) {
+      const serial = parseFloat(v);
+      const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
       }
     }
 
-    // 2. Try standard DD-MM-YYYY just in case
-    const ddmmyyyy = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/;
-    const match = v.match(ddmmyyyy);
-    if (match) {
-      const day = match[1].padStart(2, '0');
-      const month = match[2].padStart(2, '0');
-      const year = match[3];
-      return `${year}-${month}-${day}`; // Return ISO for storage
+    // 2. Try YYYY-MM-DD (e.g. 2025-11-06)
+    const matchYMD = v.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (matchYMD) {
+      const year = matchYMD[1];
+      const month = matchYMD[2].padStart(2, '0');
+      const day = matchYMD[3].padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
-    // 3. Fallback: try valid ISO
-    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    // 3. Try D-MMM-YY or DD-MMM-YYYY or D/MMM/YY (e.g., 6-Nov-25, 25-May-2026, 3-Apr-26)
+    const matchMMM = v.match(/^(\d{1,2})[-/]([a-zA-Z]{3})[-/](\d{2,4})$/);
+    if (matchMMM) {
+      const day = matchMMM[1].padStart(2, '0');
+      const mStr = matchMMM[2].toUpperCase();
+      let yearStr = matchMMM[3];
+      if (yearStr.length === 2) {
+        yearStr = String(2000 + parseInt(yearStr, 10));
+      }
+      const month = MONTH_MAP[mStr];
+      if (month) {
+        return `${yearStr}-${month}-${day}`;
+      }
+    }
+
+    // 4. Try DD-MM-YYYY or DD-MM-YY or DD/MM/YYYY or DD/MM/YY (e.g., 06/11/2025 or 6/11/25)
+    const matchDMY = v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+    if (matchDMY) {
+      const day = matchDMY[1].padStart(2, '0');
+      const month = matchDMY[2].padStart(2, '0');
+      let yearStr = matchDMY[3];
+      if (yearStr.length === 2) {
+        yearStr = String(2000 + parseInt(yearStr, 10));
+      }
+      return `${yearStr}-${month}-${day}`;
+    }
+
+    // 5. Fallback: try JS Date parse
+    const parsed = new Date(v);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0];
+    }
 
     return '';
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] border border-white/10 dark:border-slate-800 transition-all">
 
         {/* Header */}
@@ -273,32 +458,66 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
 
           {/* Step 1: Template */}
-          <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30 flex justify-between items-center transition-colors">
-            <div>
-              <h3 className="text-sm font-bold text-blue-800 dark:text-blue-300">1. Get the Template</h3>
-              <p className="text-xs text-blue-600 dark:text-blue-400">Download the blank CSV form to fill out your data.</p>
+          <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-colors">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-sm font-bold text-blue-800 dark:text-blue-300">1. Get the Template</h3>
+                <p className="text-xs text-blue-600 dark:text-blue-400">Download the blank CSV form to fill out your data.</p>
+              </div>
+              <button
+                onClick={handleDownloadTemplate}
+                className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 shadow-sm transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download Blank Form
+              </button>
             </div>
-            <button
-              onClick={handleDownloadTemplate}
-              className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 shadow-sm transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Download Blank Form
-            </button>
+            {/* ISO 31000 Description Hint */}
+            <div className="mt-3 pt-3 border-t border-blue-100 dark:border-blue-900/40">
+              <p className="text-[11px] font-bold text-blue-700 dark:text-blue-400 mb-1">📌 ISO 31000 — แนวทางการกรอกช่อง Description:</p>
+              <p className="text-[11px] text-blue-600 dark:text-blue-400 font-mono bg-blue-100/60 dark:bg-blue-900/30 px-2 py-1 rounded">
+                Due to [<span className="font-bold">cause</span>], there is a risk of [<span className="font-bold">event</span>], resulting in [<span className="font-bold">effect</span>].
+              </p>
+              <p className="text-[10px] text-blue-500 dark:text-blue-500 mt-1 italic">เช่น: Due to late material delivery, there is a risk of construction delay, resulting in cost overrun.</p>
+            </div>
           </div>
 
-          {/* Step 2: Rules Info */}
-          <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-100 dark:border-amber-900/30 transition-colors">
+          {/* Step 2: Rules Info & Duplicate Mode Selection */}
+          <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-100 dark:border-amber-900/30 transition-colors space-y-3">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">Duplicate Rule</h3>
+                <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">2. Duplicate Risk ID Handling Mode</h3>
                 <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
-                  If a <strong>Risk ID</strong> already exists for a specific <strong>Project No</strong> in the database,
-                  the uploaded row will be <span className="font-bold underline">skipped</span>.
-                  The database version is considered the master source of truth.
+                  เมื่อพบ <strong>Risk ID</strong> ที่มีอยู่แล้วใน <strong>Project No</strong> เดียวกันบนฐานข้อมูล:
                 </p>
               </div>
+            </div>
+
+            <div className="pl-8 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-amber-900 dark:text-amber-200">
+                <input
+                  type="radio"
+                  name="importMode"
+                  checked={updateExisting}
+                  onChange={() => setUpdateExisting(true)}
+                  className="w-4 h-4 text-amber-600 focus:ring-amber-500"
+                />
+                <span className="font-bold text-blue-700 dark:text-blue-400">อัปเดตข้อมูลรายการเดิม (Update Existing)</span>
+                <span className="text-gray-500 dark:text-slate-400 font-normal">— เขียนทับวันที่, สถานะ, ข้อความ จากไฟล์ CSV ลงรายการเดิม</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-amber-900 dark:text-amber-200">
+                <input
+                  type="radio"
+                  name="importMode"
+                  checked={!updateExisting}
+                  onChange={() => setUpdateExisting(false)}
+                  className="w-4 h-4 text-amber-600 focus:ring-amber-500"
+                />
+                <span className="font-bold text-amber-800 dark:text-amber-300">ข้ามรายการเดิม (Skip Existing)</span>
+                <span className="text-gray-500 dark:text-slate-400 font-normal">— ข้ามรายการที่มีอยู่แล้ว คงข้อมูลเดิมในฐานข้อมูลไว้</span>
+              </label>
             </div>
           </div>
 

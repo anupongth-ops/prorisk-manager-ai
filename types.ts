@@ -19,7 +19,10 @@ export enum PossibleEffect {
   Cost = 'C',
   Time = 'T',
   Quality = 'Q',
-  HSE = 'HSE'
+  HealthSafety = 'HS',
+  HSE = 'HSE', // Legacy support alias
+  Environment = 'E',
+  Reputation = 'R'
 }
 
 export enum MitigationStrategy {
@@ -40,7 +43,7 @@ export interface RiskChange {
   newValue: any;
 }
 
-export type UserRole = 'Admin' | 'User';
+export type UserRole = 'Admin' | 'Project_Manager' | 'User';
 
 export interface UserProfile {
   id: string; // Firestore Doc ID (uid)
@@ -52,10 +55,39 @@ export interface UserProfile {
   updatedAt?: string;
 }
 
+export type CostToMitigate = 'H' | 'M' | 'L' | '';
+export type ProbabilityOfSuccess = 'H' | 'M' | 'L' | '';
+export type RiskAppetite = 'Low' | 'Significant' | 'Critical';
+export type ReviewFrequency = 'Monthly' | 'Bi-monthly' | 'Quarterly' | 'Semi-Annually' | 'Annually';
+
+export const REVIEW_FREQUENCY_DAYS: Record<ReviewFrequency, number> = {
+  'Monthly': 30,
+  'Bi-monthly': 60,
+  'Quarterly': 90,
+  'Semi-Annually': 180,
+  'Annually': 365
+};
+
+export const DEFAULT_REVIEW_FREQUENCY: ReviewFrequency = 'Monthly';
+
+/** Computes nextReviewDate (YYYY-MM-DD) by adding frequency days to raisedDate (ISO 31000 Cl.6.6) */
+export const calculateNextReviewDate = (raisedDateStr?: string, frequency: ReviewFrequency = DEFAULT_REVIEW_FREQUENCY): string => {
+  const baseDate = raisedDateStr ? new Date(raisedDateStr) : new Date();
+  if (isNaN(baseDate.getTime())) return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const daysToAdd = REVIEW_FREQUENCY_DAYS[frequency] || 30;
+  baseDate.setDate(baseDate.getDate() + daysToAdd);
+  return baseDate.toISOString().split('T')[0];
+};
+
 export interface RiskItem {
   id: string;
   riskId: string;
   projectNo: string;
+  costToMitigate?: CostToMitigate;
+  probabilityOfSuccess?: ProbabilityOfSuccess;
+  riskAppetite?: RiskAppetite;
+  reviewFrequency?: ReviewFrequency;
+
   projectName: string;
   pmName: string;
   email: string;
@@ -65,7 +97,7 @@ export interface RiskItem {
   description: string;
   initialRisk: RiskScore;
 
-  possibleEffect: PossibleEffect;
+  possibleEffect: PossibleEffect | PossibleEffect[]; // supports multi-select (ISO 31000)
   mitigationStrategy: MitigationStrategy;
   actionToControl: string;
 
@@ -75,6 +107,7 @@ export interface RiskItem {
   raisedDate: string;
   deadlineDate: string;
   finishedDate?: string;
+  nextReviewDate?: string; // ISO 31000 Cl.6.6 Monitoring & Review cycle
   status: 'Open' | 'In Progress' | 'Closed';
   comment: string;
 
@@ -112,7 +145,21 @@ export const LIKELIHOOD_LABELS: Record<number, string> = {
 };
 
 export const EFFECT_LABELS: Record<string, string> = {
-  C: 'Cost', T: 'Time', Q: 'Quality', HSE: 'HSE'
+  C: 'Cost', T: 'Time', Q: 'Quality', HS: 'Health & Safety', E: 'Environment', R: 'Reputation'
+};
+
+/** Normalize possibleEffect field to always return PossibleEffect[] */
+export const normalizeEffects = (val: PossibleEffect | PossibleEffect[] | undefined | null): PossibleEffect[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  return [val];
+};
+
+/** Display string for effect array e.g. ["C","T"] → "Cost, Time" */
+export const formatEffects = (val: PossibleEffect | PossibleEffect[] | undefined | null): string => {
+  const arr = normalizeEffects(val);
+  if (arr.length === 0) return '-';
+  return arr.map(e => (e === 'HSE' ? 'Health & Safety' : (EFFECT_LABELS[e] ?? e))).join(', ');
 };
 
 export const STRATEGY_LABELS: Record<string, string> = {
@@ -142,6 +189,13 @@ export const INDUSTRY_TYPES = [
 ];
 
 export type RiskLevel = 'Very Low' | 'Low' | 'Significant' | 'Critical' | 'Extreme';
+
+/** Quantitative Risk Score (Impact * Likelihood, range 1 - 25) */
+export const getRiskScore = (impact: number, likelihood: number): number => {
+  const i = Math.max(1, Math.min(5, Number(impact) || 1));
+  const l = Math.max(1, Math.min(5, Number(likelihood) || 1));
+  return i * l;
+};
 
 export const getRiskLevel = (impact: number, likelihood: number): RiskLevel => {
   // Row 5: Severe
@@ -198,6 +252,22 @@ export const getRiskWeight = (level: RiskLevel): number => {
     case 'Very Low': return 1;
     default: return 0;
   }
+};
+
+export const DEFAULT_RISK_APPETITE: RiskAppetite = 'Low';
+
+/** Returns true if risk level is higher than the project's risk appetite threshold (ISO 31000 Cl.5.4.1) */
+export const isExceedingAppetite = (currentLevel: RiskLevel, appetiteThreshold: RiskAppetite = DEFAULT_RISK_APPETITE): boolean => {
+  const currentWeight = getRiskWeight(currentLevel);
+  const thresholdWeight = getRiskWeight(appetiteThreshold);
+  return currentWeight > thresholdWeight;
+};
+
+/** Returns true if a risk's next review date is today or overdue (ISO 31000 Cl.6.6 Continuous Review) */
+export const isReviewOverdue = (nextReviewDate?: string, status?: string): boolean => {
+  if (!nextReviewDate || status === 'Closed') return false;
+  const today = new Date().toISOString().split('T')[0];
+  return nextReviewDate <= today;
 };
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

@@ -1,19 +1,29 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Users, Database, Shield, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle, Clock, ShieldAlert, Edit2, Save, FolderLock, UserPlus, Info, Zap } from 'lucide-react';
+import { X, Users, Database, Shield, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle, Clock, ShieldAlert, Edit2, Save, FolderLock, UserPlus, Info, Zap, Mail } from 'lucide-react';
 import { fetchAllUsers, deleteUserRecord, createSystemBackup, updateUserPermissions } from '../services/adminService';
 import { isPermissionError, registerWithDefaultPassword } from '../services/firebaseService';
 import { PermissionsGuide } from './PermissionsGuide';
-import { UserProfile, UserRole } from '../types';
+import { UserProfile, UserRole, RiskItem } from '../types';
 import { BaselineRiskEditor } from './BaselineRiskEditor';
+import { OverdueEmailSettings } from './OverdueEmailSettings';
 
 interface AdminPanelProps {
   onClose: () => void;
   currentUserEmail: string;
+  existingProjects: string[]; // list of projectNo strings from useRisks
+  allRisks?: RiskItem[];
+  uniqueProjectData?: { projectNo: string; projectName: string; pmName: string; email: string }[];
 }
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmail }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'backup' | 'baseline'>('users');
+export const AdminPanel: React.FC<AdminPanelProps> = ({
+  onClose,
+  currentUserEmail,
+  existingProjects,
+  allRisks = [],
+  uniqueProjectData = [],
+}) => {
+  const [activeTab, setActiveTab] = useState<'users' | 'backup' | 'baseline' | 'overdue'>('users');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -23,7 +33,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
   // Edit State
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editRole, setEditRole] = useState<UserRole>('User');
-  const [editProjects, setEditProjects] = useState('');
+  const [editProjects, setEditProjects] = useState(''); // legacy fallback
+  const [editSelectedProjects, setEditSelectedProjects] = useState<string[]>([]);
 
   // Registration State
   const [newUserEmail, setNewUserEmail] = useState('');
@@ -44,10 +55,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
       // Filter out users with missing email (corrupt/incomplete records) and sort
       const validUsers = data.filter(u => u.email);
       validUsers.sort((a, b) => {
-        if (a.role === b.role) {
-          return (a.email || '').localeCompare(b.email || '');
-        }
-        return a.role === 'Admin' ? -1 : 1;
+        const roleOrder: Record<string, number> = { 'Admin': 0, 'Project_Manager': 1, 'User': 2 };
+        const roleA = roleOrder[a.role] ?? 2;
+        const roleB = roleOrder[b.role] ?? 2;
+        if (roleA !== roleB) return roleA - roleB;
+        return (a.email || '').localeCompare(b.email || '');
       });
       setUsers(validUsers);
     } catch (err: any) {
@@ -64,17 +76,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
   const handleEditPermissions = (user: UserProfile) => {
     setEditingUser(user);
     setEditRole(user.role);
-    setEditProjects(user.assignedProjects?.join(', ') || '');
+    const assigned = user.assignedProjects || [];
+    setEditSelectedProjects(assigned);
+    setEditProjects(assigned.join(', ')); // legacy
   };
 
   const handleSavePermissions = async () => {
     if (!editingUser) return;
     setActionLoading(true);
     try {
-      const projects = editProjects
-        .split(',')
-        .map(p => p.trim())
-        .filter(p => p !== '');
+      // Use multi-select list for Project_Manager and User roles
+      const projects = (editRole === 'Admin')
+        ? []
+        : editSelectedProjects;
 
       await updateUserPermissions(editingUser.id, editRole, projects);
 
@@ -85,7 +99,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
       ));
       setEditingUser(null);
     } catch (err) {
-      alert("Failed to update permissions.");
+      alert('Failed to update permissions.');
     } finally {
       setActionLoading(false);
     }
@@ -142,7 +156,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
       alert(`User ${newUserEmail} registered successfully with default password.`);
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
-        alert("This email is already registered in Authentication.");
+        alert(
+          `อีเมล ${newUserEmail} มีบัญชีอยู่ในระบบ Authentication แล้ว\n\n` +
+          `สาเหตุที่ไม่แสดงใน User List: เนื่องจากข้อมูล Profile ในคอลเลกชัน 'users' ของผู้ใช้นี้ยังไม่สมบูรณ์หรือยังไม่เคยซิงค์ข้อมูล\n\n` +
+          `วิธีแก้ไข:\n` +
+          `1. ให้ผู้ใช้อีเมล ${newUserEmail} กดเข้าสู่ระบบ (Login) ด้วยอีเมลนี้และรหัสผ่านเริ่มต้น\n` +
+          `2. ระบบจะทำการสร้าง/ซ่อมแซม Profile ในคอลเลกชัน 'users' ให้อัตโนมัติทันทีที่ล็อกอิน และชื่อจะปรากฏใน User List บนหน้า Admin Panel ครับ`
+        );
       } else {
         console.error("Registration error:", err);
         alert("Failed to register user. " + (err.message || ''));
@@ -153,7 +173,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto transition-all duration-300">
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-white/10 dark:border-slate-800 transition-all">
 
         {/* Header */}
@@ -171,12 +191,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 transition-colors">
+        <div className="flex border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 transition-colors flex-shrink-0">
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'users' ? 'bg-white dark:bg-slate-900 border-t-2 border-t-blue-600 dark:border-t-blue-500 text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300'}`}
+            className={`flex-1 py-3 text-xs sm:text-sm font-medium flex items-center justify-center gap-1 sm:gap-2 transition-colors ${activeTab === 'users' ? 'bg-white dark:bg-slate-900 border-t-2 border-t-blue-600 dark:border-t-blue-500 text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300'}`}
           >
-            <Users className="w-4 h-4" /> User Permissions
+            <Users className="w-4 h-4" /> <span className="hidden xs:inline">User</span> Permissions
+          </button>
+          <button
+            onClick={() => setActiveTab('overdue')}
+            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'overdue' ? 'bg-white dark:bg-slate-900 border-t-2 border-t-blue-600 dark:border-t-blue-500 text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300'}`}
+          >
+            <Mail className="w-4 h-4 text-red-500" /> Overdue Email Alerts
           </button>
           <button
             onClick={() => setActiveTab('backup')}
@@ -204,6 +230,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
               </div>
               <PermissionsGuide />
             </div>
+          ) : activeTab === 'overdue' ? (
+            <OverdueEmailSettings
+              allRisks={allRisks}
+              existingProjects={uniqueProjectData}
+              currentUserEmail={currentUserEmail}
+            />
           ) : activeTab === 'users' && (
             <div className="space-y-6">
               {/* Quick Add User Form */}
@@ -257,7 +289,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
                 </button>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm overflow-x-auto transition-all">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
                   <thead className="bg-gray-50 dark:bg-slate-800/50">
                     <tr>
@@ -290,9 +322,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
                             <div className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">Joined {new Date(u.createdAt).toLocaleDateString()}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${u.role === 'Admin' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-800/30' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-100 dark:border-slate-700'
-                              }`}>
-                              {u.role}
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${
+                              u.role === 'Admin'
+                                ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-800/30'
+                                : u.role === 'Project_Manager'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/30'
+                                : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-100 dark:border-slate-700'
+                            }`}>
+                              {u.role === 'Project_Manager' ? 'PM' : u.role}
                             </span>
                           </td>
                           <td className="px-6 py-4">
@@ -375,48 +412,148 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, currentUserEmai
 
         {/* Edit Permissions Modal */}
         {editingUser && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in duration-200 border border-white/10 dark:border-slate-800 transition-all">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto my-auto animate-in zoom-in duration-200 border border-white/10 dark:border-slate-800 transition-all">
+              {/* Header */}
               <div className="p-5 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 transition-colors">
                 <h3 className="font-black text-gray-800 dark:text-slate-100 uppercase tracking-widest text-xs">Assign Permissions</h3>
                 <button onClick={() => setEditingUser(null)} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"><X size={18} /></button>
               </div>
+
               <div className="p-6 space-y-5">
+                {/* Editing account */}
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Editing Account</p>
                   <p className="text-sm font-bold text-gray-900 dark:text-slate-100">{editingUser.email}</p>
                 </div>
 
+                {/* Role selector: 3 roles */}
                 <div>
                   <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-2">System Role</label>
-                  <div className="flex gap-2">
-                    {['User', 'Admin'].map(r => (
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { key: 'User', label: 'User', desc: 'Read-only, no edit' },
+                      { key: 'Project_Manager', label: 'Project\nManager', desc: 'Edit assigned projects' },
+                      { key: 'Admin', label: 'Admin', desc: 'Full access' },
+                    ] as { key: UserRole; label: string; desc: string }[]).map(r => (
                       <button
-                        key={r}
-                        onClick={() => setEditRole(r as UserRole)}
-                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all border ${editRole === r ? 'bg-blue-600 dark:bg-blue-700 text-white border-blue-700 dark:border-blue-800 shadow-md' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500'
-                          }`}
+                        key={r.key}
+                        onClick={() => {
+                          setEditRole(r.key);
+                          if (r.key === 'Admin') setEditSelectedProjects([]);
+                        }}
+                        className={`flex flex-col items-center py-3 px-2 rounded-xl text-xs font-bold transition-all border ${
+                          editRole === r.key
+                            ? r.key === 'Admin'
+                              ? 'bg-purple-600 text-white border-purple-700 shadow-md'
+                              : r.key === 'Project_Manager'
+                              ? 'bg-emerald-600 text-white border-emerald-700 shadow-md'
+                              : 'bg-blue-600 text-white border-blue-700 shadow-md'
+                            : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-blue-300'
+                        }`}
                       >
-                        {r}
+                        <span className="whitespace-pre-line text-center leading-tight">{r.label}</span>
+                        <span className={`mt-1 text-[9px] font-normal text-center leading-tight ${
+                          editRole === r.key ? 'text-white/80' : 'text-gray-400 dark:text-slate-500'
+                        }`}>{r.desc}</span>
                       </button>
                     ))}
                   </div>
+
+                  {/* Role description banner */}
+                  <div className={`mt-3 p-3 rounded-lg text-[11px] flex items-start gap-2 ${
+                    editRole === 'Admin'
+                      ? 'bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30 text-purple-700 dark:text-purple-400'
+                      : editRole === 'Project_Manager'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 text-blue-700 dark:text-blue-400'
+                  }`}>
+                    <Info size={12} className="flex-shrink-0 mt-0.5" />
+                    <span>
+                      {editRole === 'Admin' && 'Full system access — can view and edit all projects, manage users, and access admin tools.'}
+                      {editRole === 'Project_Manager' && 'Can add, edit, and delete risks only in their assigned projects. Cannot manage users or access admin tools.'}
+                      {editRole === 'User' && 'Read-only access to all visible projects. Cannot create or edit any risk items.'}
+                    </span>
+                  </div>
                 </div>
 
-                {editRole === 'User' && (
+                {/* Project multi-select (shown for User and Project_Manager) */}
+                {(editRole === 'User' || editRole === 'Project_Manager') && (
                   <div className="animate-in slide-in-from-top-2">
                     <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                      <FolderLock size={12} className="text-blue-500 dark:text-blue-400" /> Authorized Project Numbers
+                      <FolderLock size={12} className="text-blue-500 dark:text-blue-400" />
+                      Authorized Project Numbers
+                      {editSelectedProjects.length > 0 && (
+                        <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+                          {editSelectedProjects.length} selected
+                        </span>
+                      )}
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. PJ-001, PJ-002"
-                      className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
-                      value={editProjects}
-                      onChange={(e) => setEditProjects(e.target.value)}
-                    />
+
+                    {existingProjects.length === 0 ? (
+                      <div className="p-3 rounded-xl border border-dashed border-gray-200 dark:border-slate-700 text-center text-xs text-gray-400 dark:text-slate-500">
+                        No projects in database yet. Create a project first.
+                      </div>
+                    ) : (
+                      <div className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        {/* Select all / clear buttons */}
+                        <div className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+                          <span className="text-[10px] text-gray-500 dark:text-slate-400">Select projects to authorize</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setEditSelectedProjects([...existingProjects])}
+                              className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                            >All</button>
+                            <span className="text-gray-300 dark:text-slate-600">|</span>
+                            <button
+                              onClick={() => setEditSelectedProjects([])}
+                              className="text-[10px] font-bold text-gray-400 dark:text-slate-500 hover:underline"
+                            >None</button>
+                          </div>
+                        </div>
+                        {/* Project checkboxes */}
+                        <div className="max-h-48 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800">
+                          {existingProjects.map(proj => {
+                            const checked = editSelectedProjects.includes(proj);
+                            return (
+                              <label
+                                key={proj}
+                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${
+                                  checked
+                                    ? 'bg-blue-50 dark:bg-blue-900/20'
+                                    : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    setEditSelectedProjects(prev =>
+                                      prev.includes(proj)
+                                        ? prev.filter(p => p !== proj)
+                                        : [...prev, proj]
+                                    );
+                                  }}
+                                  className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className={`text-sm font-medium ${
+                                  checked
+                                    ? 'text-blue-700 dark:text-blue-300'
+                                    : 'text-gray-700 dark:text-slate-300'
+                                }`}>{proj}</span>
+                                {checked && (
+                                  <span className="ml-auto text-[9px] font-bold text-blue-500 dark:text-blue-400 uppercase">✓</span>
+                                )}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     <p className="mt-2 text-[10px] text-gray-400 dark:text-slate-500 italic">
-                      Separate multiple project numbers with a comma. Standard users can only modify risks in these projects.
+                      {editRole === 'Project_Manager'
+                        ? 'Project Managers can add, edit, and delete risks in the selected projects.'
+                        : 'Users with no projects selected will have read-only access.'}
                     </p>
                   </div>
                 )}

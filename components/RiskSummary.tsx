@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import { RiskItem, getRiskLevel, getRiskWeight, getRiskLevelColor } from '../types';
+import { RiskItem, getRiskLevel, getRiskWeight, getRiskLevelColor, getRiskScore } from '../types';
 import { X, FileText, Download } from 'lucide-react';
 
 interface RiskSummaryProps {
@@ -69,6 +69,7 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
       "Project No",
       "Category",
       "Risk Level",
+      "Risk Score (1-25)",
       "Description",
       "Owner",
       "Status",
@@ -79,6 +80,7 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
       csvHeaders.join(','),
       ...exportRows.map(r => {
         const level = getRiskLevel(r.residualRisk.impact, r.residualRisk.likelihood);
+        const score = getRiskScore(r.residualRisk.impact, r.residualRisk.likelihood);
         // Escape quotes for CSV format
         const safeDesc = `"${(r.description || '').replace(/"/g, '""')}"`;
         const safePlan = `"${(r.actionToControl || '').replace(/"/g, '""')}"`;
@@ -89,6 +91,7 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
           r.projectNo,
           safeCat,
           level,
+          score,
           safeDesc,
           r.owner,
           r.status,
@@ -109,8 +112,8 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-white/10 dark:border-slate-800 transition-all">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-white/10 dark:border-slate-800 transition-all my-auto">
 
         {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 transition-colors">
@@ -120,18 +123,19 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Risk Summary Report</h2>
-              <p className="text-sm text-gray-500 dark:text-slate-400">Sorted by Residual Risk Level (Highest to Lowest) • {filterName}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Sorted by Residual Risk Level & Score (Highest to Lowest) • {filterName}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
               onClick={exportTopRisksToCSV}
-              className="flex items-center gap-2 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm"
+              className="flex items-center gap-2 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition shadow-sm whitespace-nowrap"
               title="Export top 3 highest risks from each category to CSV"
             >
               <Download className="w-4 h-4" />
-              Export Top 3/Cat. (CSV)
+              <span className="hidden sm:inline">Export Top 3/Cat. (CSV)</span>
+              <span className="sm:hidden">Export CSV</span>
             </button>
             <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors">
               <X className="w-6 h-6" />
@@ -150,7 +154,7 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
               <thead>
                 <tr className="border-b-2 border-gray-100 dark:border-slate-800 transition-colors">
                   <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider w-24">Risk ID</th>
-                  <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider w-32">Level</th>
+                  <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider w-36">Level & Score</th>
                   <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider w-32">Category</th>
                   <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Description</th>
                   <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider w-40">Owner</th>
@@ -160,15 +164,21 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
               <tbody className="divide-y divide-gray-100 dark:divide-slate-800 transition-colors">
                 {sortedRisks.map((risk) => {
                   const level = getRiskLevel(risk.residualRisk.impact, risk.residualRisk.likelihood);
+                  const score = getRiskScore(risk.residualRisk.impact, risk.residualRisk.likelihood);
                   const colorClass = getRiskLevelColor(level);
 
                   return (
                     <tr key={risk.id} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
                       <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-slate-100">{risk.riskId}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${colorClass} whitespace-nowrap shadow-sm transition-all`}>
-                          {level}
-                        </span>
+                        <div className="flex flex-col items-start gap-0.5">
+                          <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${colorClass} whitespace-nowrap shadow-sm transition-all`}>
+                            {level}
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-500 dark:text-slate-400">
+                            Score: {score}/25
+                          </span>
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-600 dark:text-slate-400">{risk.riskCategory}</td>
                       <td className="py-3 px-4 text-sm text-gray-700 dark:text-slate-300">

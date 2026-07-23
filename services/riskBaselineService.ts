@@ -28,6 +28,8 @@ export const generateBaselineRiskItems = (
         pmName: string;
         email: string;
         industryType: string;
+        riskAppetite?: any;
+        reviewFrequency?: any;
     },
     selectedModifiers: ProjectModifier[],
     userEmail: string,
@@ -47,6 +49,8 @@ export const generateBaselineRiskItems = (
             email: project.email,
             industryType: project.industryType,
             appliedModifiers: selectedModifiers.map(m => m.item),
+            riskAppetite: project.riskAppetite || 'Low',
+            reviewFrequency: project.reviewFrequency || 'Monthly',
             riskCategory: base.discipline,
             description: `Baseline: ${base.factor}`,
             initialRisk: {

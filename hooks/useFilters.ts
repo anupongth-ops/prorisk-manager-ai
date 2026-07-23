@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
-import { RiskItem } from '../types';
+import { RiskItem, RiskAppetite, ReviewFrequency } from '../types';
 import { getIndustryBaselineScores } from '../services/riskBaselineService';
 import { PROJECT_MODIFIERS } from '../constants/riskConstants';
 
 export function useFilters(
     risks: RiskItem[],
-    uniqueProjectData: { projectNo: string, projectName: string, pmName: string, email: string, industryType?: string, appliedModifiers?: string[] }[]
+    uniqueProjectData: { projectNo: string, projectName: string, pmName: string, email: string, industryType?: string, appliedModifiers?: string[], riskAppetite?: RiskAppetite, reviewFrequency?: ReviewFrequency }[]
 ) {
     const [projectFilter, setProjectFilter] = useState<string>('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -25,12 +25,28 @@ export function useFilters(
     }, []);
 
     const filteredRisks = useMemo(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const q = searchQuery.toLowerCase().trim();
+
         let result = risks.filter(r => {
             const matchesProject = projectFilter === 'All' || r.projectNo === projectFilter;
-            const matchesSearch =
-                r.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                r.riskId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                r.owner.toLowerCase().includes(searchQuery.toLowerCase());
+
+            let matchesSearch = true;
+            if (q) {
+                if (q === 'overdue' || q === 'deadline') {
+                    matchesSearch = r.status !== 'Closed' && !!r.deadlineDate && r.deadlineDate < today;
+                } else if (q === 'review' || q === 'review due') {
+                    matchesSearch = r.status !== 'Closed' && !!r.nextReviewDate && r.nextReviewDate < today;
+                } else {
+                    matchesSearch =
+                        r.description.toLowerCase().includes(q) ||
+                        r.riskId.toLowerCase().includes(q) ||
+                        r.owner.toLowerCase().includes(q) ||
+                        r.status.toLowerCase().includes(q) ||
+                        (!!r.deadlineDate && r.deadlineDate.includes(q)) ||
+                        (!!r.nextReviewDate && r.nextReviewDate.includes(q));
+                }
+            }
 
             const matchesMatrix = !matrixFilter || (
                 matrixFilter.mode === 'initial'

@@ -3,9 +3,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   RiskItem, ImpactLevel, LikelihoodLevel, PossibleEffect,
   MitigationStrategy, IMPACT_LABELS, LIKELIHOOD_LABELS,
-  EFFECT_LABELS, STRATEGY_LABELS, RISK_CATEGORIES, getRiskLevel, getRiskLevelColor, UserProfile
+  EFFECT_LABELS, STRATEGY_LABELS, RISK_CATEGORIES, getRiskLevel, getRiskLevelColor, UserProfile,
+  normalizeEffects, RiskAppetite, DEFAULT_RISK_APPETITE, isExceedingAppetite, getRiskScore,
+  ReviewFrequency, DEFAULT_REVIEW_FREQUENCY, calculateNextReviewDate
 } from '../types';
-import { Sparkles, Save, X, Lock } from 'lucide-react';
+import { Sparkles, Save, X, Lock, AlertTriangle } from 'lucide-react';
 import { generateMitigationSuggestion } from '../services/groqService';
 import { RiskMatrix } from './RiskMatrix';
 
@@ -29,14 +31,17 @@ const initialRiskState: RiskItem = {
   riskCategory: RISK_CATEGORIES[0],
   description: '',
   initialRisk: { impact: ImpactLevel.Medium, likelihood: LikelihoodLevel.Medium },
-  possibleEffect: PossibleEffect.Cost,
+  possibleEffect: [PossibleEffect.Cost],
   mitigationStrategy: MitigationStrategy.Mitigate,
   actionToControl: '',
+  costToMitigate: '',
+  probabilityOfSuccess: '',
   residualRisk: { impact: ImpactLevel.Low, likelihood: LikelihoodLevel.Low },
   owner: '',
   raisedDate: new Date().toISOString().split('T')[0],
   deadlineDate: '',
   finishedDate: '',
+  nextReviewDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   status: 'Open',
   comment: '',
   updatedAt: new Date().toISOString(),
@@ -89,11 +94,13 @@ const DateInput = ({ label, value, onChange }: { label: string, value: string, o
   const years = Array.from({ length: 10 }, (_, i) => String(currentYear - 5 + i));
 
   return (
-    <div>
-      <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">{label}</label>
-      <div className="flex gap-1">
+    <div className="min-w-0">
+      <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1 truncate" title={label}>
+        {label}
+      </label>
+      <div className="grid grid-cols-3 gap-1">
         <select
-          className="w-16 border border-gray-300 dark:border-slate-700 rounded-md px-1 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
+          className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-1 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
           value={day}
           onChange={(e) => handlePartChange('d', e.target.value)}
         >
@@ -101,7 +108,7 @@ const DateInput = ({ label, value, onChange }: { label: string, value: string, o
           {days.map(d => <option key={d} value={d} className="dark:bg-slate-900">{d}</option>)}
         </select>
         <select
-          className="w-20 border border-gray-300 dark:border-slate-700 rounded-md px-1 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
+          className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-1 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
           value={month}
           onChange={(e) => handlePartChange('m', e.target.value)}
         >
@@ -109,7 +116,7 @@ const DateInput = ({ label, value, onChange }: { label: string, value: string, o
           {MONTHS.map(m => <option key={m.val} value={m.val} className="dark:bg-slate-900">{m.label}</option>)}
         </select>
         <select
-          className="w-20 border border-gray-300 dark:border-slate-700 rounded-md px-1 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
+          className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-1 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
           value={year}
           onChange={(e) => handlePartChange('y', e.target.value)}
         >
@@ -122,11 +129,7 @@ const DateInput = ({ label, value, onChange }: { label: string, value: string, o
 };
 
 export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProject, onSave, onCancel, existingProjects, nextId, userProfile }) => {
-  const [formData, setFormData] = useState<RiskItem>(() => {
-    if (initialData) return initialData;
-    if (prefilledProject) return { ...initialRiskState, id: crypto.randomUUID(), riskId: nextId, ...prefilledProject };
-    return { ...initialRiskState, id: crypto.randomUUID(), riskId: nextId };
-  });
+  const [formData, setFormData] = useState<RiskItem>(initialRiskState);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,11 +138,27 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
     if (initialData) {
       setFormData(initialData);
     } else if (prefilledProject) {
-      setFormData(prev => ({ ...prev, ...prefilledProject, riskId: nextId }));
+      const proj = existingProjects.find(p => p.projectNo === prefilledProject.projectNo);
+      const freq = proj?.reviewFrequency || DEFAULT_REVIEW_FREQUENCY;
+      const raised = new Date().toISOString().split('T')[0];
+      setFormData(prev => ({
+        ...prev,
+        ...prefilledProject,
+        riskId: nextId,
+        reviewFrequency: freq,
+        raisedDate: raised,
+        nextReviewDate: calculateNextReviewDate(raised, freq)
+      }));
     } else {
-      setFormData(prev => ({ ...prev, riskId: nextId }));
+      const raised = new Date().toISOString().split('T')[0];
+      setFormData(prev => ({
+        ...prev,
+        riskId: nextId,
+        raisedDate: raised,
+        nextReviewDate: calculateNextReviewDate(raised, DEFAULT_REVIEW_FREQUENCY)
+      }));
     }
-  }, [initialData, prefilledProject, nextId]);
+  }, [initialData, prefilledProject, nextId, existingProjects]);
 
   const isAdmin = userProfile?.role === 'Admin';
 
@@ -150,6 +169,13 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
   }, [existingProjects, isAdmin, userProfile]);
 
   const handleChange = (field: keyof RiskItem, value: any) => {
+    if (field === 'raisedDate' && value) {
+      const proj = existingProjects.find(p => p.projectNo === formData.projectNo);
+      const freq = formData.reviewFrequency || proj?.reviewFrequency || DEFAULT_REVIEW_FREQUENCY;
+      const nextDate = calculateNextReviewDate(value, freq);
+      setFormData(prev => ({ ...prev, raisedDate: value, nextReviewDate: nextDate }));
+      return;
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -158,12 +184,17 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
     const projectData = existingProjects.find(p => p.projectNo === selectedProjectNo);
 
     if (projectData) {
+      const freq = projectData.reviewFrequency || DEFAULT_REVIEW_FREQUENCY;
+      const computedNextReview = calculateNextReviewDate(formData.raisedDate, freq);
       setFormData(prev => ({
         ...prev,
         projectNo: projectData.projectNo,
         projectName: projectData.projectName,
         pmName: projectData.pmName,
-        email: projectData.email
+        email: projectData.email,
+        riskAppetite: projectData.riskAppetite,
+        reviewFrequency: freq,
+        nextReviewDate: computedNextReview
       }));
     } else {
       setFormData(prev => ({
@@ -195,7 +226,7 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
         formData.description,
         formData.initialRisk.impact,
         formData.initialRisk.likelihood,
-        formData.possibleEffect
+        normalizeEffects(formData.possibleEffect)[0] ?? PossibleEffect.Cost
       );
 
       if (suggestion) {
@@ -221,6 +252,9 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
 
   const initialLevel = getRiskLevel(formData.initialRisk.impact, formData.initialRisk.likelihood);
   const residualLevel = getRiskLevel(formData.residualRisk.impact, formData.residualRisk.likelihood);
+  const currentProjData = existingProjects.find(p => p.projectNo === formData.projectNo);
+  const activeAppetite = formData.riskAppetite || currentProjData?.riskAppetite || DEFAULT_RISK_APPETITE;
+  const exceedsAppetite = isExceedingAppetite(residualLevel, activeAppetite);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 overflow-y-auto transition-all duration-300">
@@ -340,27 +374,48 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Description</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">
+                    Description
+                    <span className="ml-2 text-[10px] font-normal text-blue-400 dark:text-blue-500 normal-case">
+                      (ISO 31000: Cause → Risk Event → Effect)
+                    </span>
+                  </label>
                   <textarea
                     required
                     className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
                     value={formData.description}
                     onChange={(e) => handleChange('description', e.target.value)}
-                    placeholder="Describe the potential risk event..."
+                    placeholder="Due to [cause], there is a risk of [event], resulting in [effect]. &#10;เช่น: Due to late material delivery, there is a risk of construction delay, resulting in cost overrun."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Possible Effect</label>
-                  <select
-                    className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
-                    value={formData.possibleEffect}
-                    onChange={(e) => handleChange('possibleEffect', e.target.value)}
-                  >
-                    {Object.entries(EFFECT_LABELS).map(([val, label]) => (
-                      <option key={val} value={val} className="dark:bg-slate-900">{val} - {label}</option>
-                    ))}
-                  </select>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-2">Possible Effect</label>
+                  <div className="flex flex-wrap gap-2">
+                    {(Object.entries(EFFECT_LABELS) as [PossibleEffect, string][]).map(([val, label]) => {
+                      const selected = normalizeEffects(formData.possibleEffect).includes(val);
+                      return (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => {
+                            const current = normalizeEffects(formData.possibleEffect);
+                            const next = selected
+                              ? current.filter(e => e !== val)
+                              : [...current, val];
+                            handleChange('possibleEffect', next.length > 0 ? next : [val]);
+                          }}
+                          className={`px-3 py-1.5 rounded-md text-xs font-bold border transition-all ${
+                            selected
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                              : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-300 dark:border-slate-700 hover:border-blue-400 hover:text-blue-600'
+                          }`}
+                        >
+                          {val} — {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 bg-blue-50 dark:bg-blue-900/10 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30 transition-colors">
@@ -373,7 +428,10 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
                     <div className="font-medium dark:text-slate-200">{LIKELIHOOD_LABELS[formData.initialRisk.likelihood]} ({formData.initialRisk.likelihood})</div>
                   </div>
                   <div className="col-span-2 mt-1 pt-2 border-t border-blue-200 dark:border-blue-800 flex justify-between items-center">
-                    <span className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase">Risk Level</span>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase">Initial Risk</span>
+                      <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400">Score: {getRiskScore(formData.initialRisk.impact, formData.initialRisk.likelihood)} / 25</span>
+                    </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${getRiskLevelColor(initialLevel)}`}>
                       {initialLevel}
                     </span>
@@ -410,7 +468,7 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-7 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Strategy</label>
                     <select
@@ -421,6 +479,34 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
                       {Object.entries(STRATEGY_LABELS).map(([val, label]) => (
                         <option key={val} value={val} className="dark:bg-slate-900">{val} - {label}</option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Cost to Mitigate (CTM)</label>
+                    <select
+                      className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
+                      value={formData.costToMitigate || ''}
+                      onChange={(e) => handleChange('costToMitigate', e.target.value)}
+                    >
+                      <option value="" className="dark:bg-slate-900">- Select -</option>
+                      <option value="H" className="dark:bg-slate-900">H - High</option>
+                      <option value="M" className="dark:bg-slate-900">M - Medium</option>
+                      <option value="L" className="dark:bg-slate-900">L - Low</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Prob. of Success (POS)</label>
+                    <select
+                      className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
+                      value={formData.probabilityOfSuccess || ''}
+                      onChange={(e) => handleChange('probabilityOfSuccess', e.target.value)}
+                    >
+                      <option value="" className="dark:bg-slate-900">- Select -</option>
+                      <option value="H" className="dark:bg-slate-900">H - High</option>
+                      <option value="M" className="dark:bg-slate-900">M - Medium</option>
+                      <option value="L" className="dark:bg-slate-900">L - Low</option>
                     </select>
                   </div>
                 </div>
@@ -445,11 +531,22 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
                     <div className="font-medium dark:text-slate-200">{LIKELIHOOD_LABELS[formData.residualRisk.likelihood]} ({formData.residualRisk.likelihood})</div>
                   </div>
                   <div className="col-span-2 mt-1 pt-2 border-t border-gray-200 dark:border-slate-800 flex justify-between items-center">
-                    <span className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase">Residual Level</span>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase">Residual Risk</span>
+                      <span className="text-[10px] font-extrabold text-gray-700 dark:text-slate-300">Score: {getRiskScore(formData.residualRisk.impact, formData.residualRisk.likelihood)} / 25</span>
+                    </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${getRiskLevelColor(residualLevel)}`}>
                       {residualLevel}
                     </span>
                   </div>
+                  {exceedsAppetite && (
+                    <div className="col-span-2 mt-2 p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-xs text-amber-800 dark:text-amber-300">
+                        <span className="font-bold">ISO 31000 Risk Appetite Alert:</span> Residual Risk ({residualLevel}) exceeds Project Risk Tolerance ({activeAppetite}). Detailed Action Plan & Close Monitoring are required.
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -467,15 +564,30 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
           {/* Section 4: Administrative */}
           <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-lg border border-gray-200 dark:border-slate-800 transition-colors">
             <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 uppercase tracking-wider mb-4">4. Administrative</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            {/* Row 1: Owner, Status, Raised Date, Deadline */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Owner</label>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1">Owner</label>
                 <input
                   type="text"
                   className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
                   value={formData.owner}
                   onChange={(e) => handleChange('owner', e.target.value)}
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1">Status</label>
+                <select
+                  className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
+                  value={formData.status}
+                  onChange={(e) => handleChange('status', e.target.value)}
+                >
+                  <option value="Open" className="dark:bg-slate-900">Open</option>
+                  <option value="In Progress" className="dark:bg-slate-900">In Progress</option>
+                  <option value="Closed" className="dark:bg-slate-900">Closed</option>
+                </select>
               </div>
 
               <DateInput
@@ -489,30 +601,24 @@ export const RiskForm: React.FC<RiskFormProps> = ({ initialData, prefilledProjec
                 value={formData.deadlineDate}
                 onChange={(val) => handleChange('deadlineDate', val)}
               />
+            </div>
 
+            {/* Row 2: Finished Date, Next Review Date, Comment */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
               <DateInput
                 label="Finished Date"
                 value={formData.finishedDate || ''}
                 onChange={(val) => handleChange('finishedDate', val)}
               />
 
-            </div>
+              <DateInput
+                label="Next Review (ISO 31000)"
+                value={formData.nextReviewDate || ''}
+                onChange={(val) => handleChange('nextReviewDate', val)}
+              />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Status</label>
-                <select
-                  className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"
-                  value={formData.status}
-                  onChange={(e) => handleChange('status', e.target.value)}
-                >
-                  <option value="Open" className="dark:bg-slate-900">Open</option>
-                  <option value="In Progress" className="dark:bg-slate-900">In Progress</option>
-                  <option value="Closed" className="dark:bg-slate-900">Closed</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 uppercase mb-1">Comment</label>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-1">Comment</label>
                 <input
                   type="text"
                   className="w-full border border-gray-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:text-slate-100 transition-colors"

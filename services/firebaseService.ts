@@ -8,20 +8,20 @@ import {
 import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, updatePassword, User, Auth,
-  sendPasswordResetEmail
+  sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential
 } from 'firebase/auth';
 import { RiskItem, UserProfile } from '../types';
 import { BASELINE_RISKS, ProjectModifier } from '../constants/riskConstants';
 import { calculateAdjustedScore } from './riskBaselineService';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDsEWkkz5HqKps6fiRgUjLarKYivqpeY3U",
-  authDomain: "risk-e-po-pm.firebaseapp.com",
-  projectId: "risk-e-po-pm",
-  storageBucket: "risk-e-po-pm.firebasestorage.app",
-  messagingSenderId: "182724137344",
-  appId: "1:182724137344:web:5075d17a8f23aafaa6b165",
-  measurementId: "G-TB7H3QJBMD"
+  apiKey: "AIzaSyCAyFUBlA6dYUs0DybaMIO1ar1RkA9k3sY",
+  authDomain: "epc-project-management-5e14a.firebaseapp.com",
+  projectId: "epc-project-management-5e14a",
+  storageBucket: "epc-project-management-5e14a.firebasestorage.app",
+  messagingSenderId: "968939185099",
+  appId: "1:968939185099:web:aa326d05c5a605b0e40c4e",
+  measurementId: "G-N42LT9ZBPN"
 };
 
 export let app: FirebaseApp | undefined;
@@ -164,11 +164,34 @@ export const checkUserNeedsPasswordChange = async (uid: string): Promise<boolean
   }
 };
 
-export const updateUserPasswordAndProfile = async (newPassword: string) => {
+export const updateUserPasswordAndProfile = async (newPassword: string, currentPassword?: string) => {
   if (!auth || !db) throw new Error("auth-not-initialized");
   const user = auth.currentUser;
   if (!user) throw new Error("no-user-logged-in");
-  await updatePassword(user, newPassword);
+
+  const pwdToTry = currentPassword || DEFAULT_PASSWORD;
+
+  try {
+    await updatePassword(user, newPassword);
+  } catch (err: any) {
+    const isRecentLoginError =
+      err?.code === 'auth/requires-recent-login' ||
+      String(err?.message || '').includes('requires-recent-login');
+
+    if (isRecentLoginError && user.email) {
+      try {
+        const credential = EmailAuthProvider.credential(user.email, pwdToTry);
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+      } catch (reauthErr: any) {
+        console.error("Re-authentication attempt failed:", reauthErr);
+        throw err;
+      }
+    } else {
+      throw err;
+    }
+  }
+
   await setDoc(doc(db, USERS_COLLECTION, user.uid), {
     isDefaultPassword: false,
     updatedAt: new Date().toISOString()
@@ -261,9 +284,30 @@ export const batchSaveRisks = async (risks: RiskItem[]): Promise<void> => {
   await batch.commit();
 };
 
+export const deleteProjectRisks = async (projectNo: string): Promise<void> => {
+  if (!db) throw new Error("db-not-initialized");
+  const risks = await fetchRisksByProject(projectNo);
+  if (risks.length === 0) return;
+
+  const batch = writeBatch(db);
+  risks.forEach(risk => {
+    const ref = doc(db, COLLECTION_NAME, risk.id);
+    batch.delete(ref);
+  });
+  await batch.commit();
+};
+
 export const updateProjectDetails = async (
   projectNo: string,
-  updates: { projectName: string, pmName: string, email: string, industryType?: string, appliedModifiers?: string[] }
+  updates: {
+    projectName: string;
+    pmName: string;
+    email: string;
+    industryType?: string;
+    appliedModifiers?: string[];
+    riskAppetite?: RiskAppetite;
+    reviewFrequency?: ReviewFrequency;
+  }
 ): Promise<void> => {
   if (!db) throw new Error("db-not-initialized");
 
@@ -275,7 +319,7 @@ export const updateProjectDetails = async (
   const batch = writeBatch(db);
   risks.forEach(risk => {
     const ref = doc(db, COLLECTION_NAME, risk.id);
-    batch.update(ref, {
+    const updateData: any = {
       projectName: updates.projectName,
       pmName: updates.pmName,
       email: updates.email,
@@ -283,7 +327,11 @@ export const updateProjectDetails = async (
       appliedModifiers: updates.appliedModifiers || [],
       lastUpdatedBy: auth?.currentUser?.email || 'System',
       updatedAt: new Date().toISOString()
-    });
+    };
+    if (updates.riskAppetite) updateData.riskAppetite = updates.riskAppetite;
+    if (updates.reviewFrequency) updateData.reviewFrequency = updates.reviewFrequency;
+
+    batch.update(ref, updateData);
   });
 
   await batch.commit();

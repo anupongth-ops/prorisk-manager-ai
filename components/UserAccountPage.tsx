@@ -29,18 +29,18 @@ export const UserAccountPage: React.FC<UserAccountPageProps> = ({ user, userProf
   const isAdmin = userProfile?.role === 'Admin';
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 pointer-events-auto border border-white/10 dark:border-slate-800 transition-all">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md my-auto max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 pointer-events-auto border border-white/10 dark:border-slate-800 transition-all">
 
         {/* Header/Cover */}
-        <div className={`h-32 relative ${isAdmin ? 'bg-gradient-to-r from-slate-800 to-slate-900' : 'bg-gradient-to-r from-blue-600 to-indigo-700'}`}>
+        <div className={`h-28 sm:h-32 relative flex-shrink-0 ${isAdmin ? 'bg-gradient-to-r from-slate-800 to-slate-900' : 'bg-gradient-to-r from-blue-600 to-indigo-700'}`}>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 rounded-full text-white transition-colors z-10"
           >
             <X className="w-5 h-5" />
           </button>
-          <div className="absolute -bottom-10 left-8">
+          <div className="absolute -bottom-10 left-6 sm:left-8">
             <div className="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 p-1 shadow-xl transition-colors">
               <div className="w-full h-full rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
                 {isAdmin ? <ShieldAlert className="w-10 h-10 text-emerald-600 dark:text-emerald-500" /> : <User className="w-10 h-10" />}
@@ -49,8 +49,8 @@ export const UserAccountPage: React.FC<UserAccountPageProps> = ({ user, userProf
           </div>
         </div>
 
-        {/* Profile Content */}
-        <div className="pt-14 pb-8 px-8">
+        {/* Profile Content - Scrollable for small screens */}
+        <div className="pt-12 pb-6 px-6 sm:px-8 overflow-y-auto flex-1">
           <div className="mb-6">
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">User Account</h2>

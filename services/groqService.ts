@@ -12,10 +12,20 @@ export const generateMitigationSuggestion = async (
     description: string,
     impact: ImpactLevel,
     likelihood: LikelihoodLevel,
-    possibleEffect: PossibleEffect
+    possibleEffect: PossibleEffect | PossibleEffect[]
 ): Promise<{ strategy: MitigationStrategy; action: string } | null> => {
     const apiKey = getApiKey();
     if (!apiKey) return null;
+
+    const effectArr = Array.isArray(possibleEffect) ? possibleEffect : [possibleEffect];
+    const effectText = effectArr.map(e =>
+        e === 'C' ? 'ต้นทุน (Cost)' :
+        e === 'T' ? 'กำหนดเวลา (Time)' :
+        e === 'Q' ? 'คุณภาพ (Quality)' :
+        e === 'R' ? 'ชื่อเสียงภาพลักษณ์องค์กร (Reputation)' :
+        e === 'E' ? 'สิ่งแวดล้อม (Environment)' :
+        'ความปลอดภัย อาชีวอนามัย (HSE)'
+    ).join(', ');
 
     const prompt = `
 คุณคือผู้เชี่ยวชาญด้านการบริหารความเสี่ยงโครงการ (Project Risk Management Expert) 
@@ -25,7 +35,7 @@ export const generateMitigationSuggestion = async (
 - **คำอธิบายความเสี่ยง:** ${description}
 - **ระดับผลกระทบ (Impact):** ${impact}/5 ${impact >= 4 ? '(สูงมาก)' : impact >= 3 ? '(ปานกลาง-สูง)' : '(ต่ำ-ปานกลาง)'}
 - **ระดับโอกาสเกิด (Likelihood):** ${likelihood}/5 ${likelihood >= 4 ? '(โอกาสสูง)' : likelihood >= 3 ? '(โอกาสปานกลาง)' : '(โอกาสต่ำ)'}
-- **ผลกระทบที่อาจเกิดต่อ:** ${possibleEffect === 'C' ? 'ต้นทุน (Cost)' : possibleEffect === 'T' ? 'กำหนดเวลา (Time)' : possibleEffect === 'Q' ? 'คุณภาพ (Quality)' : 'ความปลอดภัย อาชีวอนามัย สิ่งแวดล้อม (HSE)'}
+- **ผลกระทบที่อาจเกิดต่อ:** ${effectText}
 - **Risk Score:** ${impact * likelihood}/25
 
 ## กลยุทธ์การจัดการความเสี่ยง (เลือก 1 กลยุทธ์ที่เหมาะสมที่สุด)
@@ -114,5 +124,116 @@ export const generateMitigationSuggestion = async (
             strategy: MitigationStrategy.Mitigate, // Default to Mitigate
             action: `[จำลองคำตอบจาก AI เนื่องจากเกิดข้อผิดพลาด]\n\n1. จัดทำแผนสำรองฉุกเฉิน (Contingency Plan) สำหรับความเสี่ยงนี้\n2. มอบหมายผู้รับผิดชอบติดตามสถานะและรายงานผลทุกสัปดาห์\n3. พิจารณามาตรการลดผลกระทบหรือโอกาสเกิดตามความเหมาะสม\n4. ตรวจสอบทรัพยากรที่จำเป็นต้องใช้เพิ่มเติม`,
         };
+    }
+};
+
+// ─── Risk Library: AI Similarity Scoring ────────────────────────────────────
+
+export interface RiskLibraryItem {
+    id: string;
+    riskId: string;
+    projectNo: string;
+    projectName: string;
+    industryType?: string;
+    riskCategory: string;
+    description: string;
+    actionToControl: string;
+    initialScore: number;  // impact * likelihood
+    residualScore: number;
+}
+
+export interface ScoredRisk {
+    id: string;
+    score: number;        // 0–100 relevance
+    reason: string;       // short Thai explanation
+}
+
+/**
+ * Calls Groq to score a batch of historical risks against a new project context.
+ * Returns up to `risks.length` scored items sorted by relevance (desc).
+ * Falls back gracefully if the API key is missing or the call fails.
+ */
+export const scoreRiskSimilarity = async (
+    newProjectContext: {
+        industryType: string;
+        projectName: string;
+        categories: string[];  // categories already in the new project
+    },
+    risks: RiskLibraryItem[]
+): Promise<ScoredRisk[]> => {
+    const apiKey = getApiKey();
+
+    // Without API key → return neutral scores so UI still works
+    if (!apiKey || risks.length === 0) {
+        return risks.map(r => ({ id: r.id, score: 50, reason: 'ยังไม่ได้ตั้งค่า Groq API Key' }));
+    }
+
+    // Limit to 30 items per call to stay within token limits
+    const batch = risks.slice(0, 30);
+
+    const riskList = batch.map((r, i) =>
+        `${i + 1}. [${r.id}] หมวด: ${r.riskCategory} | อุตสาหกรรม: ${r.industryType || 'N/A'} | คำอธิบาย: ${r.description.slice(0, 120)}`
+    ).join('\n');
+
+    const prompt = `
+คุณคือผู้เชี่ยวชาญด้านการบริหารความเสี่ยงโครงการ
+
+## บริบทโครงการใหม่
+- ชื่อโครงการ: ${newProjectContext.projectName}
+- ประเภทอุตสาหกรรม: ${newProjectContext.industryType || 'ไม่ระบุ'}
+- หมวดความเสี่ยงที่มีอยู่แล้ว: ${newProjectContext.categories.join(', ') || 'ยังไม่มี'}
+
+## รายการความเสี่ยงจากฐานข้อมูลประวัติ (${batch.length} รายการ)
+${riskList}
+
+## งาน
+ให้คะแนน relevance ของแต่ละ risk (0–100) ว่ามีความเกี่ยวข้องและมีประโยชน์สำหรับโครงการใหม่นี้มากแค่ไหน
+พิจารณาจาก: ประเภทอุตสาหกรรม, หมวดความเสี่ยง, ความคล้ายคลึงของสถานการณ์
+
+ตอบเป็น JSON array เท่านั้น ตัวอย่าง:
+[{"id":"<risk_id>","score":85,"reason":"อุตสาหกรรมตรงกัน และเป็นความเสี่ยงที่พบบ่อยในโครงการประเภทนี้"}]
+
+ตอบเฉพาะ JSON array ไม่มีข้อความอื่น
+`;
+
+    try {
+        const response = await fetch(GROQ_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: GROQ_MODEL,
+                messages: [
+                    { role: 'system', content: 'You are a risk management expert. Respond with valid JSON only.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.3,
+                max_tokens: 2048,
+            }),
+        });
+
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+        const data = await response.json();
+        const text = data.choices?.[0]?.message?.content || '[]';
+
+        // Parse — strip markdown fences if present
+        const clean = text.replace(/```json?/g, '').replace(/```/g, '').trim();
+        const parsed: ScoredRisk[] = JSON.parse(clean);
+
+        // Merge scores back — items not in batch get score 50
+        const scoreMap = new Map(parsed.map(s => [s.id, s]));
+        return risks.map(r => scoreMap.get(r.id) ?? { id: r.id, score: 50, reason: 'ไม่ได้ประเมิน' });
+
+    } catch (err) {
+        console.error('scoreRiskSimilarity error:', err);
+        // Graceful fallback — score by category overlap
+        return risks.map(r => ({
+            id: r.id,
+            score: newProjectContext.categories.includes(r.riskCategory) ? 70 : 40,
+            reason: 'ประเมินจาก category (AI ไม่พร้อมใช้งาน)'
+        }));
     }
 };

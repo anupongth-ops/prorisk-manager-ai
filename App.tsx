@@ -5,6 +5,7 @@ import { RiskMatrix } from './components/RiskMatrix';
 import { ProjectForm } from './components/ProjectForm';
 import { RiskBarChart } from './components/RiskBarChart';
 import { StatusBarChart } from './components/StatusBarChart';
+import { CategoryBarChart } from './components/CategoryBarChart';
 import { OverdueRiskChart } from './components/OverdueRiskChart';
 import { LoginPage } from './components/LoginPage';
 import { ChangePasswordScreen } from './components/ChangePasswordScreen';
@@ -21,14 +22,17 @@ import { Navbar } from './components/Navbar';
 import { DashboardStats } from './components/DashboardStats';
 import { DashboardControls } from './components/DashboardControls';
 import { RiskTable } from './components/RiskTable';
+import { RiskGuideModal } from './components/RiskGuideModal';
 
 // Lazy-loaded heavy components (code splitting)
 const RiskForm = lazy(() => import('./components/RiskForm').then(m => ({ default: m.RiskForm })));
 const RiskSummary = lazy(() => import('./components/RiskSummary').then(m => ({ default: m.RiskSummary })));
 const RiskImportModal = lazy(() => import('./components/RiskImportModal').then(m => ({ default: m.RiskImportModal })));
+const RiskExportModal = lazy(() => import('./components/RiskExportModal').then(m => ({ default: m.RiskExportModal })));
 const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 const UserAccountPage = lazy(() => import('./components/UserAccountPage').then(m => ({ default: m.UserAccountPage })));
 const BaselineComparisonMatrix = lazy(() => import('./components/BaselineComparisonMatrix').then(m => ({ default: m.BaselineComparisonMatrix })));
+const RiskLibraryModal = lazy(() => import('./components/RiskLibraryModal').then(m => ({ default: m.RiskLibraryModal })));
 
 const ModalLoader = () => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -47,7 +51,8 @@ function App() {
 
   const {
     risks, isLoading, uniqueProjectData, uniqueProjectNos,
-    handleSaveRisk, handleDelete, getNextRiskId, handleCreateProject, handleUpdateProject
+    handleSaveRisk, handleDelete, getNextRiskId, handleCreateProject, handleUpdateProject, handleDeleteProject,
+    handleBatchImportFromLibrary
   } = useRisks(user, mustChangePassword, setPermissionDenied, canModifyProject, userProfile?.id, isAdmin, setUserProfile);
 
   const {
@@ -62,10 +67,13 @@ function App() {
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showRiskLibrary, setShowRiskLibrary] = useState(false);
   const [showUserAccount, setShowUserAccount] = useState(false);
   const [viewHistoryRisk, setViewHistoryRisk] = useState<RiskItem | null>(null);
   const [prefilledProject, setPrefilledProject] = useState<{ projectNo: string, projectName: string, pmName: string, email: string, industryType?: string } | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -116,14 +124,17 @@ function App() {
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
         setShowImport={setShowImport}
+        setShowExport={setShowExport}
         setShowSummary={setShowSummary}
         setShowAdmin={setShowAdmin}
+        setShowRiskLibrary={setShowRiskLibrary}
         setShowProjectForm={setShowProjectForm}
         setEditingRisk={setEditingRisk}
         setShowForm={setShowForm}
         setPrefilledProject={setPrefilledProject}
         setShowUserAccount={setShowUserAccount}
         handleLogout={handleLogout}
+        setShowGuide={setShowGuide}
       />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -159,14 +170,17 @@ function App() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-6 items-stretch">
-                <div className="xl:col-span-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-12 gap-6 items-stretch">
+                <div className="xl:col-span-4">
+                  <CategoryBarChart risks={filteredRisks} />
+                </div>
+                <div className="xl:col-span-4">
                   <StatusBarChart
                     risks={filteredRisks}
                     comparisonRisks={projectFilter !== 'All' ? risks : undefined}
                   />
                 </div>
-                <div className="xl:col-span-6">
+                <div className="xl:col-span-4">
                   <OverdueRiskChart risks={filteredRisks} />
                 </div>
               </div>
@@ -225,6 +239,7 @@ function App() {
               setMatrixFilter={setMatrixFilter}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
+              filteredRisks={filteredRisks}
             />
 
             <RiskTable
@@ -264,6 +279,12 @@ function App() {
         <ProjectForm
           existingProjects={uniqueProjectData}
           initialData={editingProject}
+          isAdmin={isAdmin}
+          onDeleteProject={(projectNo) => handleDeleteProject(projectNo, () => {
+            setShowProjectForm(false);
+            setEditingProject(undefined);
+            if (projectFilter === projectNo) setProjectFilter('All');
+          })}
           onSuccess={(proj, src, mods) => {
             if (editingProject) {
               handleUpdateProject(proj, () => {
@@ -284,7 +305,30 @@ function App() {
       {viewHistoryRisk && <RiskHistory risk={viewHistoryRisk} onClose={() => setViewHistoryRisk(null)} />}
       {showSummary && <Suspense fallback={<ModalLoader />}><RiskSummary risks={filteredRisks} onClose={() => setShowSummary(false)} filterName={projectFilter === 'All' ? 'All Projects' : projectFilter} /></Suspense>}
       {showImport && <Suspense fallback={<ModalLoader />}><RiskImportModal onClose={() => setShowImport(false)} /></Suspense>}
-      {showAdmin && <Suspense fallback={<ModalLoader />}><AdminPanel onClose={() => setShowAdmin(false)} currentUserEmail={user?.email || ''} /></Suspense>}
+      {showAdmin && (
+        <Suspense fallback={<ModalLoader />}>
+          <AdminPanel
+            onClose={() => setShowAdmin(false)}
+            currentUserEmail={user?.email || ''}
+            existingProjects={uniqueProjectNos}
+            allRisks={risks}
+            uniqueProjectData={uniqueProjectData}
+          />
+        </Suspense>
+      )}
+      {showRiskLibrary && (
+        <Suspense fallback={<ModalLoader />}>
+          <RiskLibraryModal
+            allRisks={risks}
+            existingProjects={uniqueProjectData}
+            userProfile={userProfile}
+            currentUserEmail={user?.email || ''}
+            getNextRiskId={getNextRiskId}
+            onImport={handleBatchImportFromLibrary}
+            onClose={() => setShowRiskLibrary(false)}
+          />
+        </Suspense>
+      )}
       {showUserAccount && (
         <Suspense fallback={<ModalLoader />}>
           <UserAccountPage
@@ -302,6 +346,7 @@ function App() {
           />
         </Suspense>
       )}
+      {showGuide && <RiskGuideModal onClose={() => setShowGuide(false)} />}
     </div>
   );
 }

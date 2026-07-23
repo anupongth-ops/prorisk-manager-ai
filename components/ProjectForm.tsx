@@ -1,27 +1,31 @@
 
 import React, { useState } from 'react';
 import { X, Save, FolderPlus, Copy, Factory, ChevronRight, ChevronLeft, CheckCircle2, Info } from 'lucide-react';
-import { INDUSTRY_TYPES } from '../types';
+import { INDUSTRY_TYPES, RiskAppetite, DEFAULT_RISK_APPETITE, ReviewFrequency, DEFAULT_REVIEW_FREQUENCY } from '../types';
 import { PROJECT_MODIFIERS, ProjectModifier } from '../constants/riskConstants';
 
 interface ProjectFormProps {
-  existingProjects: { projectNo: string; projectName: string; industryType?: string }[];
-  initialData?: { projectNo: string; projectName: string; pmName: string; email: string; industryType?: string };
+  existingProjects: { projectNo: string; projectName: string; industryType?: string; riskAppetite?: RiskAppetite; reviewFrequency?: ReviewFrequency }[];
+  initialData?: { projectNo: string; projectName: string; pmName: string; email: string; industryType?: string; appliedModifiers?: string[]; riskAppetite?: RiskAppetite; reviewFrequency?: ReviewFrequency };
+  isAdmin?: boolean;
+  onDeleteProject?: (projectNo: string) => void;
   onSuccess: (
-    project: { projectNo: string; projectName: string; pmName: string; email: string; industryType?: string },
+    project: { projectNo: string; projectName: string; pmName: string; email: string; industryType?: string; appliedModifiers?: string[]; riskAppetite?: RiskAppetite; reviewFrequency?: ReviewFrequency },
     copySourceProjectNo?: string,
     modifiers?: ProjectModifier[]
   ) => void;
   onCancel: () => void;
 }
 
-export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, initialData, onSuccess, onCancel }) => {
+export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, initialData, isAdmin, onDeleteProject, onSuccess, onCancel }) => {
   const [step, setStep] = useState(1);
   const [projectNo, setProjectNo] = useState(initialData?.projectNo || '');
   const [projectName, setProjectName] = useState(initialData?.projectName || '');
   const [pmName, setPmName] = useState(initialData?.pmName || '');
   const [email, setEmail] = useState(initialData?.email || '');
   const [industryType, setIndustryType] = useState(initialData?.industryType || '');
+  const [riskAppetite, setRiskAppetite] = useState<RiskAppetite>(initialData?.riskAppetite || DEFAULT_RISK_APPETITE);
+  const [reviewFrequency, setReviewFrequency] = useState<ReviewFrequency>(initialData?.reviewFrequency || DEFAULT_REVIEW_FREQUENCY);
   const [copySourceProjectNo, setCopySourceProjectNo] = useState('');
   const [selectedModifiers, setSelectedModifiers] = useState<string[]>(initialData?.appliedModifiers || []);
 
@@ -30,7 +34,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, init
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const modifiers = PROJECT_MODIFIERS.filter(m => selectedModifiers.includes(m.item));
-    onSuccess({ projectNo, projectName, pmName, email, industryType, appliedModifiers: selectedModifiers }, copySourceProjectNo || undefined, modifiers);
+    onSuccess({ projectNo, projectName, pmName, email, industryType, appliedModifiers: selectedModifiers, riskAppetite, reviewFrequency }, copySourceProjectNo || undefined, modifiers);
   };
 
   const toggleModifier = (item: string) => {
@@ -42,10 +46,10 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, init
   const categories = Array.from(new Set(PROJECT_MODIFIERS.map(m => m.category)));
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 transition-all duration-300">
-      <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full ${step === 1 ? 'max-w-md' : 'max-w-2xl'} overflow-hidden border border-white/10 dark:border-slate-800 transition-all duration-300`}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 overflow-y-auto transition-all duration-300">
+      <div className={`bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full ${step === 1 ? 'max-w-md' : 'max-w-2xl'} max-h-[90vh] flex flex-col border border-white/10 dark:border-slate-800 transition-all duration-300`}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 transition-colors">
+        <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 transition-colors flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
               <FolderPlus className="w-5 h-5" />
@@ -65,7 +69,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, init
         </div>
 
         {step === 1 ? (
-          <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="p-8 space-y-5">
+          <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="p-6 space-y-4 overflow-y-auto flex-1">
             {!isEditing && (
               <div className="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 mb-2">
                 <label className="block text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
@@ -153,36 +157,85 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, init
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                  🛡️ Risk Appetite / Tolerance Threshold (ISO 31000)
+                </label>
+                <select
+                  className="w-full border border-gray-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-white dark:bg-slate-800 dark:text-slate-100"
+                  value={riskAppetite}
+                  onChange={(e) => setRiskAppetite(e.target.value as RiskAppetite)}
+                >
+                  <option value="Low">Low — Residual Risk &gt; Low Requires Action Plan (Default)</option>
+                  <option value="Significant">Significant — Residual Risk &gt; Significant Requires Action Plan</option>
+                  <option value="Critical">Critical — High Risk Tolerance (Only Critical/Extreme Requires Action)</option>
+                </select>
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">
+                  ISO 31000 Cl.5.4.1: Level above which risks exceed acceptable project tolerance.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                  📅 Risk Review Frequency (ISO 31000 Cl.6.6)
+                </label>
+                <select
+                  className="w-full border border-gray-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-white dark:bg-slate-800 dark:text-slate-100"
+                  value={reviewFrequency}
+                  onChange={(e) => setReviewFrequency(e.target.value as ReviewFrequency)}
+                >
+                  <option value="Monthly">Monthly — Every 30 Days (Default)</option>
+                  <option value="Bi-monthly">Bi-monthly — Every 60 Days</option>
+                  <option value="Quarterly">Quarterly — Every 90 Days</option>
+                  <option value="Semi-Annually">Semi-Annually — Every 180 Days</option>
+                  <option value="Annually">Annually — Every 365 Days</option>
+                </select>
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">
+                  ISO 31000 Cl.6.6: Default monitoring cycle applied to all risks in this project.
+                </p>
+              </div>
             </div>
 
-            <div className="pt-4 flex gap-3">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-bold text-sm transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2"
-              >
-                {isEditing ? (
-                  <>
-                    <Save className="w-4 h-4" />
-                    Save Changes
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
+            <div className="pt-4 flex flex-col sm:flex-row gap-3">
+              {isEditing && isAdmin && onDeleteProject && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteProject(projectNo)}
+                  className="px-4 py-3 rounded-xl bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-bold text-sm shadow-sm transition-all"
+                >
+                  Delete Project
+                </button>
+              )}
+              <div className="flex-1 flex gap-3">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-bold text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {isEditing ? (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save Changes
+                    </>
+                  ) : (
+                    <>
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         ) : (
-          <div className="flex flex-col h-[600px] bg-white dark:bg-slate-900 transition-colors">
+          <div className="flex flex-col flex-1 overflow-hidden bg-white dark:bg-slate-900 transition-colors">
             {/* Industry Selection Info */}
             <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 border-b border-indigo-100 dark:border-indigo-900/30 flex items-center gap-3">
               <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />

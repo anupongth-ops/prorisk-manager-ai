@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, ArrowUpDown, Lock, History, Edit2, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { RiskItem, getRiskLevel, getRiskLevelColor } from '../types';
+import { RiskItem, getRiskLevel, getRiskLevelColor, isExceedingAppetite, DEFAULT_RISK_APPETITE, RiskAppetite, getRiskScore, isReviewOverdue, formatDateDisplay } from '../types';
 
 interface RiskTableProps {
     filteredRisks: RiskItem[];
@@ -26,13 +26,25 @@ export function RiskTable({
     handleDelete
 }: RiskTableProps) {
 
-    const getRiskBadge = (impact: number, likelihood: number) => {
+    const getRiskBadge = (impact: number, likelihood: number, appetiteThreshold?: RiskAppetite) => {
         const level = getRiskLevel(impact, likelihood);
         const colorClass = getRiskLevelColor(level);
+        const score = getRiskScore(impact, likelihood);
+        const isExceeding = appetiteThreshold ? isExceedingAppetite(level, appetiteThreshold) : false;
+
         return (
             <div className="flex flex-col items-center">
-                <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${colorClass} whitespace-nowrap`}>{level}</span>
-                <span className="text-[10px] text-gray-400 mt-0.5">I:{impact} / L:{likelihood}</span>
+                <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${colorClass} whitespace-nowrap shadow-sm`}>
+                    {level}
+                </span>
+                <span className="text-[10px] font-bold text-gray-600 dark:text-slate-300 mt-0.5">
+                    Score: {score} <span className="font-normal text-gray-400 dark:text-slate-500">(I:{impact}/L:{likelihood})</span>
+                </span>
+                {isExceeding && (
+                    <span className="mt-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded text-[9px] font-bold border border-amber-200 dark:border-amber-800" title={`Exceeds Project Risk Appetite (>${appetiteThreshold})`}>
+                        ⚡ Exceeds Appetite
+                    </span>
+                )}
             </div>
         );
     };
@@ -100,15 +112,27 @@ export function RiskTable({
                                             {getRiskBadge(risk.initialRisk.impact, risk.initialRisk.likelihood)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                                            {getRiskBadge(risk.residualRisk.impact, risk.residualRisk.likelihood)}
+                                            {getRiskBadge(risk.residualRisk.impact, risk.residualRisk.likelihood, risk.riskAppetite || DEFAULT_RISK_APPETITE)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${risk.status === 'Open' ? 'bg-red-100 text-red-800' :
-                                                risk.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                                                    'bg-green-100 text-green-800'
-                                                }`}>
-                                                {risk.status}
-                                            </span>
+                                            <div className="flex flex-col items-start gap-1">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${risk.status === 'Open' ? 'bg-red-100 text-red-800' :
+                                                    risk.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-green-100 text-green-800'
+                                                    }`}>
+                                                    {risk.status}
+                                                </span>
+                                                {risk.status !== 'Closed' && risk.deadlineDate && risk.deadlineDate < new Date().toISOString().split('T')[0] && (
+                                                    <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-[9px] font-bold border border-red-200 dark:border-red-800" title={`Deadline Overdue: ${formatDateDisplay(risk.deadlineDate)}`}>
+                                                        🚨 Deadline Overdue
+                                                    </span>
+                                                )}
+                                                {isReviewOverdue(risk.nextReviewDate, risk.status) && (
+                                                    <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded text-[9px] font-bold border border-indigo-200 dark:border-indigo-800" title={`ISO 31000 Review Due: ${formatDateDisplay(risk.nextReviewDate)}`}>
+                                                        📅 Review Due
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex items-center justify-end gap-2">

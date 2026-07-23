@@ -1,7 +1,7 @@
 # ProRisk Manager AI - Developer Blueprint
 
-**Version:** 0.2 (2026-01-28)
-**Date:** 2026-02-18
+**Version:** 0.2.20260717
+**Date:** 2026-07-17
 
 ---
 

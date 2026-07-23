@@ -1,10 +1,12 @@
 {
-  "name": "prorisk-manager-ai-0-2-20260401",
+  "name": "prorisk-manager-ai-0-2-20260717",
   "private": true,
-  "version": "0.2.20260401",
+  "version": "0.2.20260717",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:all": "concurrently \"node export-server.cjs\" \"vite\" --names \"EXPORT,VITE\" --prefix-colors \"green,blue\"",
+    "export-server": "node export-server.cjs",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -14,11 +16,15 @@
     "lucide-react": "^0.554.0",
     "papaparse": "^5.4.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "xlsx": "^0.18.5",
+    "xlsx-populate": "^1.21.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^10.0.3",
+    "exceljs": "^4.4.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

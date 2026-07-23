@@ -305,6 +305,15 @@ function App() {
       {viewHistoryRisk && <RiskHistory risk={viewHistoryRisk} onClose={() => setViewHistoryRisk(null)} />}
       {showSummary && <Suspense fallback={<ModalLoader />}><RiskSummary risks={filteredRisks} onClose={() => setShowSummary(false)} filterName={projectFilter === 'All' ? 'All Projects' : projectFilter} /></Suspense>}
       {showImport && <Suspense fallback={<ModalLoader />}><RiskImportModal onClose={() => setShowImport(false)} /></Suspense>}
+      {showExport && (
+        <Suspense fallback={<ModalLoader />}>
+          <RiskExportModal
+            risks={filteredRisks}
+            projectFilter={projectFilter}
+            onClose={() => setShowExport(false)}
+          />
+        </Suspense>
+      )}
       {showAdmin && (
         <Suspense fallback={<ModalLoader />}>
           <AdminPanel

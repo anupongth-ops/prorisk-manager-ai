@@ -1,7 +1,44 @@
 
 import React, { useState } from 'react';
 import { X, Download, FileSpreadsheet, Loader2, AlertTriangle } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { RiskItem } from '../types';
+
+const handleClientSideExport = (targetRisks: RiskItem[], filter: string) => {
+  const exportData = targetRisks.map(r => ({
+    'Risk ID': r.riskId,
+    'Project No.': r.projectNo,
+    'Project Name': r.projectName,
+    'PM Name': r.pmName,
+    'Risk Title': r.riskTitle || '',
+    'Category': r.riskCategory,
+    'Risk Event': r.riskEventDescription,
+    'Possible Effects': Array.isArray(r.possibleEffects) ? r.possibleEffects.join(', ') : r.possibleEffects,
+    'Initial Impact (1-5)': r.initialRisk.impact,
+    'Initial Likelihood (1-5)': r.initialRisk.likelihood,
+    'Initial Risk Score': r.initialRisk.impact * r.initialRisk.likelihood,
+    'Strategy': r.mitigationStrategy,
+    'Action Plan': r.actionPlan,
+    'Owner': r.actionOwner,
+    'Target Date': r.targetDate,
+    'Residual Impact (1-5)': r.residualRisk.impact,
+    'Residual Likelihood (1-5)': r.residualRisk.likelihood,
+    'Residual Risk Score': r.residualRisk.impact * r.residualRisk.likelihood,
+    'Status': r.status,
+    'Review Frequency': r.reviewFrequency || 'Monthly',
+    'Next Review Date': r.nextReviewDate || ''
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Risk Register');
+
+  const filename = filter !== 'All'
+    ? `RiskRegister_${filter}.xlsx`
+    : 'RiskRegister_AllProjects.xlsx';
+
+  XLSX.writeFile(workbook, filename);
+};
 
 interface RiskExportModalProps {
   risks: RiskItem[];
@@ -24,11 +61,11 @@ export const RiskExportModal: React.FC<RiskExportModalProps> = ({ risks, project
     return Array.from(map.values());
   }, [risks]);
 
+
   const handleExport = async () => {
     setIsExporting(true);
     setError(null);
     try {
-      // Serialize risks data for the API
       const payload = {
         risks: risks,
         projectNo: projectFilter
@@ -37,32 +74,35 @@ export const RiskExportModal: React.FC<RiskExportModalProps> = ({ risks, project
       const isProd = import.meta.env.PROD;
       const apiUrl = isProd ? 'https://aeng.info/export-excel' : '/api/export-excel';
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        let errMsg = `Export failed (${response.status})`;
-        try { errMsg = JSON.parse(errText).error || errMsg; } catch {}
-        throw new Error(errMsg);
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          const filename = projectFilter !== 'All'
+            ? `RiskRegister_${projectFilter}.xlsx`
+            : 'RiskRegister_AllProjects.xlsx';
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          onClose();
+          return;
+        }
+      } catch (netErr) {
+        console.warn('Server export API unavailable, using client-side XLSX fallback', netErr);
       }
 
-      // Download the file
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const filename = projectFilter !== 'All'
-        ? `RiskRegister_${projectFilter}.xlsx`
-        : 'RiskRegister_AllProjects.xlsx';
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Fallback to client-side XLSX generation
+      handleClientSideExport(risks, projectFilter);
       onClose();
     } catch (e: any) {
       setError(e.message || 'Unknown error during export');

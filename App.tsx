@@ -257,6 +257,21 @@ function App() {
         )}
       </main>
 
+      {/* Footer */}
+      <footer className="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 mt-auto transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-gray-700 dark:text-slate-300">Risk Manager E-PO-PM</span>
+            <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              v0.2.20260717
+            </span>
+          </div>
+          <div className="text-gray-500 dark:text-slate-400">
+            Design by <span className="font-semibold text-gray-800 dark:text-slate-200">E-PO-PM</span>
+          </div>
+        </div>
+      </footer>
+
       {/* Modals */}
       {showForm && (
         <Suspense fallback={<ModalLoader />}>

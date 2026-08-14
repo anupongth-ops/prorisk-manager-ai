@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { RiskItem, RiskSnapshot, RiskChange, RiskAppetite, ReviewFrequency, calculateNextReviewDate, DEFAULT_REVIEW_FREQUENCY, getRiskLevel } from '../types';
 import {
     subscribeToRisks,

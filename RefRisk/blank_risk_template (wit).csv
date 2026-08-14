@@ -1,0 +1,208 @@
+﻿Project No,Project Name,PM Name,Email,Risk ID,Risk Category,Description,Initial Impact (1-5),Initial Likelihood (1-5),Possible Effect (C/T/Q/HS/E/R e.g. C+T+HS),Strategy (A/T/M/AC),Action Plan,Cost to Mitigate (H/M/L),Probability of Success (H/M/L),Residual Impact (1-5),Residual Likelihood (1-5),Owner,Raised Date (DD-MMM-YYYY),Deadline Date (DD-MMM-YYYY),Finished Date (DD-MMM-YYYY),Next Review Date (DD-MMM-YYYY),Status (Open/In Progress/Closed),Comment
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C1,Engineering,"Delay to complete engineering for distribute to concerned disciplines and engineering package attached CRQ.
+ - Process.
+ - Civil.
+ - Piping.
+ - Instrument.
+",3,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,25-May-26,25-May-26,,Closed,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C2,Engineering,Delay to submit construction permit (for operation plat form) and get approval from IEAT.,3,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Permit package shall submit to IEAT within 30-Aug-26.",,,3,1,,6-Nov-25,5-Feb-27,,,In-progress,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C3,Engineering,Delay to complete instrument design to issue long lead equipment control valve.,4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,4,1,,6-Nov-25,18-Dec-25,21-Nov-25,,Closed,N/A
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C4,Project Management,eMOC shall complete and matching with Project schedule.,3,2,,,"1.) Set up meeting with GC for schedule to follow up with plan.
+2.) Set meeting for clarification if any.",,,3,1,,5-Feb-26,31-May-26,3-Apr-26,,Closed,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C5,Project Management,Vendors Control valve delay to submit key document.,3,3,,,"1.) Set up project schedule to follow up progress with plan, included vendors DDL.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,30-Sep-27,25-Jun-26,,Closed,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C6,Project Management,"Vendors Control valve delay order materials for fabrication or manufacturing, that effect to delivery date.",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.
+3.) Request vendors to prepare and update progress, PSR and report.",,,3,1,,6-Nov-25,3-Sep-27,,,In-progress,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C7,Procurement/Contract,"Instrument long lead items Control valve need 7 months for delivery time, may cannot delivery on plan.",4,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 03-Aug-27.",,,3,1,,6-Nov-25,3-Aug-27,2-Jun-26,,Closed,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C8,Procurement/Contract,"Subcontracting may cannot award on plan.
+ - Piping and Structure package including scaffolding.
+ - E&amp;I Package.",4,2,,,1.) Set up project schedule to follow up progress with plan.,,,3,1,,6-Nov-25,27-Jan-27,,,In-progress,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C9,Construction,"Delay to complete piping and pipe support fabrication, inspection and painting.",4,3,,,"1.) Set up project schedule to follow up progress with plan included subcontractor shop visit.
+2.) Hiring experienced subcontractor to execute the project, OT working may required.",,,2,2,,6-Nov-25,28-Feb-27,,,In-progress,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C10,Construction,Transportation new piping spool to construction area may damage.,4,1,,,"1.) Hiring experienced subcontractor to execute and coordinate with all party for ensure no obstruction in transportation route.
+2.) Coordinate with experienced subcontractor to prepare to repair in case of equipment damage.",,,2,1,,6-Nov-25,31-Mar-27,,,Identified,N/A
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C11,Construction,"Delay to complete piping installation included scaffolding, painting.",4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,27-May-28,,,In-progress,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C12,Construction,"Delay to complete E&I installation included scaffolding, painting.",4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,31-May-28,,,In-progress,#NAME?
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C13,Construction,Delay to complete ITCC system in T/A period.,4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor to execute the project included site checking for any installation concerned area, OT working may required.
+3.) Set up daily plan and meeting to execution and prevent unforseen.
+",,,3,2,,6-Nov-25,31-May-28,,,Identified,N/A
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C14,Construction,Crane position and capacity.,3,3,,,"1.) Confirm existing U/G drawings and site survey with construction team to ensure available area.
+2.) Prepare lifting plan to confirm crane capacity.",,,2,2,,6-Nov-25,31-Mar-28,,,Identified,N/A
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C15,Construction,Obtruction Area / Communication with other concerned parties.,3,4,,,1.) Set up meeting for comunication with concerned area to all concerned parties and site survey to clarify obstruct area.,,,3,2,,6-Nov-25,31-Mar-28,,,Identified,N/A
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C16,SHE,Incident case from construction work for related component including EIA document.,5,3,,,"1.) Follow plant&#39;s safety regulation, JSEA and Job method statement.
+2.) Request safety subcontractor&#39;s inspector to take care for every working area and supervise by GCME&#39;s safety manager and safety inspector.",,,3,1,,6-Nov-25,31-Mar-28,,,Identified,N/A
+SA-20-25002-C,OCP Project (OSBL) Anti-Surge scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,C17,Project Management,Deley to delivery import equipment due to Middle east situation.,5,2,,,"1.) Set up all equipment list which issued PO and expidite with vendor for update progress and situation.
+2.) Prepare alternative transportation route or method if any.",,,4,1,,11-Mar-26,,,,In-progress,Import items was listed and monitoring with Vendor.
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B1,Engineering,"Delay to complete engineering for distribute to concerned disciplines and engineering package attached CRQ.
+ - Process.
+ - Piping.
+",3,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,30-Apr-26,28-Apr-26,,Closed,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B2,Engineering,Delay to submit construction permit and get approval from EFT (IEAT 108).,3,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Permit package shall submit to EFT within 30-Apr-26.",,,3,1,,6-Nov-25,27-Nov-26,,,In-progress,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B3,Engineering,Delay to complete instrument design to issue long lead equipment PSV.,4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,4,1,,6-Nov-25,3-Mar-26,3-Oct-25,,Closed,N/A
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B4,Project Management,eMOC shall complete and matching with Project schedule.,3,2,,,"1.) Set up meeting with GC for schedule to follow up with plan.
+2.) Set meeting for clarification if any.",,,3,1,,5-Feb-26,31-Mar-26,30-Apr-26,,Closed,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B5,Project Management,Vendors PSV delay to submit key document.,3,3,,,"1.) Set up project schedule to follow up progress with plan, included vendors DDL.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,31-Oct-26,30-Apr-26,,Closed,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B6,Project Management,"Vendors PSV delay order materials for fabrication or manufacturing, that effect to delivery date.",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.
+3.) Request vendors to prepare and update progress, PSR and report.",,,3,1,,6-Nov-25,31-Oct-26,30-May-26,,Closed,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B7,Procurement/Contract,"Instrument long lead items PSV need 5 months for delivery time, may cannot delivery on plan.",4,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 29-Sep-26.",,,3,1,,6-Nov-25,29-Sep-26,9-Apr-26,,Closed,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B8,Procurement/Contract,"Subcontracting may cannot award on plan.
+ - Piping package including scaffolding.",4,2,,,1.) Set up project schedule to follow up progress with plan.,,,3,1,,6-Nov-25,27-Jan-27,,,In-progress,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B9,Construction,"Delay to complete piping and pipe support fabrication, inspection and painting.",4,3,,,"1.) Set up project schedule to follow up progress with plan included subcontractor shop visit.
+2.) Hiring experienced subcontractor to execute the project, OT working may required.",,,2,2,,6-Nov-25,31-Mar-27,,,In-progress,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B10,Construction,Transportation new piping spool to construction area may damage.,4,1,,,"1.) Hiring experienced subcontractor to execute and coordinate with all party for ensure no obstruction in transportation route.
+2.) Coordinate with experienced subcontractor to prepare to repair in case of equipment damage.",,,2,1,,6-Nov-25,31-Mar-27,,,Identified,N/A
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B11,Construction,"Delay to complete piping installation included scaffolding, painting.",4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,30-Jun-27,,,In-progress,#NAME?
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B12,Construction,Crane position and capacity.,3,3,,,"1.) Confirm existing U/G drawings and site survey with construction team to ensure available area.
+2.) Prepare lifting plan to confirm crane capacity.",,,2,2,,6-Nov-25,31-Mar-27,,,Identified,N/A
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B13,Construction,Obtruction Area / Communication with other concerned parties.,3,4,,,1.) Set up meeting for comunication with concerned area to all concerned parties and site survey to clarify obstruct area.,,,3,2,,6-Nov-25,31-Mar-27,,,Identified,N/A
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B14,Operations/Commissioning,Delay to complete work from other contractor which need to commissioning togerther.,3,3,,,"1.) Coordinate with GC to confirm actual schedule of commissioning work.
+2.) Set internal meeting for request manpower to support.",,,2,2,,6-Nov-25,31-Aug-27,,,Identified,N/A
+SA-20-25002-B,OCP Project (OSBL) B-1 scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,B15,SHE,"Incident case from construction work for related component including EIA document.
+",5,3,,,"1.) Follow plant&#39;s safety regulation, JSEA and Job method statement.
+2.) Request safety subcontractor&#39;s inspector to take care for every working area and supervise by GCME&#39;s safety manager and safety inspector.",,,3,1,,6-Nov-25,31-Mar-27,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A1,Engineering,"Delay to complete engineering for distribute to concerned disciplines and engineering package attached CRQ.
+ - Process.
+ - Civil.
+ - Piping.
+ - E&amp;I.",3,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,25-May-26,25-May-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A2,Engineering,"Incomplete drawing and calculation of engineering for EFT piperack design.
+ - Civil.
+ - Piping.",3,3,,,1.) Consentrate site checking with Construction team before and after complete detail design to ensure drawngs available for construction.,,,2,2,,6-Nov-25,15-May-26,8-May-26,,Closed,"- Issued Structure and calculation, piping GA and pipe stress analysys to EFT on 27-Mar-26.
+- Waiting EFT confirm."
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A3,Engineering,"Delay to submit construction permit and get approval from IEAT.
+ - GC11 area.
+ - Pipe rack Railway station.",3,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Permit package shall submit to IEAT within 31-Mar-26.",,,3,1,,6-Nov-25,12-Jun-26,,,In-progress,"- Issued and revised as IEAT comment Permit request in GC11 are on 09-Mar-26.
+- Waiting EFT approve drawings and calculation before prepare Permit request for Railway station."
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A4,Engineering,Delay to submit construction permit and get approval from EFT (IEAT 108).,3,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Permit package shall submit to EFT within 31-Mar-26.",,,3,1,,6-Nov-25,3-Jun-26,,,In-progress,"- Issued Structure and calculation, piping GA and pipe stress analysys to EFT on 27-Mar-26.
+- Waiting EFT confirm."
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A5,Engineering,Delay to complete mechchanical design to issue long lead equipment MR for desuperheater and silencer.,4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,4,1,,6-Nov-25,15-Dec-25,22-Sep-25,,Closed,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A6,Engineering,Delay to complete piping design to issue long lead equipment MR for Alloy materials.,4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,4,1,,6-Nov-25,15-Dec-25,21-Oct-25,,Closed,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A7,Engineering,"Delay to complete instrument design to issue long lead equipment (flow computer, on-off valve, control valve, PSV, DCS&ESD).",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.",,,4,1,,6-Nov-25,15-Dec-25,3-Nov-25,,Closed,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A8,Engineering,Desuperheater and silencer cannot install in design location.,3,3,,,1.) Consentrate site checking with Construction team before and after complete detail design to ensure drawngs available for construction.,,,3,1,,6-Nov-25,31-Jan-26,27-Jan-26,,Closed,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A9,Engineering,Online modification and config of DCS and ESD shall aware with other concerned party (GPSC).,4,3,,,1.) Design temporary operation unit of DCS and ESD to prevent online modification and modify when Plant shutdown.,,,3,1,,5-Feb-26,31-Jan-26,3-Nov-25,,Closed,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A10,Project Management,eMOC shall complete and matching with Project schedule.,3,2,,,"1.) Set up meeting with GC for schedule to follow up with plan.
+2.) Set meeting for clarification if any.",,,3,1,,5-Feb-26,31-Mar-26,3-Apr-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A11,Project Management,Vendors Desuperheater delay to submit key document.,3,3,,,"1.) Set up project schedule to follow up progress with plan, included vendors DDL.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,15-Jun-26,23-Jun-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A12,Project Management,Vendors Silencer delay to submit key document.,3,3,,,"1.) Set up project schedule to follow up progress with plan, included vendors DDL.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,30-May-26,30-Apr-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A13,Project Management,Vendors On-off valve delay to submit key document.,3,3,,,"1.) Set up project schedule to follow up progress with plan, included vendors DDL.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,30-May-26,30-Apr-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A14,Project Management,Vendors Control valve delay to submit key document.,3,3,,,"1.) Set up project schedule to follow up progress with plan, included vendors DDL.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,30-May-26,30-Apr-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A15,Project Management,Vendors PSV delay to submit key document.,3,3,,,"1.) Set up project schedule to follow up progress with plan, included vendors DDL.
+2.) Set meeting for clarification if any.",,,2,2,,6-Nov-25,30-May-26,30-Apr-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A16,Project Management,"Vendors Desuperheater delay order materials for fabrication or manufacturing, that effect to delivery date.",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.
+3.) Request vendors to prepare and update progress, PSR and report.",,,3,1,,6-Nov-25,15-Jun-26,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A17,Project Management,"Vendors Silencer delay order materials for fabrication or manufacturing, that effect to delivery date.",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.
+3.) Request vendors to prepare and update progress, PSR and report.",,,3,1,,6-Nov-25,30-May-26,15-Jun-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A18,Project Management,"Vendors On-off valve delay order materials for fabrication or manufacturing, that effect to delivery date.",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.
+3.) Request vendors to prepare and update progress, PSR and report.",,,3,1,,6-Nov-25,30-May-26,30-May-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A19,Project Management,"Vendors Control valve delay order materials for fabrication or manufacturing, that effect to delivery date.",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.
+3.) Request vendors to prepare and update progress, PSR and report.",,,3,1,,6-Nov-25,30-May-26,30-May-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A20,Project Management,"Vendors PSV delay order materials for fabrication or manufacturing, that effect to delivery date.",4,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Set meeting for clarification if any.
+3.) Request vendors to prepare and update progress, PSR and report.",,,3,1,,6-Nov-25,30-May-26,30-May-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A21,Procurement/Contract,"Mechanical long lead equipment desuperheater need 10 months delivery time, may cannot delivery on plan.",5,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 05-Mar-26.",,,3,1,,6-Nov-25,15-Mar-26,5-Jun-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A22,Procurement/Contract,"Mechanical long lead equipment silencer need 6 months delivery time, may cannot delivery on plan.",5,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 05-Mar-26.",,,3,1,,6-Nov-25,5-Mar-26,17-Mar-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A23,Procurement/Contract,"Piping alloy bulk material need 6 months delivery time, may cannot delivery on plan.",3,3,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 30-Dec-25.",,,3,2,,6-Nov-25,30-Dec-25,23-Dec-25,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A24,Procurement/Contract,"Piping alloy manual valve need 6 months delivery time, may cannot delivery on plan.",3,3,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 15-Mar-26.",,,3,2,,6-Nov-25,15-Mar-26,13-Mar-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A25,Procurement/Contract,"Instrument long lead items flow computer need 6 months for delivery time, may cannot delivery on plan.",4,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 01-Apr-26.",,,3,1,,6-Nov-25,1-Apr-26,8-May-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A26,Procurement/Contract,"Instrument long lead items on-off valve need 10 months for delivery time, may cannot delivery on plan.",4,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 01-Apr-26.",,,3,1,,6-Nov-25,1-Apr-26,13-Jan-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A27,Procurement/Contract,"Instrument long lead items control valve need 5 months for delivery time, may cannot delivery on plan.",4,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 01-Apr-26.",,,3,1,,6-Nov-25,1-Apr-26,4-Mar-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A28,Procurement/Contract,"Instrument long lead items PSV need 5 months for delivery time, may cannot delivery on plan.",4,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 01-Apr-26.",,,3,1,,6-Nov-25,1-Apr-26,9-Apr-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A29,Procurement/Contract,"Instrument long lead items DCS&ESD need 7 months for delivery time, may cannot delivery on plan.",4,2,,,"1.) Set up project schedule to follow up progress with early plan.
+2.) Closely expedite vendor to request monthly progress.
+3.) PO shall issue to vendor within 01-Apr-26.",,,3,1,,6-Nov-25,15-May-26,19-Jun-26,,Closed,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A30,Procurement/Contract,"Subcontracting may cannot award on plan.
+ - Civil/structure, mechanical, piping package.
+ - Scaffolding and insulation package.
+ - E&amp;I Package.
+ - DCS and ESD package.",4,2,,,1.) Set up project schedule to follow up progress with plan.,,,3,1,,6-Nov-25,30-Jun-26,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A31,Construction,Incomplete installation and welding HP steam piping and component.,4,3,,,1.) Hiring experienced subcontractor which familiar with HP steam and high pipe thickness to execute the project including welder qualification.,,,3,2,,6-Nov-25,31-May-26,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A32,Construction,"Delay to complete piping and pipe support fabrication, inspection and painting.
+ - GC11 area.
+ - GPSC area.
+ - EFT area.",4,3,,,"1.) Set up project schedule to follow up progress with plan included subcontractor shop visit.
+2.) Hiring experienced subcontractor to execute the project, OT working may required.",,,2,2,,6-Nov-25,31-Aug-26,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A33,Construction,"Delay to complete structure fabrication, inspection and painting.
+ - GC11 area.
+ - GPSC area.
+ - EFT area.",4,3,,,"1.) Set up project schedule to follow up progress with plan included subcontractor shop visit.
+2.) Hiring experienced subcontractor to execute the project, OT working may required.",,,2,2,,6-Nov-25,31-Aug-26,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A34,Construction,"Transportation new mechanical equipment, piping spool, steel structure to construction area may damage.",4,1,,,"1.) Hiring experienced subcontractor to execute and coordinate with all party for ensure no obstruction in transportation route.
+2.) Coordinate with experienced subcontractor to prepare to repair in case of equipment damage.",,,2,1,,6-Nov-25,31-Aug-26,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A35,Construction,Delay to complete structure installation included scaffolding and painting in GC11 and GPSC area before piping spool ready to install.,4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,30-Sep-26,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A36,Construction,Delay to complete structure installation included scaffolding and painting in EFT area before piping spool ready to install.,4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor which familiar with EFT regulation to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,16-Dec-26,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A37,Construction,"Delay to complete piping installation included scaffolding, painting and insulation in GC11 and GPSC area.",4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,30-Nov-26,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A38,Construction,"Delay to complete piping installation included included scaffolding, painting and insulation in EFT area.",4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor which familiar with EFT regulation to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,31-Mar-27,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A39,Construction,"Delay to complete E&I installation including related system works in GC11, GPSC and EFT area.",4,3,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor which familiar with EFT regulation to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,15-Jun-27,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A40,Construction,Delay to complete DCS and ESD installation and function in GC11 and GPSC area.,5,2,,,"1.) Set up project schedule to follow up progress with plan.
+2.) Hiring experienced subcontractor which operate existing system in GC11 and GPSC  to execute the project included site checking for any installation concerned area, OT working may required.",,,2,2,,6-Nov-25,26-Jan-27,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A41,Construction,Crane position and capacity.,3,3,,,"1.) Confirm existing U/G drawings and site survey with construction team to ensure available area.
+2.) Prepare lifting plan to confirm crane capacity.",,,2,2,,6-Nov-25,31-Jul-26,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A42,Construction,Obtruction Area / Communication with other concerned parties.,3,4,,,1.) Set up meeting for comunication with concerned area to all concerned parties and site survey to clarify obstruct area.,,,3,2,,6-Nov-25,31-Jul-26,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A43,Construction,Lost time for 100%RT work.,3,3,,,1.) Propose alternative method PAUT to GC for consider.,,,2,2,,6-Nov-25,31-Jul-26,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A44,Construction,Delay to complete DCS and ESD existing modification including SAT and cable wiring in T/A period at GC11.,4,3,,,"1.) Set up project schedule in daily activities to follow up progress with plan.
+2.) Hiring experienced subcontractor which operate existing system in GC11 to execute including OT working.
+3.) Setup daily meeting to follow up.",,,2,2,,5-Feb-26,31-Mar-28,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A45,Construction,Interfacing area for subcontractor may delay from area handover or property may damage.,3,3,,,"1.) Set up subcontracting package to suaitable with scope of work.
+2.) Set up project schedule for each package.
+3.) Prepare CRQ for bidding including clarification and site survey.",,,3,2,,5-Feb-26,30-Jun-26,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A46,Operations/Commissioning,Incomplete for steam flushing from GPSC to OLE3.,3,3,,,"1.) Set meeting to confirm activities and schedule of steam flushing work.
+2.) Prepare P&amp;ID and flushing activities presentation for operation and follow up including equipment list and temporary piping spool list.
+3.) Coordinate with concerned party if any.",,,3,2,,5-Feb-26,31-Aug-27,,,In-progress,#NAME?
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A47,Operations/Commissioning,Delay to complete work from other contractor which need to commissioning togerther.,3,3,,,"1.) Coordinate with GC to confirm actual schedule of commissioning work.
+2.) Set internal meeting for request manpower to support.",,,2,2,,6-Nov-25,31-Aug-27,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A48,SHE,Incident case from construction work for related component including EIA document.,5,3,,,"1.) Follow plant&#39;s safety regulation, JSEA and Job method statement.
+2.) Request safety subcontractor&#39;s inspector to take care for every working area and supervise by GCME&#39;s safety manager and safety inspector.",,,3,1,,6-Nov-25,31-Jul-26,,,Identified,N/A
+SA-20-25002-A,OCP Project (OSBL) HP Steam scope,Wittawat Siri-Amnart,Wittawat.S@pttgcgroup.com,A49,Project Management,Deley to delivery import equipment due to Middle east situation.,5,2,,,"1.) Set up all equipment list which issued PO and expidite with vendor for update progress and situation.
+2.) Prepare alternative transportation route or method if any.",,,4,1,,11-Mar-26,,,,In-progress,#NAME?

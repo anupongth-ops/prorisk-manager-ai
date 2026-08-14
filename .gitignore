@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary test files & outputs
+test-*.xlsx
+*.zip
+.gemini/
+graphify-out/
+

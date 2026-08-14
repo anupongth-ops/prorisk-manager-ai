@@ -10,7 +10,7 @@ import {
   signOut, onAuthStateChanged, updatePassword, User, Auth,
   sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential
 } from 'firebase/auth';
-import { RiskItem, UserProfile } from '../types';
+import { RiskItem, UserProfile, RiskAppetite, ReviewFrequency } from '../types';
 import { BASELINE_RISKS, ProjectModifier } from '../constants/riskConstants';
 import { calculateAdjustedScore } from './riskBaselineService';
 

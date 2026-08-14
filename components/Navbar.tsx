@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     AlertOctagon, UploadCloud, Download, FileText, Shield, FolderPlus, Plus,
     Sun, Moon, User, ShieldCheck, Settings, LogOut, Menu, X, BookOpen,
-    ChevronDown, HelpCircle
+    ChevronDown, HelpCircle, FileSpreadsheet, LayoutGrid
 } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -12,6 +12,8 @@ interface NavbarProps {
     isAdmin: boolean;
     isDarkMode: boolean;
     setIsDarkMode: (isDark: boolean) => void;
+    viewMode: 'dashboard' | 'excel';
+    setViewMode: (mode: 'dashboard' | 'excel') => void;
     setShowImport: (show: boolean) => void;
     setShowExport: (show: boolean) => void;
     setShowSummary: (show: boolean) => void;
@@ -62,7 +64,7 @@ const FILLED_BLUE =
 
 // ─── Divider ──────────────────────────────────────────────────────────────────
 const Divider = () => (
-    <div className="h-5 w-px bg-gray-200 dark:bg-slate-700 flex-shrink-0" />
+    <div className="h-5 w-px bg-gray-200 dark:bg-slate-700 flex-shrink-0 mx-0.5" />
 );
 
 // ─── Tooltip wrapper ─────────────────────────────────────────────────────────
@@ -72,6 +74,7 @@ const NavBtn = ({
     label,
     title,
     iconOnly = false,
+    responsive = false,
     variant = GHOST,
     onClick,
     className = '',
@@ -80,19 +83,32 @@ const NavBtn = ({
     label: string;
     title?: string;
     iconOnly?: boolean;
+    responsive?: boolean;
     variant?: string;
     onClick: () => void;
     className?: string;
-}) => (
-    <button
-        onClick={onClick}
-        title={title || label}
-        className={`${iconOnly ? BTN_ICON : BTN_LABEL} ${variant} ${className}`}
-    >
-        <Icon className="w-4 h-4 flex-shrink-0" />
-        {!iconOnly && <span className="whitespace-nowrap">{label}</span>}
-    </button>
-);
+}) => {
+    const btnClass = iconOnly 
+        ? BTN_ICON 
+        : responsive
+            ? `h-9 flex items-center justify-center 2xl:justify-start gap-1.5 px-2.5 2xl:px-3 rounded-lg border text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`
+            : BTN_LABEL;
+
+    return (
+        <button
+            onClick={onClick}
+            title={title || label}
+            className={`${btnClass} ${variant} ${className}`}
+        >
+            <Icon className="w-4 h-4 flex-shrink-0" />
+            {!iconOnly && (
+                <span className={`whitespace-nowrap ${responsive ? 'hidden 2xl:inline' : ''}`}>
+                    {label}
+                </span>
+            )}
+        </button>
+    );
+};
 
 // ─── Role badge ───────────────────────────────────────────────────────────────
 const RoleBadge = ({ role }: { role: string }) => {
@@ -123,6 +139,8 @@ export function Navbar({
     isAdmin,
     isDarkMode,
     setIsDarkMode,
+    viewMode,
+    setViewMode,
     setShowImport,
     setShowExport,
     setShowSummary,
@@ -176,22 +194,52 @@ export function Navbar({
                 {/* ── Desktop toolbar ────────────────────────────────────── */}
                 <div className="hidden lg:flex items-center gap-1.5">
 
+                    {/* View Switcher: Dashboard vs Excel Grid */}
+                    <div className="flex items-center bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700 mr-1 flex-shrink-0">
+                        <button
+                            onClick={() => setViewMode('dashboard')}
+                            className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-md transition-all ${
+                                viewMode === 'dashboard'
+                                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
+                                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
+                            }`}
+                            title="Dashboard View"
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                            <span className="hidden 2xl:inline">Dashboard</span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('excel')}
+                            className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-md transition-all ${
+                                viewMode === 'excel'
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                            }`}
+                            title="Excel Grid Input (EPM-03-014AT1)"
+                        >
+                            <FileSpreadsheet className="w-4 h-4" />
+                            <span className="hidden 2xl:inline">Excel Grid</span>
+                        </button>
+                    </div>
+
+                    <Divider />
+
                     {/* Group 1: Data I/O */}
-                    <NavBtn icon={UploadCloud} label="Import"  variant={GHOST}       onClick={() => setShowImport(true)} />
-                    <NavBtn icon={Download}    label="Export"  variant={GHOST_GREEN}  onClick={() => setShowExport(true)} />
-                    <NavBtn icon={FileText}    label="Summary" variant={GHOST}        onClick={() => setShowSummary(true)} />
+                    <NavBtn icon={UploadCloud} label="Import" title="Import from CSV" variant={GHOST} onClick={() => setShowImport(true)} responsive />
+                    <NavBtn icon={Download} label="Export" title="Export to Excel" variant={GHOST_GREEN} onClick={() => setShowExport(true)} responsive />
+                    <NavBtn icon={FileText} label="Summary" title="Risk Summary" variant={GHOST} onClick={() => setShowSummary(true)} responsive />
 
                     {canSeeLibrary && (
-                        <NavBtn icon={BookOpen} label="Risk Library" variant={GHOST_INDIGO} onClick={() => setShowRiskLibrary(true)} />
+                        <NavBtn icon={BookOpen} label="Risk Library" title="Risk Library" variant={GHOST_INDIGO} onClick={() => setShowRiskLibrary(true)} responsive />
                     )}
 
-                    <NavBtn icon={HelpCircle} label="คู่มือ" title="คู่มือการประเมินความเสี่ยง" variant={GHOST_TEAL} onClick={() => setShowGuide(true)} />
+                    <NavBtn icon={HelpCircle} label="คู่มือ" title="คู่มือการประเมินความเสี่ยง" variant={GHOST_TEAL} onClick={() => setShowGuide(true)} responsive />
 
                     <Divider />
 
                     {/* Group 2: Admin */}
                     {isAdmin && (
-                        <NavBtn icon={Shield} label="Admin" variant={FILLED_SLATE} onClick={() => setShowAdmin(true)} />
+                        <NavBtn icon={Shield} label="Admin" title="Admin Maintenance" variant={FILLED_SLATE} onClick={() => setShowAdmin(true)} responsive />
                     )}
 
                     {/* Group 3: Create */}

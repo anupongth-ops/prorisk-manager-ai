@@ -290,88 +290,242 @@ const Step1Tab: React.FC = () => (
   </div>
 );
 
-const Step2Tab: React.FC = () => (
-  <div className="space-y-5">
-    <StepBadge step={2} label="การประเมินผลกระทบ (Impact Assessment)" color="bg-red-500" />
-    <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
-      ประเมินระดับผลกระทบหากความเสี่ยงเกิดขึ้น <strong className="text-gray-900 dark:text-slate-200">ก่อนดำเนินมาตรการใดๆ</strong> (Initial Impact)
-      พิจารณาจากผลกระทบต่อโครงการในมิติต่างๆ
-    </p>
+const Step2Tab: React.FC = () => {
+  const [selectedImpactCategory, setSelectedImpactCategory] = useState<'financial' | 'she' | 'partners' | 'law' | 'reputation'>('financial');
 
-    <div className="space-y-3">
-      {[
-        { level: 1, name: 'Insignificant', color: 'bg-emerald-500', desc: 'ผลกระทบเล็กน้อยมาก จัดการได้ด้วยทรัพยากรภายใน', budget: '< 1%', time: '< 1 สัปดาห์', severity: 'ไม่มีผลกระทบต่อ Critical Path' },
-        { level: 2, name: 'Minor', color: 'bg-yellow-400 text-gray-900', desc: 'ผลกระทบเล็กน้อย ต้องใช้ทรัพยากรเพิ่มเติมเล็กน้อย', budget: '1–5%', time: '1–4 สัปดาห์', severity: 'กระทบ Non-critical activities' },
-        { level: 3, name: 'Moderate', color: 'bg-orange-500', desc: 'ผลกระทบปานกลาง ต้องมีการปรับแผนโครงการ', budget: '5–10%', time: '1–3 เดือน', severity: 'กระทบ Critical Path บางส่วน' },
-        { level: 4, name: 'Major', color: 'bg-red-500', desc: 'ผลกระทบสูง ส่งผลต่อเป้าหมายโครงการอย่างมีนัยสำคัญ', budget: '10–20%', time: '3–6 เดือน', severity: 'กระทบ Critical Path หลักทั้งหมด' },
-        { level: 5, name: 'Severe', color: 'bg-red-900', desc: 'ผลกระทบรุนแรงมาก อาจยกเลิกหรือยุติโครงการ', budget: '> 20%', time: '> 6 เดือน', severity: 'ยุติโครงการ หรือเหตุ HSE รุนแรง' },
-      ].map(item => (
-        <div key={item.level} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl p-4 flex gap-4">
-          <div className={`w-12 h-12 rounded-xl ${item.color} text-white flex flex-col items-center justify-center flex-shrink-0 shadow-sm`}>
-            <span className="text-xl font-black leading-none">{item.level}</span>
-          </div>
-          <div className="flex-1 space-y-1 min-w-0">
-            <div className="font-bold text-gray-900 dark:text-slate-100">{item.name}</div>
-            <div className="text-xs text-gray-600 dark:text-slate-400">{item.desc}</div>
-            <div className="flex flex-wrap gap-3 mt-2">
-              <span className="text-[11px] bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-900">💰 Budget: {item.budget}</span>
-              <span className="text-[11px] bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-900">⏱ Time: {item.time}</span>
-              <span className="text-[11px] bg-gray-50 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded-full border border-gray-100 dark:border-slate-600">{item.severity}</span>
+  const impactData = [
+    {
+      level: 1,
+      name: 'Insignificant (เล็กน้อยมาก)',
+      color: 'bg-emerald-500',
+      badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+      financial: '• Schedule Delay: X < 3% ของระยะเวลาโครงการ หรือ < 1 เดือน\n• Cost Overrun: X < 3% ของงบประมาณโครงการรวม\n• EBITDA: ผลกระทบ < 3% ต่อ EBITDA ปีแรก',
+      she: '• Safety/Health: First Aid Case (ไม่มีผู้บาดเจ็บ หรือบาดเจ็บเล็กน้อยระดับปฐมพยาบาล) ไม่กระทบต่อสุขภาพและขวัญกำลังใจ\n• Environment: ไม่มีผลกระทบต่อสิ่งแวดล้อมตั้งต้น ควบคุมได้ ณ จุดเกิดเหตุ ไม่ต้องใช้เวลาฟื้นฟู',
+      partners: '• Supplier: Retail partners ไม่พึงพอใจ/ร้องเรียนกลับ แต่ส่งมอบสินค้าได้บางส่วน\n• Customers: Retail customers ร้องเรียนกลับ ยอดขายลดลง < 5%',
+      law: '• การไม่ปฏิบัติตามกฎหมาย/ข้อบังคับในลักษณะที่แก้ไขได้ง่ายดาย (Easily fixed)',
+      reputation: '• Reputation: ส่งผลกระทบเล็กน้อยมากต่อชื่อเสียง สามารถดูดซับได้ด้วยกิจกรรมปกติ ผลกระทบชั่วคราวในพื้นที่\n• Negative News: ไม่เป็นกระแสในสื่อท้องถิ่น (Below target < 5%)'
+    },
+    {
+      level: 2,
+      name: 'Minor (เล็กน้อย)',
+      color: 'bg-yellow-400 text-gray-900',
+      badge: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
+      financial: '• Schedule Delay: 3% ≤ X < 6% ของระยะเวลาโครงการ หรือ < 2 เดือน\n• Cost Overrun: 3% ≤ X < 6% ของงบประมาณโครงการรวม (ต้องขออนุมัติ BOD)\n• EBITDA: ผลกระทบ 3% ≤ X < 6% ต่อ EBITDA ปีแรก',
+      she: '• Safety/Health: Minor Injuries ต้องรับการรักษาพยาบาล (Medical Treatment) หรือหยุดงานชั่วคราว (Restricted Work Case) ผลกระทบต่ำต่อขวัญกำลังใจระยะสั้น\n• Environment: ความเสียหายสิ่งแวดล้อมเล็กน้อย ใช้เวลาฟื้นฟู < 3 เดือน',
+      partners: '• Supplier: ร้องเรียนด้วยวาจา (Verbal complaint) / Retail partners ไม่สามารถส่งมอบสินค้า/บริการได้\n• Customers: ร้องเรียนด้วยวาจา / ยอดขายลดลง 5-10%',
+      law: '• อาจทำให้เกิดการไม่ปฏิบัติตามข้อกำหนดหรือมาตรฐานภายในบริษัท (Non-conformance)',
+      reputation: '• Reputation: ผลกระทบเล็กน้อย แก้ไขได้ในระยะเวลาอันสั้น เกิดเหตุการณ์ส่งผลลบแต่ดูดซับได้ ผลกระทบระยะสั้นในพื้นที่\n• Negative News: ได้รับข้อร้องเรียนจากชุมชนผ่านช่องทางไม่เป็นทางการ มีข่าวในสื่อท้องถิ่น (5-10%)'
+    },
+    {
+      level: 3,
+      name: 'Moderate (ปานกลาง)',
+      color: 'bg-orange-500 text-white',
+      badge: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
+      financial: '• Schedule Delay: 6% ≤ X < 10% ของระยะเวลาโครงการ หรือ < 3 เดือน\n• Cost Overrun: 6% ≤ X < 10% ของงบประมาณโครงการรวม\n• EBITDA: ผลกระทบ 6% ≤ X < 10% ต่อ EBITDA ปีแรก',
+      she: '• Safety/Health: Serious Injuries ต้องรับการรักษาพยาบาล หรือสูญเสียวันทำงาน (Lost Work Case) ผลกระทบปานกลางต่อสุขภาพและขวัญกำลังใจระยะยาว\n• Environment: อันตรายปานกลางที่อาจส่งผลเป็นวงกว้าง ใช้เวลาฟื้นฟู 3-6 เดือน',
+      partners: '• Supplier: Major partners ออกหนังสือร้องเรียนอย่างเป็นทางการ (Official Complaint) แต่ยังส่งมอบสินค้าได้บางส่วน\n• Customers: Major customers ออกหนังสือร้องเรียนอย่างเป็นทางการ ยอดขายลดลง 10-20%',
+      law: '• อาจทำให้ผิดกฎหมาย หรือผิดระเบียบข้อบังคับบริษัท (Non-compliance with laws/Articles of association)',
+      reputation: '• Reputation: กระทบชื่อเสียงปานกลาง สร้างความไม่พอใจให้ชุมชน/สาธารณชน ต้องใช้ความพยายามบริหารจัดการเพิ่มเติม\n• Negative News: มีข่าวเชิงลบเผยแพร่ในสื่อระดับจังหวัดและภูมิภาค (10-30%)'
+    },
+    {
+      level: 4,
+      name: 'Major (สูง / สำคัญ)',
+      color: 'bg-red-500 text-white',
+      badge: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+      financial: '• Schedule Delay: X ≥ 10% ของระยะเวลาโครงการ หรือ > 3 เดือน\n• Cost Overrun: X ≥ 10% ของงบประมาณโครงการรวม\n• EBITDA: ผลกระทบ X ≥ 10% ต่อ EBITDA ปีแรก',
+      she: '• Safety/Health: Major or Multiple Injuries - บาดเจ็บรุนแรง พิการทุพพลภาพ หรือถึงขั้นเสียชีวิต ทุพพลภาพ มีการประท้วงหรือร้องเรียนเป็นทางการ\n• Environment: อันตรายร้ายแรงส่งผลกระทบในท้องถิ่น สร้างความเสียหายมาก ใช้เวลาฟื้นฟู 6-12 เดือน',
+      partners: '• Supplier: สูญเสียคู่ค้ารายใหญ่ (Lose major partners) ไม่สามารถส่งมอบสินค้า/บริการได้\n• Customers: สูญเสียลูกค้ารายใหญ่ ยอดขายลดลง > 20% ลูกค้าไม่สามารถชำระเงินได้',
+      law: '• ผิดกฎหมายอาญาหรือแพ่ง ละเมิดกฎระเบียบบริษัท มีโทษทางอาญา ค่าปรับ หรือจำคุก',
+      reputation: '• Reputation: ความเสียหายต่อชื่อเสียงรุนแรงจนขาดความเชื่อมั่น ต้องใช้ความพยายามบริหารจัดการพิเศษระดับวิกฤต\n• Negative News: มีข่าวเชิงลบในสื่อระดับชาติ (National level 30-50%)'
+    },
+    {
+      level: 5,
+      name: 'Severe (รุนแรงมาก / วิกฤต)',
+      color: 'bg-red-900 text-white',
+      badge: 'bg-red-950 text-red-200 border border-red-800',
+      financial: '• Schedule Delay: X > 20% ของระยะเวลาโครงการ หรือ > 6 เดือน\n• Cost Overrun: X > 20% ของงบประมาณโครงการรวม\n• EBITDA: ผลกระทบ > 20% ต่อ EBITDA ปีแรก',
+      she: '• Safety/Health: Fatalities (>1 person) เสียชีวิต 1 คนขึ้นไป/ทุพพลภาพหลายคน กระทบชุมชนรอบโรงงานต้องอพยพ > 1 ปี มีการนัดหยุดงาน (Strike) ยุติการทำงาน\n• Environment: อันตรายร้ายแรงส่งผลกระทบเป็นวงกว้าง ใช้เวลาฟื้นฟู > 1 ปี และมีโอกาสฟื้นฟูได้จำกัด',
+      partners: '• Supplier: คู่ค้ายกเลิกสัญญาซื้อขายสินค้า/บริการ กระทบยอดขาย > 50% ต่อปี\n• Customers: ลูกค้าเกิดการต่อต้าน (Boycott) กระทบยอดขาย > 50% ต่อปี',
+      law: '• [Black Swan] บริษัทถูกถอนชื่อออกจากตลาดหลักทรัพย์ (Delisted) ถูกสั่งให้หยุดดำเนินธุรกิจ ถูกเพิกถอนหรือระงับใบอนุญาต',
+      reputation: '• [Black Swan] ชื่อเสียงเสียหายร้ายแรงระดับประเทศ กระทรวง/หน่วยงานรัฐเข้าตรวจสอบ มีโอกาสนำไปสู่การพังทลายของโครงการ (Collapse)\n• Negative News: มีข่าวเชิงลบในสื่อต่างประเทศ (Foreign media > 50%)'
+    }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <StepBadge step={2} label="เกณฑ์การประเมินผลกระทบ (Impact Definitions — EPM-03-014AT2)" color="bg-red-500" />
+      <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
+        อ้างอิงตามเอกสารมาตรฐานองค์กร <strong className="text-gray-900 dark:text-slate-200">EPM-03-014 Rev F3 (Page 14)</strong> กำหนดเกณฑ์การประเมินระดับผลกระทบ (Impact 1-5) ครอบคลุม 5 มิติหลัก ดังนี้:
+      </p>
+
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-slate-800 pb-2">
+        {[
+          { key: 'financial', label: '💰 Financial & Schedule', color: 'text-blue-600 border-blue-600' },
+          { key: 'she', label: '🛡️ Safety, Health & Env', color: 'text-emerald-600 border-emerald-600' },
+          { key: 'partners', label: '🤝 Supplier & Customers', color: 'text-amber-600 border-amber-600' },
+          { key: 'law', label: '⚖️ Law & Regulation', color: 'text-purple-600 border-purple-600' },
+          { key: 'reputation', label: '📢 Reputation & News', color: 'text-red-600 border-red-600' },
+        ].map(cat => (
+          <button
+            key={cat.key}
+            onClick={() => setSelectedImpactCategory(cat.key as any)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              selectedImpactCategory === cat.key
+                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Level Cards */}
+      <div className="space-y-3">
+        {impactData.map(item => (
+          <div key={item.level} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 transition shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center font-bold text-white text-sm shadow-sm`}>
+                  {item.level}
+                </span>
+                <span className="font-bold text-sm text-gray-900 dark:text-slate-100">{item.name}</span>
+              </div>
+              <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${item.badge}`}>
+                Impact Level {item.level}
+              </span>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-lg border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-line">
+              {item[selectedImpactCategory]}
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
 
-    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex gap-3">
-      <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-      <div className="text-sm text-amber-800 dark:text-amber-300">
-        <strong>หลักการสำคัญ:</strong> ประเมิน Impact จากผลกระทบต่อโครงการ<strong>ในภาพรวม</strong> ไม่ใช่เฉพาะงานส่วนที่ตนรับผิดชอบ
-        และพิจารณาจากสถานการณ์ที่เป็นจริงที่สุด ไม่ใช่สถานการณ์เลวร้ายที่สุดในทางทฤษฎี
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex gap-3">
+        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-amber-800 dark:text-amber-300">
+          <strong>หลักการประเมิน Impact (EPM-03-014):</strong> หากความเสี่ยงหนึ่งรายการส่งผลกระทบหลายมิติพร้อมกัน ให้เลือกระดับ Impact สูงสุด (Worst-case Impact) จากมิติที่ได้รับผลกระทบหนักที่สุด
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-const Step3Tab: React.FC = () => (
-  <div className="space-y-5">
-    <StepBadge step={3} label="การประเมินโอกาสเกิด (Likelihood Assessment)" color="bg-orange-500" />
-    <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
-      ประเมินความน่าจะเป็นที่ความเสี่ยงจะเกิดขึ้น <strong className="text-gray-900 dark:text-slate-200">ก่อนดำเนินมาตรการใดๆ</strong>
-      โดยใช้ข้อมูลเชิงประจักษ์จากประสบการณ์โครงการที่ผ่านมา
-    </p>
+const Step3Tab: React.FC = () => {
+  const [selectedLikelihoodCategory, setSelectedLikelihoodCategory] = useState<'future' | 'past' | 'control' | 'experience'>('future');
 
-    <div className="space-y-3">
-      {[
-        { level: 1, name: 'Rarely', pct: '< 5%', color: 'bg-emerald-500', desc: 'โอกาสเกิดน้อยมาก / แทบไม่เคยเกิดขึ้นในสถานการณ์ที่คล้ายกัน', guide: 'ไม่มีบันทึกหรือบันทึกน้อยมากใน Project ที่ผ่านมา' },
-        { level: 2, name: 'Unlikely', pct: '5–20%', color: 'bg-yellow-400 text-gray-900', desc: 'โอกาสเกิดน้อย / ไม่น่าจะเกิดขึ้นในสถานการณ์ปัจจุบัน', guide: 'เคยเกิดขึ้นในโครงการบางโครงการในอดีต' },
-        { level: 3, name: 'Occasional', pct: '20–50%', color: 'bg-orange-400', desc: 'อาจเกิดขึ้นได้เป็นบางครั้ง / มีโอกาสพอๆ กับไม่เกิด', guide: 'เกิดขึ้นเป็นครั้งคราวในโครงการที่ผ่านมา' },
-        { level: 4, name: 'Likely', pct: '50–80%', color: 'bg-red-500', desc: 'มีแนวโน้มสูงที่จะเกิดขึ้น / มีโอกาสเกิดมากกว่าไม่เกิด', guide: 'เกิดขึ้นบ่อยในโครงการที่ผ่านมา' },
-        { level: 5, name: 'Most Likely', pct: '> 80%', color: 'bg-red-900', desc: 'มีความน่าจะเป็นสูงมาก / แทบแน่นอนว่าจะเกิดขึ้น', guide: 'เกิดขึ้นในเกือบทุกโครงการที่ผ่านมา' },
-      ].map(item => (
-        <div key={item.level} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl p-4 flex gap-4">
-          <div className={`w-14 flex-shrink-0 flex flex-col items-center justify-center rounded-xl ${item.color} shadow-sm`}>
-            <span className="text-white font-black text-xl leading-none">{item.level}</span>
-            <span className="text-[10px] font-bold text-white/80 mt-0.5">{item.pct}</span>
+  const likelihoodData = [
+    {
+      level: 1,
+      name: 'Rarely (น้อยมาก < 5%)',
+      color: 'bg-emerald-500 text-white',
+      future: '• Probability < 5%\n• Highly unlikely to occur on this project (มีโอกาสเกิดน้อยมาก แทบไม่มีโอกาสเกิดขึ้นในโครงการนี้)',
+      past: '• Never happened or may occur over a period of > 3 years (ไม่เคยเกิดขึ้น หรืออาจเกิดขึ้นนานกว่า 3 ปีขึ้นไป)',
+      control: '• Work process is simple and less chance of error.\n• There is a good audit or control. Has a very good control ability. (ขั้นตอนการทำงานไม่ซับซ้อน โอกาสผิดพลาดน้อยมาก มีการตรวจสอบและควบคุมดีมาก)',
+      experience: '• Have direct experience in that business or job (มีประสบการณ์ตรงในธุรกิจหรือประเภทงานนั้นๆ)'
+    },
+    {
+      level: 2,
+      name: 'Unlikely (น้อย 5% - 10%)',
+      color: 'bg-yellow-400 text-gray-900',
+      future: '• Probability 5% - 10%\n• Given current practices and procedures, this event is unlikely to occur on this project (ภายใต้แนวปฏิบัติและขั้นตอนปัจจุบัน เหตุการณ์นี้ไม่น่าจะเกิดขึ้นในโครงการนี้)',
+      past: '• Has happened 1 time in the past 3 years in an industry or business or system similar to that of GCME (เคยเกิดขึ้น 1 ครั้งในรอบ 3 ปีในอุตสาหกรรม/ระบบที่คล้ายคลึงกับ GCME)',
+      control: '• The workflow is more complicated. But there is also good monitoring or control. Have good control ability. (ขั้นตอนซับซ้อนขึ้น แต่มีการติดตามและควบคุมที่ดี)',
+      experience: '• Very experienced in a similar business or type of work (มีความเชี่ยวชาญ/ประสบการณ์สูงในงานประเภทใกล้เคียง)'
+    },
+    {
+      level: 3,
+      name: 'Occasional (ปานกลาง > 10% - 25%)',
+      color: 'bg-orange-500 text-white',
+      future: '• Probability > 10% - 25%\n• This event has occurred on a similar project (เหตุการณ์นี้เคยเกิดขึ้นในโครงการที่คล้ายคลึงกันมาก่อน)',
+      past: '• Has happened more than once in the past 3 years in an industry or business or system similar to that of GCME (เคยเกิดขึ้นมากกว่า 1 ครั้งในรอบ 3 ปีในอุตสาหกรรมที่คล้ายกัน)',
+      control: '• The work process is complicated. But there is a check or moderately controlled. Have some or moderate control ability. (ขั้นตอนซับซ้อน มีการตรวจสอบ/ควบคุมระดับปานกลาง)',
+      experience: '• Have some or moderate experience in that business or job (มีประสบการณ์ปานกลางในงานนั้นๆ)'
+    },
+    {
+      level: 4,
+      name: 'Likely (สูง > 25% - 50%)',
+      color: 'bg-red-500 text-white',
+      future: '• Probability > 25% - 50%\n• Event is Likely to occur on this project (เหตุการณ์มีแนวโน้มสูงที่จะเกิดขึ้นในโครงการนี้)',
+      past: '• Has happened 1 time locally or more times in the GCME in the past 1 year (เคยเกิดขึ้น 1 ครั้งในพื้นที่ หรือหลายครั้งใน GCME ในรอบ 1 ปีที่ผ่านมา)',
+      control: '• The work process is complicated, and there are few checks or still have little control. Little control ability. (ขั้นตอนซับซ้อน มีการตรวจสอบน้อย การควบคุมต่ำ)',
+      experience: '• Little experience in that business or job (มีประสบการณ์น้อยในงานนั้นๆ)'
+    },
+    {
+      level: 5,
+      name: 'Most Likely (สูงมาก > 50%)',
+      color: 'bg-red-900 text-white',
+      future: '• Probability > 50%\n• Event is very likely to occur on this project, possibly several times (มีความน่าจะเป็นสูงมากที่จะเกิดขึ้นในโครงการนี้ และอาจเกิดขึ้นหลายครั้ง)',
+      past: '• Has happened more than 1 time locally in the past 1 year in GCME (เคยเกิดขึ้นมากกว่า 1 ครั้งในพื้นที่ในรอบ 1 ปีที่ผ่านมาใน GCME)',
+      control: '• The workflow is very complicated, and no inspection or has never been regulated. There is little or no control ability. (ขั้นตอนซับซ้อนมาก ไม่มีระบบตรวจสอบ แทบควบคุมไม่ได้)',
+      experience: '• Little or no experience in that business or job (แทบไม่มีหรือไม่มีประสบการณ์ในงานนั้นเลย)'
+    }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <StepBadge step={3} label="เกณฑ์การประเมินโอกาสเกิด (Likelihood Definitions — EPM-03-014AT2)" color="bg-orange-500" />
+      <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
+        อ้างอิงตามเอกสารมาตรฐานองค์กร <strong className="text-gray-900 dark:text-slate-200">EPM-03-014 Rev F3 (Page 15)</strong> ประเมินโอกาสเกิด (Likelihood 1-5) จาก 4 มิติเชิงประจักษ์:
+      </p>
+
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-gray-200 dark:border-slate-800 pb-2">
+        {[
+          { key: 'future', label: '🔮 Probability of Future Events', color: 'text-orange-600' },
+          { key: 'past', label: '📜 Probability of Past Events', color: 'text-blue-600' },
+          { key: 'control', label: '⚙️ Work Process & Control', color: 'text-emerald-600' },
+          { key: 'experience', label: '🎓 Past Experience & Success', color: 'text-purple-600' },
+        ].map(cat => (
+          <button
+            key={cat.key}
+            onClick={() => setSelectedLikelihoodCategory(cat.key as any)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              selectedLikelihoodCategory === cat.key
+                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Level Cards */}
+      <div className="space-y-3">
+        {likelihoodData.map(item => (
+          <div key={item.level} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-4 transition shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center font-bold text-sm shadow-sm`}>
+                  {item.level}
+                </span>
+                <span className="font-bold text-sm text-gray-900 dark:text-slate-100">{item.name}</span>
+              </div>
+              <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2.5 py-0.5 rounded-full border border-orange-200 dark:border-orange-800">
+                Level {item.level}
+              </span>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-lg border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-line">
+              {item[selectedLikelihoodCategory]}
+            </div>
           </div>
-          <div className="flex-1 min-w-0 space-y-1">
-            <div className="font-bold text-gray-900 dark:text-slate-100">{item.name}</div>
-            <div className="text-xs text-gray-600 dark:text-slate-400">{item.desc}</div>
-            <div className="text-[11px] text-gray-400 dark:text-slate-500 italic">📋 {item.guide}</div>
-          </div>
+        ))}
+      </div>
+
+      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 flex gap-3">
+        <Info className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-orange-800 dark:text-orange-300">
+          <strong>หลักการประเมิน Likelihood (EPM-03-014):</strong> พิจารณาจากทั้ง 4 มิติร่วมกัน ได้แก่ โอกาสในอนาคต, สถิติในอดีต, ความซับซ้อน/ระบบควบคุมงาน และประสบการณ์ของทีมงาน เพื่อให้ระดับ Likelihood สะท้อนความจริงที่สุด
         </div>
-      ))}
-    </div>
-
-    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 flex gap-3">
-      <Info className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
-      <div className="text-sm text-orange-800 dark:text-orange-300">
-        <strong>หลักการสำคัญ:</strong> ใช้ข้อมูลจากประสบการณ์จริงและสถิติโครงการที่ผ่านมา <em>ห้ามใช้ความรู้สึกส่วนตัวหรือการคาดเดา</em>
-        หากไม่มีข้อมูล ให้ใช้ Expert Judgment ของทีมโครงการ
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const MatrixTab: React.FC = () => (
   <div className="space-y-5">

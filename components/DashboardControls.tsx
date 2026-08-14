@@ -1,6 +1,6 @@
 import React from 'react';
 import Papa from 'papaparse';
-import { Filter, Edit2, TrendingDown, X, Search, Download } from 'lucide-react';
+import { Filter, Edit2, TrendingDown, X, Search, Download, FileSpreadsheet } from 'lucide-react';
 
 interface DashboardControlsProps {
     projectFilter: string;
@@ -16,6 +16,7 @@ interface DashboardControlsProps {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     filteredRisks: any[];
+    onSwitchToExcelGrid?: () => void;
 }
 
 export function DashboardControls({
@@ -31,7 +32,8 @@ export function DashboardControls({
     setMatrixFilter,
     searchQuery,
     setSearchQuery,
-    filteredRisks
+    filteredRisks,
+    onSwitchToExcelGrid
 }: DashboardControlsProps) {
 
     const handleExport = () => {
@@ -177,6 +179,17 @@ export function DashboardControls({
                     <Download className="w-3.5 h-3.5" />
                     Export CSV
                 </button>
+
+                {onSwitchToExcelGrid && (
+                    <button
+                        onClick={onSwitchToExcelGrid}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 border border-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-sm"
+                        title="Open Excel Grid Data Input (EPM-03-014AT1)"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5" />
+                        Excel Grid Input
+                    </button>
+                )}
             </div>
 
             <div className="relative w-full sm:w-64">

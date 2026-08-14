@@ -10,17 +10,16 @@ const handleClientSideExport = (targetRisks: RiskItem[], filter: string) => {
     'Project No.': r.projectNo,
     'Project Name': r.projectName,
     'PM Name': r.pmName,
-    'Risk Title': r.riskTitle || '',
-    'Category': r.riskCategory,
-    'Risk Event': r.riskEventDescription,
-    'Possible Effects': Array.isArray(r.possibleEffects) ? r.possibleEffects.join(', ') : r.possibleEffects,
+    'Risk Category': r.riskCategory,
+    'Risk Description': r.description,
+    'Possible Effects': Array.isArray(r.possibleEffect) ? r.possibleEffect.join(', ') : (r.possibleEffect || ''),
     'Initial Impact (1-5)': r.initialRisk.impact,
     'Initial Likelihood (1-5)': r.initialRisk.likelihood,
     'Initial Risk Score': r.initialRisk.impact * r.initialRisk.likelihood,
     'Strategy': r.mitigationStrategy,
-    'Action Plan': r.actionPlan,
-    'Owner': r.actionOwner,
-    'Target Date': r.targetDate,
+    'Action Plan': r.actionToControl,
+    'Owner': r.owner,
+    'Target Date': r.deadlineDate,
     'Residual Impact (1-5)': r.residualRisk.impact,
     'Residual Likelihood (1-5)': r.residualRisk.likelihood,
     'Residual Risk Score': r.residualRisk.impact * r.residualRisk.likelihood,
@@ -71,7 +70,7 @@ export const RiskExportModal: React.FC<RiskExportModalProps> = ({ risks, project
         projectNo: projectFilter
       };
 
-      const isProd = import.meta.env.PROD;
+      const isProd = Boolean((import.meta as any).env?.PROD);
       const apiUrl = isProd ? 'https://aeng.info/export-excel' : '/api/export-excel';
 
       try {

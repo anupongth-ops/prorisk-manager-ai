@@ -24,6 +24,8 @@ import { DashboardControls } from './components/DashboardControls';
 import { RiskTable } from './components/RiskTable';
 import { RiskGuideModal } from './components/RiskGuideModal';
 
+import { batchSaveRisks } from './services/firebaseService';
+
 // Lazy-loaded heavy components (code splitting)
 const RiskForm = lazy(() => import('./components/RiskForm').then(m => ({ default: m.RiskForm })));
 const RiskSummary = lazy(() => import('./components/RiskSummary').then(m => ({ default: m.RiskSummary })));
@@ -33,6 +35,7 @@ const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ def
 const UserAccountPage = lazy(() => import('./components/UserAccountPage').then(m => ({ default: m.UserAccountPage })));
 const BaselineComparisonMatrix = lazy(() => import('./components/BaselineComparisonMatrix').then(m => ({ default: m.BaselineComparisonMatrix })));
 const RiskLibraryModal = lazy(() => import('./components/RiskLibraryModal').then(m => ({ default: m.RiskLibraryModal })));
+const ExcelRiskRegisterGrid = lazy(() => import('./components/ExcelRiskRegisterGrid').then(m => ({ default: m.ExcelRiskRegisterGrid })));
 
 const ModalLoader = () => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -60,7 +63,7 @@ function App() {
     matrixFilter, setMatrixFilter, sortConfig, handleSort, filteredRisks, currentBaselineScores
   } = useFilters(risks, uniqueProjectData);
 
-  // UI State for Modals/Forms
+  const [viewMode, setViewMode] = useState<'dashboard' | 'excel'>('dashboard');
   const [editingRisk, setEditingRisk] = useState<RiskItem | undefined>(undefined);
   const [editingProject, setEditingProject] = useState<{ projectNo: string, projectName: string, pmName: string, email: string, industryType?: string } | undefined>(undefined);
   const [showForm, setShowForm] = useState(false);
@@ -123,6 +126,8 @@ function App() {
         isAdmin={isAdmin}
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
         setShowImport={setShowImport}
         setShowExport={setShowExport}
         setShowSummary={setShowSummary}
@@ -154,6 +159,22 @@ function App() {
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
             <p className="text-gray-500">Loading risks from database...</p>
           </div>
+        ) : viewMode === 'excel' ? (
+          <Suspense fallback={<ModalLoader />}>
+            <ExcelRiskRegisterGrid
+              risks={risks}
+              uniqueProjectData={uniqueProjectData}
+              canModifyProject={canModifyProject}
+              onSaveBatch={batchSaveRisks}
+              onDeleteRisk={handleDelete}
+              getNextRiskId={getNextRiskId}
+              userProfile={userProfile}
+              currentUserEmail={user?.email || ''}
+              projectFilter={projectFilter}
+              setProjectFilter={setProjectFilter}
+              onBackToDashboard={() => setViewMode('dashboard')}
+            />
+          </Suspense>
         ) : (
           <>
             <div className="space-y-8 mb-12">
@@ -240,6 +261,7 @@ function App() {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               filteredRisks={filteredRisks}
+              onSwitchToExcelGrid={() => setViewMode('excel')}
             />
 
             <RiskTable

@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { AlertOctagon, Lock, Mail, Loader2, Info, UserPlus, LogIn, CheckCircle, Settings, Copy, ExternalLink, ShieldAlert, KeyRound, ArrowLeft, X } from 'lucide-react';
-import { loginWithEmail, registerWithDefaultPassword, isConfigured, resetUserPassword } from '../services/firebaseService';
+import { loginWithEmail, loginWithMicrosoft, registerWithDefaultPassword, isConfigured, resetUserPassword } from '../services/firebaseService';
+
+const MicrosoftIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+    <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+    <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+    <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+  </svg>
+);
 
 export const LoginPage: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot-password'>('login');
@@ -8,6 +17,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMicrosoft, setLoadingMicrosoft] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authDomainError, setAuthDomainError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -120,6 +130,44 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleMicrosoftLogin = async () => {
+    setLoadingMicrosoft(true);
+    setError(null);
+    setRegisterSuccess(null);
+    setAuthDomainError(null);
+
+    try {
+      await loginWithMicrosoft();
+    } catch (err: any) {
+      console.error("Microsoft Auth Error:", err);
+      const code = err.code || '';
+      const msg = err.message || '';
+
+      // Unauthorized Domain Check
+      if (code === 'auth/unauthorized-domain' || msg.includes('unauthorized-domain')) {
+        setAuthDomainError(window.location.hostname);
+        return;
+      }
+
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // User closed popup without signing in
+        return;
+      }
+
+      if (code === 'auth/account-exists-with-different-credential') {
+        setError("An account already exists with the same email address using a different sign-in method.");
+      } else if (code === 'auth/popup-blocked') {
+        setError("The login popup was blocked by your browser. Please allow popups for this site and try again.");
+      } else if (code === 'auth/operation-not-allowed') {
+        setError("Microsoft Sign-In is not enabled in Firebase Authentication console. Please enable Microsoft provider in the Firebase Console.");
+      } else {
+        setError(msg || "Failed to sign in with Microsoft. Please try again.");
+      }
+    } finally {
+      setLoadingMicrosoft(false);
+    }
+  };
+
   if (configMissing) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors">
@@ -135,7 +183,7 @@ export const LoginPage: React.FC = () => {
             <p className="font-bold text-gray-700 dark:text-slate-300 mb-2">// services/firebaseService.ts</p>
             <p className="text-gray-500 dark:text-slate-500">const firebaseConfig = &#123;</p>
             <p className="text-red-500 dark:text-red-400 pl-4">apiKey: "VALID_API_KEY",</p>
-            <p className="text-red-500 dark:text-red-400 pl-4">projectId: "risk-e-po-pm",</p>
+            <p className="text-red-500 dark:text-red-400 pl-4">projectId: "epc-project-management-5e14a",</p>
             <p className="text-gray-500 dark:text-slate-500 pl-4">...</p>
             <p className="text-gray-500 dark:text-slate-500">&#125;;</p>
           </div>
@@ -297,7 +345,7 @@ export const LoginPage: React.FC = () => {
                       </ol>
 
                       <a
-                        href={`https://console.firebase.google.com/project/risk-e-po-pm/authentication/settings`}
+                        href={`https://console.firebase.google.com/project/epc-project-management-5e14a/authentication/settings`}
                         target="_blank"
                         rel="noreferrer"
                         className="flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-transform active:scale-95 mt-2"
@@ -370,13 +418,42 @@ export const LoginPage: React.FC = () => {
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || loadingMicrosoft}
                     className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all active:scale-[0.98] uppercase tracking-widest"
                   >
                     {loading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       mode === 'login' ? 'Sign In' : 'Create Account'
+                    )}
+                  </button>
+
+                  {/* Divider */}
+                  <div className="relative my-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200 dark:border-slate-700"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white dark:bg-slate-900 px-3 text-gray-400 dark:text-slate-500 font-semibold tracking-wider">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Microsoft Sign-In Button */}
+                  <button
+                    type="button"
+                    onClick={handleMicrosoftLogin}
+                    disabled={loading || loadingMicrosoft}
+                    className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 dark:border-slate-700 rounded-xl shadow-sm text-sm font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all active:scale-[0.98]"
+                  >
+                    {loadingMicrosoft ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" />
+                    ) : (
+                      <>
+                        <MicrosoftIcon className="w-5 h-5 flex-shrink-0" />
+                        <span>Sign in with Microsoft</span>
+                      </>
                     )}
                   </button>
                 </form>

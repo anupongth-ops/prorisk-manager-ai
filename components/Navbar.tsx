@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     AlertOctagon, UploadCloud, Download, FileText, Shield, FolderPlus, Plus,
     Sun, Moon, User, ShieldCheck, Settings, LogOut, Menu, X, BookOpen,
-    ChevronDown, HelpCircle, FileSpreadsheet, LayoutGrid
+    ChevronDown, HelpCircle, FileSpreadsheet, LayoutGrid, FileSearch
 } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -12,8 +12,8 @@ interface NavbarProps {
     isAdmin: boolean;
     isDarkMode: boolean;
     setIsDarkMode: (isDark: boolean) => void;
-    viewMode: 'dashboard' | 'excel';
-    setViewMode: (mode: 'dashboard' | 'excel') => void;
+    viewMode: 'dashboard' | 'excel' | 'tor-risk';
+    setViewMode: (mode: 'dashboard' | 'excel' | 'tor-risk') => void;
     setShowImport: (show: boolean) => void;
     setShowExport: (show: boolean) => void;
     setShowSummary: (show: boolean) => void;
@@ -194,7 +194,7 @@ export function Navbar({
                 {/* ── Desktop toolbar ────────────────────────────────────── */}
                 <div className="hidden lg:flex items-center gap-1.5">
 
-                    {/* View Switcher: Dashboard vs Excel Grid */}
+                    {/* View Switcher: Dashboard vs Excel Grid vs TOR Proposal Risk */}
                     <div className="flex items-center bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700 mr-1 flex-shrink-0">
                         <button
                             onClick={() => setViewMode('dashboard')}
@@ -219,6 +219,18 @@ export function Navbar({
                         >
                             <FileSpreadsheet className="w-4 h-4" />
                             <span className="hidden 2xl:inline">Excel Grid</span>
+                        </button>
+                        <button
+                            onClick={() => setViewMode('tor-risk')}
+                            className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-md transition-all ${
+                                viewMode === 'tor-risk'
+                                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                                    : 'text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30'
+                            }`}
+                            title="TOR & Proposal Risk Assessment (ISO 31000 / COSO ERM)"
+                        >
+                            <FileSearch className="w-4 h-4" />
+                            <span className="hidden 2xl:inline">TOR Risk</span>
                         </button>
                     </div>
 
@@ -365,8 +377,14 @@ export function Navbar({
                         {/* Menu sections */}
                         <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
 
+                            {/* View Switcher group */}
+                            <p className="px-3 pt-1 pb-1 text-[10px] font-bold text-gray-400 dark:text-slate-600 uppercase tracking-widest">Views</p>
+                            <MobileItem icon={LayoutGrid} label="Dashboard View" onClick={() => { setViewMode('dashboard'); closeMobileMenu(); }} color="gray" />
+                            <MobileItem icon={FileSpreadsheet} label="Excel Grid View" onClick={() => { setViewMode('excel'); closeMobileMenu(); }} color="emerald" />
+                            <MobileItem icon={FileSearch} label="TOR Proposal Risk" onClick={() => { setViewMode('tor-risk'); closeMobileMenu(); }} color="indigo" />
+
                             {/* Data I/O group */}
-                            <p className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 dark:text-slate-600 uppercase tracking-widest">Data</p>
+                            <p className="px-3 pt-3 pb-1 text-[10px] font-bold text-gray-400 dark:text-slate-600 uppercase tracking-widest">Data</p>
                             <MobileItem icon={UploadCloud} label="Import from CSV"   onClick={() => { setShowImport(true); closeMobileMenu(); }} color="gray" />
                             <MobileItem icon={Download}    label="Export to Excel"   onClick={() => { setShowExport(true); closeMobileMenu(); }} color="emerald" />
                             <MobileItem icon={FileText}    label="Risk Summary"      onClick={() => { setShowSummary(true); closeMobileMenu(); }} color="gray" />

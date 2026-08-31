@@ -8,9 +8,11 @@ import {
 import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, updatePassword, User, Auth,
-  sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential
+  sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential,
+  OAuthProvider, signInWithPopup
 } from 'firebase/auth';
 import { RiskItem, UserProfile, RiskAppetite, ReviewFrequency } from '../types';
+import { TorProject } from '../types/torRisk';
 import { BASELINE_RISKS, ProjectModifier } from '../constants/riskConstants';
 import { calculateAdjustedScore } from './riskBaselineService';
 
@@ -106,6 +108,38 @@ export const loginWithEmail = async (email: string, password: string) => {
     } else {
       // Auto-promote default admin if they were just a 'User'
       if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && (docSnap.data() as any).role !== 'Admin') {
+        await updateDoc(docRef, { role: 'Admin' });
+      }
+    }
+  }
+
+  return credential;
+};
+
+export const loginWithMicrosoft = async () => {
+  if (!auth) throw new Error("auth-not-initialized");
+  const provider = new OAuthProvider('microsoft.com');
+  provider.setCustomParameters({
+    prompt: 'select_account'
+  });
+  
+  const credential = await signInWithPopup(auth, provider);
+
+  // Ensure profile exists after Microsoft login
+  if (db && credential.user) {
+    const docRef = doc(db, USERS_COLLECTION, credential.user.uid);
+    const docSnap = await getDoc(docRef);
+    const userEmail = credential.user.email || '';
+    if (!docSnap.exists()) {
+      await setDoc(docRef, {
+        email: userEmail,
+        role: userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'Admin' : 'User',
+        assignedProjects: [],
+        isDefaultPassword: false,
+        createdAt: new Date().toISOString()
+      });
+    } else {
+      if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase() && (docSnap.data() as any).role !== 'Admin') {
         await updateDoc(docRef, { role: 'Admin' });
       }
     }
@@ -421,3 +455,51 @@ export const saveBaselineRisksBatch = async (risks: any[]): Promise<void> => {
 
   await batch.commit();
 };
+
+// --- TOR & PROPOSAL RISK ASSESSMENT MANAGEMENT ---
+
+const TOR_PROJECTS_COLLECTION = 'tor_projects';
+
+export const subscribeToTorProjects = (
+  onUpdate: (projects: TorProject[]) => void,
+  onError?: (error: any) => void
+): (() => void) => {
+  if (!db) {
+    onUpdate([]);
+    return () => { };
+  }
+  return onSnapshot(collection(db, TOR_PROJECTS_COLLECTION), (querySnapshot) => {
+    const projects: TorProject[] = [];
+    querySnapshot.forEach((doc) => {
+      projects.push(doc.data() as TorProject);
+    });
+    // Sort by updatedAt desc
+    projects.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+    onUpdate(projects);
+  }, (error) => {
+    console.error("Error fetching TOR projects:", error);
+    if (onError) onError(error);
+  });
+};
+
+export const saveTorProject = async (project: TorProject): Promise<void> => {
+  if (!db) throw new Error("db-not-initialized");
+  const cleanProject = sanitizeData(project);
+  await setDoc(doc(db, TOR_PROJECTS_COLLECTION, project.id), cleanProject);
+};
+
+export const deleteTorProject = async (projectId: string): Promise<void> => {
+  if (!db) throw new Error("db-not-initialized");
+  await deleteDoc(doc(db, TOR_PROJECTS_COLLECTION, projectId));
+};
+
+export const getTorProject = async (projectId: string): Promise<TorProject | null> => {
+  if (!db) return null;
+  const docRef = doc(db, TOR_PROJECTS_COLLECTION, projectId);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return docSnap.data() as TorProject;
+  }
+  return null;
+};
+

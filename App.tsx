@@ -36,6 +36,7 @@ const UserAccountPage = lazy(() => import('./components/UserAccountPage').then(m
 const BaselineComparisonMatrix = lazy(() => import('./components/BaselineComparisonMatrix').then(m => ({ default: m.BaselineComparisonMatrix })));
 const RiskLibraryModal = lazy(() => import('./components/RiskLibraryModal').then(m => ({ default: m.RiskLibraryModal })));
 const ExcelRiskRegisterGrid = lazy(() => import('./components/ExcelRiskRegisterGrid').then(m => ({ default: m.ExcelRiskRegisterGrid })));
+const TorRiskAssessment = lazy(() => import('./pages/TorRiskAssessment'));
 
 const ModalLoader = () => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -63,7 +64,7 @@ function App() {
     matrixFilter, setMatrixFilter, sortConfig, handleSort, filteredRisks, currentBaselineScores
   } = useFilters(risks, uniqueProjectData);
 
-  const [viewMode, setViewMode] = useState<'dashboard' | 'excel'>('dashboard');
+  const [viewMode, setViewMode] = useState<'dashboard' | 'excel' | 'tor-risk'>('dashboard');
   const [editingRisk, setEditingRisk] = useState<RiskItem | undefined>(undefined);
   const [editingProject, setEditingProject] = useState<{ projectNo: string, projectName: string, pmName: string, email: string, industryType?: string } | undefined>(undefined);
   const [showForm, setShowForm] = useState(false);
@@ -159,6 +160,13 @@ function App() {
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
             <p className="text-gray-500">Loading risks from database...</p>
           </div>
+        ) : viewMode === 'tor-risk' ? (
+          <Suspense fallback={<ModalLoader />}>
+            <TorRiskAssessment
+              onBackToDashboard={() => setViewMode('dashboard')}
+              userProfile={userProfile}
+            />
+          </Suspense>
         ) : viewMode === 'excel' ? (
           <Suspense fallback={<ModalLoader />}>
             <ExcelRiskRegisterGrid

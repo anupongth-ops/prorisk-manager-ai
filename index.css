@@ -1,0 +1,7 @@
+/* Global Styles */
+@layer base {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}

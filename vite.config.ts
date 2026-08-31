@@ -1,6 +1,11 @@
 import path from 'path';
+import { createRequire } from 'module';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+
+const require = createRequire(import.meta.url);
+const exportApiPlugin = require('./vite-plugin-export-api.cjs');
+const torAiPlugin = require('./vite-plugin-tor-ai.cjs');
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
@@ -17,7 +22,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     base: '/epopm/',
-    plugins: [react()],
+    plugins: [react(), exportApiPlugin(), torAiPlugin()],
     build: {
       outDir: 'dist',
       sourcemap: false,
@@ -34,7 +39,8 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1000
     },
     define: {
-      'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY)
+      'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY),
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || '')
     },
     resolve: {
       alias: {

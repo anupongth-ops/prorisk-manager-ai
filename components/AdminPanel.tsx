@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Users, Database, Shield, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle, Clock, ShieldAlert, Edit2, Save, FolderLock, UserPlus, Info, Zap, Mail } from 'lucide-react';
 import { fetchAllUsers, deleteUserRecord, createSystemBackup, updateUserPermissions } from '../services/adminService';
 import { isPermissionError, registerWithDefaultPassword } from '../services/firebaseService';
+import { fetchCompleteDatabase, generatePostgreSqlDump, generateMySqlDump } from '../services/sqlBackupService';
 import { PermissionsGuide } from './PermissionsGuide';
 import { UserProfile, UserRole, RiskItem } from '../types';
 import { BaselineRiskEditor } from './BaselineRiskEditor';
@@ -121,21 +122,58 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
+  const [backupStatus, setBackupStatus] = useState<string | null>(null);
+
+  const handleExportSql = async (dialect: 'postgresql' | 'mysql') => {
+    setActionLoading(true);
+    setBackupStatus(`Fetching all collections from Firestore...`);
+    try {
+      const fullData = await fetchCompleteDatabase();
+      setBackupStatus(`Generating ${dialect === 'postgresql' ? 'PostgreSQL' : 'MySQL'} SQL dump...`);
+      
+      const sqlContent = dialect === 'postgresql' 
+        ? generatePostgreSqlDump(fullData)
+        : generateMySqlDump(fullData);
+
+      const blob = new Blob([sqlContent], { type: 'text/sql;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const dateStr = new Date().toISOString().split('T')[0];
+      link.download = `ProRisk_Database_${dialect.toUpperCase()}_Backup_${dateStr}.sql`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setBackupStatus(`Downloaded successfully! (${fullData.stats.risksCount} risks, ${fullData.stats.usersCount} users)`);
+    } catch (err: any) {
+      console.error("SQL Export failed:", err);
+      if (isPermissionError(err)) setPermissionDenied(true);
+      else alert("Failed to export SQL: " + (err.message || 'Unknown error'));
+      setBackupStatus(null);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleBackup = async () => {
     setActionLoading(true);
+    setBackupStatus("Extracting system backup JSON...");
     try {
-      const jsonString = await createSystemBackup();
+      const fullData = await fetchCompleteDatabase();
+      const jsonString = JSON.stringify(fullData, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ProRisk_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `ProRisk_Full_Backup_${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (err) {
+      setBackupStatus(`JSON Backup downloaded! (${fullData.stats.risksCount} risks, ${fullData.stats.usersCount} users)`);
+    } catch (err: any) {
       if (isPermissionError(err)) setPermissionDenied(true);
       else setError("Backup failed.");
+      setBackupStatus(null);
     } finally {
       setActionLoading(false);
     }
@@ -379,27 +417,106 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
 
           {!permissionDenied && activeTab === 'backup' && (
-            <div className="flex flex-col items-center justify-center h-full py-10 text-center space-y-6">
-              <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center transition-colors">
-                <Database className="w-10 h-10" />
-              </div>
-              <div className="max-w-md">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Full System Backup</h3>
-                <p className="text-sm text-gray-500 dark:text-slate-400 mt-2">
-                  Generates a JSON file containing all Risk Assessments and User Permission data.
+            <div className="space-y-6 max-w-4xl mx-auto py-4">
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto transition-colors shadow-inner">
+                  <Database className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">Database Backup & SQL Migration</h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400 max-w-xl mx-auto">
+                  Export live Firestore database collections directly into production-ready SQL scripts or full JSON snapshots.
                 </p>
-              </div>
-              <button
-                onClick={handleBackup}
-                disabled={actionLoading}
-                className="flex items-center px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 shadow-md transition disabled:opacity-50 font-bold uppercase text-xs tracking-widest"
-              >
-                {actionLoading ? 'Generating...' : (
-                  <>
-                    <Download className="w-5 h-5 mr-2" /> Download Backup
-                  </>
+                {backupStatus && (
+                  <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold px-4 py-2 rounded-full animate-in fade-in">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>{backupStatus}</span>
+                  </div>
                 )}
-              </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+                {/* Card 1: PostgreSQL */}
+                <div className="bg-white dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                        PostgreSQL
+                      </span>
+                      <span className="text-xs font-mono text-gray-400">.sql</span>
+                    </div>
+                    <h4 className="font-bold text-gray-900 dark:text-slate-100 text-base">PostgreSQL / Supabase / AWS RDS</h4>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
+                      Complete DDL schema, tables (`users`, `risks`, `risk_history`, `baseline_risks`, `tor_projects`), arrays, and JSONB relations.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleExportSql('postgresql')}
+                    disabled={actionLoading}
+                    className="mt-6 w-full flex items-center justify-center gap-2 py-3 px-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition disabled:opacity-50 shadow-sm uppercase tracking-wider"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export PostgreSQL
+                  </button>
+                </div>
+
+                {/* Card 2: MySQL */}
+                <div className="bg-white dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                        MySQL
+                      </span>
+                      <span className="text-xs font-mono text-gray-400">.sql</span>
+                    </div>
+                    <h4 className="font-bold text-gray-900 dark:text-slate-100 text-base">MySQL / MariaDB</h4>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
+                      Optimized for MySQL 8.0+ / MariaDB with `InnoDB`, `utf8mb4`, JSON columns, and `ON DUPLICATE KEY UPDATE` syntax.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleExportSql('mysql')}
+                    disabled={actionLoading}
+                    className="mt-6 w-full flex items-center justify-center gap-2 py-3 px-4 bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition disabled:opacity-50 shadow-sm uppercase tracking-wider"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export MySQL
+                  </button>
+                </div>
+
+                {/* Card 3: JSON Full Backup */}
+                <div className="bg-white dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                        Snapshot
+                      </span>
+                      <span className="text-xs font-mono text-gray-400">.json</span>
+                    </div>
+                    <h4 className="font-bold text-gray-900 dark:text-slate-100 text-base">Full JSON Snapshot</h4>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
+                      Raw JSON export containing all collections with exact document structures and metadata for restoration or archiving.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleBackup}
+                    disabled={actionLoading}
+                    className="mt-6 w-full flex items-center justify-center gap-2 py-3 px-4 bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition disabled:opacity-50 shadow-sm uppercase tracking-wider"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export JSON
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-blue-50/60 dark:bg-slate-800/50 border border-blue-100 dark:border-slate-700 rounded-xl p-4 text-xs text-gray-600 dark:text-slate-400 flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-gray-800 dark:text-slate-200">How to restore or import SQL:</span>
+                  <p className="mt-1">
+                    Open your SQL terminal and execute: <code className="bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-gray-200 dark:border-slate-700 font-mono text-blue-600 dark:text-blue-400">psql -U postgres -d prorisk &lt; filename.sql</code> for PostgreSQL, or <code className="bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-gray-200 dark:border-slate-700 font-mono text-amber-600 dark:text-amber-400">mysql -u root -p prorisk &lt; filename.sql</code> for MySQL.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

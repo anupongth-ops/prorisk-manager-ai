@@ -12,15 +12,15 @@ import { OverdueEmailSettings } from './OverdueEmailSettings';
 interface AdminPanelProps {
   onClose: () => void;
   currentUserEmail: string;
-  existingProjects: string[]; // list of projectNo strings from useRisks
+  existingProjects?: string[]; // list of projectNo strings from useRisks
   allRisks?: RiskItem[];
   uniqueProjectData?: { projectNo: string; projectName: string; pmName: string; email: string }[];
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   onClose,
-  currentUserEmail,
-  existingProjects,
+  currentUserEmail = '',
+  existingProjects = [],
   allRisks = [],
   uniqueProjectData = [],
 }) => {
@@ -50,7 +50,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const loadUsers = async () => {
     setLoading(true);
     setError(null);
-    setPermissionDenied(false);
     try {
       const data = await fetchAllUsers();
       // Filter out users with missing email (corrupt/incomplete records) and sort
@@ -63,6 +62,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         return (a.email || '').localeCompare(b.email || '');
       });
       setUsers(validUsers);
+      setPermissionDenied(false);
     } catch (err: any) {
       if (isPermissionError(err)) {
         setPermissionDenied(true);
@@ -211,8 +211,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto transition-all duration-300">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-white/10 dark:border-slate-800 transition-all">
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-gray-200 dark:border-slate-800">
 
         {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-slate-800 bg-slate-900 dark:bg-slate-950 text-white flex justify-between items-center transition-colors">
@@ -259,23 +259,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-auto p-6 bg-gray-50/50 dark:bg-slate-900/20 transition-colors">
 
-          {permissionDenied ? (
-            <div className="space-y-6">
-              <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-lg text-center border border-red-100 dark:border-red-900/30 transition-colors">
-                <ShieldAlert className="w-10 h-10 text-red-600 dark:text-red-500 mx-auto mb-2" />
-                <h3 className="font-bold text-gray-900 dark:text-slate-100">Access Denied</h3>
-                <p className="text-sm text-gray-600 dark:text-slate-400">You must have Admin privileges to access this area.</p>
+          {/* TAB 1: USER PERMISSIONS */}
+          {activeTab === 'users' && (
+            permissionDenied ? (
+              <div className="space-y-6">
+                <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-xl text-center border border-red-100 dark:border-red-900/30 transition-colors">
+                  <ShieldAlert className="w-10 h-10 text-red-600 dark:text-red-500 mx-auto mb-2" />
+                  <h3 className="font-bold text-gray-900 dark:text-slate-100 text-base">Access Denied to Users Collection</h3>
+                  <p className="text-sm text-gray-600 dark:text-slate-400 max-w-lg mx-auto mt-1">
+                    Firestore Security Rules are blocking access to query the user list. You can update your Security Rules in Firebase Console, or continue using other tools (Overdue Email Alerts, System Backup, Baseline Risks) from the menu tabs above.
+                  </p>
+                  <button
+                    onClick={loadUsers}
+                    disabled={loading}
+                    className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-2 shadow-sm"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? 'Retrying...' : 'Retry Loading Users'}
+                  </button>
+                </div>
+                <PermissionsGuide />
               </div>
-              <PermissionsGuide />
-            </div>
-          ) : activeTab === 'overdue' ? (
-            <OverdueEmailSettings
-              allRisks={allRisks}
-              existingProjects={uniqueProjectData}
-              currentUserEmail={currentUserEmail}
-            />
-          ) : activeTab === 'users' && (
-            <div className="space-y-6">
+            ) : (
+              <div className="space-y-6">
               {/* Quick Add User Form */}
               <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/20 rounded-xl p-5 mb-2 transition-colors">
                 <div className="flex items-center gap-2 mb-4 text-blue-700 dark:text-blue-400">
@@ -414,9 +420,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </table>
               </div>
             </div>
+          ))}
+
+          {/* TAB 2: OVERDUE EMAIL ALERTS */}
+          {activeTab === 'overdue' && (
+            <OverdueEmailSettings
+              allRisks={allRisks}
+              existingProjects={uniqueProjectData}
+              currentUserEmail={currentUserEmail}
+            />
           )}
 
-          {!permissionDenied && activeTab === 'backup' && (
+          {/* TAB 3: SYSTEM BACKUP & SQL MIGRATION */}
+          {activeTab === 'backup' && (
             <div className="space-y-6 max-w-4xl mx-auto py-4">
               <div className="text-center space-y-2">
                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto transition-colors shadow-inner">
@@ -520,7 +536,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
-          {!permissionDenied && activeTab === 'baseline' && (
+          {/* TAB 4: BASELINE RISKS */}
+          {activeTab === 'baseline' && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               <BaselineRiskEditor />
             </div>

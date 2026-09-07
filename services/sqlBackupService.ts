@@ -6,7 +6,8 @@
 
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from './firebaseService';
-import { RiskItem, UserProfile, BaselineRisk } from '../types';
+import { RiskItem, UserProfile } from '../types';
+import { BaselineRisk } from '../constants/riskConstants';
 import { TorProject } from '../types/torRisk';
 
 export type SqlDialect = 'postgresql' | 'mysql' | 'sqlserver';
@@ -31,6 +32,8 @@ export function escapeSqlString(val: any, dialect: SqlDialect = 'postgresql'): s
     return `'${String(val).replace(/'/g, "''")}'`;
 }
 
+export type StoredBaselineRisk = BaselineRisk & { id: string; };
+
 export interface FullBackupData {
     timestamp: string;
     stats: {
@@ -41,7 +44,7 @@ export interface FullBackupData {
     };
     users: UserProfile[];
     risks: RiskItem[];
-    baselineRisks: BaselineRisk[];
+    baselineRisks: StoredBaselineRisk[];
     torProjects: TorProject[];
 }
 
@@ -63,8 +66,7 @@ export async function fetchCompleteDatabase(): Promise<FullBackupData> {
             assignedProjects: Array.isArray(data.assignedProjects) ? data.assignedProjects : [],
             isDefaultPassword: !!data.isDefaultPassword,
             createdAt: data.createdAt || new Date().toISOString(),
-            updatedAt: data.updatedAt || undefined,
-            name: data.name || undefined
+            updatedAt: data.updatedAt || undefined
         });
     });
 
@@ -77,7 +79,7 @@ export async function fetchCompleteDatabase(): Promise<FullBackupData> {
 
     // 3. Baseline Risks
     const baselineSnap = await getDocs(collection(db, 'baseline_risks'));
-    const baselineRisks: BaselineRisk[] = [];
+    const baselineRisks: StoredBaselineRisk[] = [];
     baselineSnap.forEach(docSnap => {
         baselineRisks.push({
             id: docSnap.id,

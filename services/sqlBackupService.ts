@@ -13,7 +13,8 @@ import { TorProject } from '../types/torRisk';
 export type SqlDialect = 'postgresql' | 'mysql' | 'sqlserver';
 
 /**
- * Escapes SQL string literals securely.
+ * Escapes SQL string literals securely across dialects (PostgreSQL, MySQL, SQL Server).
+ * For MySQL, escapes backslashes (\ -> \\) and quotes (' -> '') to prevent escape sequence injection.
  */
 export function escapeSqlString(val: any, dialect: SqlDialect = 'postgresql'): string {
     if (val === null || val === undefined) return 'NULL';
@@ -26,10 +27,17 @@ export function escapeSqlString(val: any, dialect: SqlDialect = 'postgresql'): s
         return String(val);
     }
     if (Array.isArray(val) || typeof val === 'object') {
-        const jsonStr = JSON.stringify(val).replace(/'/g, "''");
-        return `'${jsonStr}'`;
+        const jsonStr = JSON.stringify(val);
+        if (dialect === 'mysql') {
+            return `'${jsonStr.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+        }
+        return `'${jsonStr.replace(/'/g, "''")}'`;
     }
-    return `'${String(val).replace(/'/g, "''")}'`;
+    const str = String(val);
+    if (dialect === 'mysql') {
+        return `'${str.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+    }
+    return `'${str.replace(/'/g, "''")}'`;
 }
 
 export type StoredBaselineRisk = BaselineRisk & { id: string; };
@@ -356,6 +364,11 @@ export function generateMySqlDump(data: FullBackupData): string {
     lines.push(`-- Statistics: ${data.stats.usersCount} users, ${data.stats.risksCount} risks, ${data.stats.baselineCount} baseline risks, ${data.stats.torCount} TOR projects`);
     lines.push(`-- ==============================================================================\n`);
 
+    lines.push(`/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;`);
+    lines.push(`/*!40101 SET NAMES utf8mb4 */;`);
+    lines.push(`/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;`);
+    lines.push(`/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n`);
+
     lines.push(`START TRANSACTION;\n`);
 
     // Schema DDL
@@ -572,5 +585,8 @@ export function generateMySqlDump(data: FullBackupData): string {
     }
 
     lines.push(`COMMIT;\n`);
+    lines.push(`/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;`);
+    lines.push(`/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;`);
+    lines.push(`/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;`);
     return lines.join('\n');
 }

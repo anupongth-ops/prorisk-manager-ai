@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Save, Plus, Trash2, Copy, AlertCircle, CheckCircle2,
   FileSpreadsheet, Filter, Search, RotateCcw, Calendar,
@@ -46,16 +46,64 @@ export function ExcelRiskRegisterGrid({
   const [dirtyRowIds, setDirtyRowIds] = useState<Set<string>>(new Set());
   // Track newly created unsaved row IDs
   const [newRowIds, setNewRowIds] = useState<Set<string>>(new Set());
-  
+
+  // Refs to access latest dirty state inside effects without stale closures
+  const dirtyRowIdsRef = useRef<Set<string>>(dirtyRowIds);
+  const newRowIdsRef = useRef<Set<string>>(newRowIds);
+  const isInitialMount = useRef<boolean>(true);
+
+  useEffect(() => {
+    dirtyRowIdsRef.current = dirtyRowIds;
+  }, [dirtyRowIds]);
+
+  useEffect(() => {
+    newRowIdsRef.current = newRowIds;
+  }, [newRowIds]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Sync grid items from props
+  // Sync grid items from props safely without overwriting unsaved user edits
   useEffect(() => {
-    setGridItems(JSON.parse(JSON.stringify(risks)));
-    setDirtyRowIds(new Set());
-    setNewRowIds(new Set());
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      setGridItems(JSON.parse(JSON.stringify(risks)));
+      setDirtyRowIds(new Set());
+      setNewRowIds(new Set());
+      return;
+    }
+
+    setGridItems(prev => {
+      const currentDirty = dirtyRowIdsRef.current;
+      const currentNew = newRowIdsRef.current;
+
+      // If no unsaved edits, do a clean replacement from incoming risks
+      if (currentDirty.size === 0 && currentNew.size === 0) {
+        return JSON.parse(JSON.stringify(risks));
+      }
+
+      // Preserve dirty and new rows; merge clean rows from incoming risks
+      const dirtyOrNewMap = new Map<string, RiskItem>();
+      prev.forEach(item => {
+        if (currentDirty.has(item.id) || currentNew.has(item.id)) {
+          dirtyOrNewMap.set(item.id, item);
+        }
+      });
+
+      const updatedList: RiskItem[] = risks.map(incomingRisk => {
+        if (dirtyOrNewMap.has(incomingRisk.id)) {
+          const preserved = dirtyOrNewMap.get(incomingRisk.id)!;
+          dirtyOrNewMap.delete(incomingRisk.id);
+          return preserved;
+        }
+        return JSON.parse(JSON.stringify(incomingRisk));
+      });
+
+      // Retain new rows that have not yet been saved to Firestore
+      const remainingNewRows = Array.from(dirtyOrNewMap.values());
+      return [...remainingNewRows, ...updatedList];
+    });
   }, [risks]);
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
@@ -185,7 +233,7 @@ export function ExcelRiskRegisterGrid({
       return;
     }
 
-    const newId = 'new_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    const newId = 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
     const newRiskId = getNextRiskId();
 
     const newItem: RiskItem = {
@@ -224,7 +272,7 @@ export function ExcelRiskRegisterGrid({
 
   // Duplicate an existing row
   const handleDuplicateRow = (item: RiskItem) => {
-    const newId = 'dup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    const newId = 'dup_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
     const newRiskId = getNextRiskId();
 
     const duplicatedItem: RiskItem = {
@@ -240,6 +288,26 @@ export function ExcelRiskRegisterGrid({
     setGridItems(prev => [duplicatedItem, ...prev]);
     setDirtyRowIds(prev => new Set(prev).add(newId));
     setNewRowIds(prev => new Set(prev).add(newId));
+  };
+
+  // Delete row - handles unsaved new rows locally without firing unnecessary Firestore deletes
+  const handleDeleteRow = (item: RiskItem) => {
+    if (newRowIds.has(item.id)) {
+      setGridItems(prev => prev.filter(r => r.id !== item.id));
+      setDirtyRowIds(prev => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+      setNewRowIds(prev => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+      return;
+    }
+
+    onDeleteRisk(item);
   };
 
   // Save all modified rows
@@ -981,7 +1049,7 @@ export function ExcelRiskRegisterGrid({
                             <Copy className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => onDeleteRisk(item)}
+                            onClick={() => handleDeleteRow(item)}
                             disabled={!canModify}
                             className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                             title="Delete Risk"

@@ -20,9 +20,17 @@ function escapeSQL(val, dialect = 'postgresql') {
   }
   if (typeof val === 'number') return isNaN(val) ? 'NULL' : String(val);
   if (Array.isArray(val) || typeof val === 'object') {
-    return `'${JSON.stringify(val).replace(/'/g, "''")}'`;
+    const jsonStr = JSON.stringify(val);
+    if (dialect === 'mysql') {
+      return `'${jsonStr.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+    }
+    return `'${jsonStr.replace(/'/g, "''")}'`;
   }
-  return `'${String(val).replace(/'/g, "''")}'`;
+  const str = String(val);
+  if (dialect === 'mysql') {
+    return `'${str.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+  }
+  return `'${str.replace(/'/g, "''")}'`;
 }
 
 async function runAdminMigration() {

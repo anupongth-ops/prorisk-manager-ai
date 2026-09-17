@@ -307,15 +307,36 @@ export const fetchRisksByProject = async (projectNo: string): Promise<RiskItem[]
   return risks;
 };
 
+// Maximum operations per Firestore batch (Firestore hard limit is 500)
+const FIRESTORE_BATCH_LIMIT = 450;
+
+/**
+ * Executes batch operations in safe chunks (max 450 operations per batch)
+ * to strictly stay below the Firestore 500-operation limit per commit.
+ */
+async function commitInBatches<T>(
+  items: T[],
+  operation: (batch: ReturnType<typeof writeBatch>, item: T) => void
+): Promise<void> {
+  if (!db) throw new Error("db-not-initialized");
+  if (items.length === 0) return;
+
+  for (let i = 0; i < items.length; i += FIRESTORE_BATCH_LIMIT) {
+    const chunk = items.slice(i, i + FIRESTORE_BATCH_LIMIT);
+    const batch = writeBatch(db);
+    chunk.forEach(item => operation(batch, item));
+    await batch.commit();
+  }
+}
+
 export const batchSaveRisks = async (risks: RiskItem[]): Promise<void> => {
   if (!db) throw new Error("db-not-initialized");
   if (risks.length === 0) return;
-  const batch = writeBatch(db);
-  risks.forEach(risk => {
+
+  await commitInBatches(risks, (batch, risk) => {
     const ref = doc(db, COLLECTION_NAME, risk.id);
     batch.set(ref, sanitizeData(risk));
   });
-  await batch.commit();
 };
 
 export const deleteProjectRisks = async (projectNo: string): Promise<void> => {
@@ -323,12 +344,10 @@ export const deleteProjectRisks = async (projectNo: string): Promise<void> => {
   const risks = await fetchRisksByProject(projectNo);
   if (risks.length === 0) return;
 
-  const batch = writeBatch(db);
-  risks.forEach(risk => {
+  await commitInBatches(risks, (batch, risk) => {
     const ref = doc(db, COLLECTION_NAME, risk.id);
     batch.delete(ref);
   });
-  await batch.commit();
 };
 
 export const updateProjectDetails = async (
@@ -349,9 +368,11 @@ export const updateProjectDetails = async (
   const risks = await fetchRisksByProject(projectNo);
   if (risks.length === 0) return;
 
-  // 2. Batch update all of them
-  const batch = writeBatch(db);
-  risks.forEach(risk => {
+  // 2. Batch update all of them in chunks
+  const currentUserEmail = auth?.currentUser?.email || 'System';
+  const now = new Date().toISOString();
+
+  await commitInBatches(risks, (batch, risk) => {
     const ref = doc(db, COLLECTION_NAME, risk.id);
     const updateData: any = {
       projectName: updates.projectName,
@@ -359,16 +380,14 @@ export const updateProjectDetails = async (
       email: updates.email,
       industryType: updates.industryType || '',
       appliedModifiers: updates.appliedModifiers || [],
-      lastUpdatedBy: auth?.currentUser?.email || 'System',
-      updatedAt: new Date().toISOString()
+      lastUpdatedBy: currentUserEmail,
+      updatedAt: now
     };
     if (updates.riskAppetite) updateData.riskAppetite = updates.riskAppetite;
     if (updates.reviewFrequency) updateData.reviewFrequency = updates.reviewFrequency;
 
     batch.update(ref, updateData);
   });
-
-  await batch.commit();
 };
 
 export const syncBaselineRisks = async (
@@ -385,9 +404,11 @@ export const syncBaselineRisks = async (
   const baselineRisks = risks.filter(r => r.riskId.startsWith('B-'));
   if (baselineRisks.length === 0) return;
 
-  const batch = writeBatch(db);
+  const currentUserEmail = auth?.currentUser?.email || 'System';
+  const now = new Date().toISOString();
+  const modifierItems = modifiers.map(m => m.item);
 
-  baselineRisks.forEach(risk => {
+  await commitInBatches(baselineRisks, (batch, risk) => {
     // Find the corresponding baseline definition to get base scores
     const baseDef = currentBaseline.find(b => `Baseline: ${b.factor}` === risk.description);
     if (baseDef) {
@@ -402,14 +423,12 @@ export const syncBaselineRisks = async (
           impact: Math.max(1, impact - 1),
           likelihood: Math.max(1, likelihood - 1)
         },
-        appliedModifiers: modifiers.map(m => m.item),
-        lastUpdatedBy: auth?.currentUser?.email || 'System',
-        updatedAt: new Date().toISOString()
+        appliedModifiers: modifierItems,
+        lastUpdatedBy: currentUserEmail,
+        updatedAt: now
       });
     }
   });
-
-  await batch.commit();
 };
 
 // --- BASELINE RISK MANAGEMENT ---
@@ -438,22 +457,26 @@ export const fetchBaselineRisks = async (): Promise<any[]> => {
 
 export const saveBaselineRisksBatch = async (risks: any[]): Promise<void> => {
   if (!db) throw new Error("db-not-initialized");
-  const batch = writeBatch(db);
 
   // Fetch existing baseline risks to know what to delete/overwrite
   const querySnapshot = await getDocs(collection(db, BASELINE_COLLECTION));
-  querySnapshot.forEach((doc) => {
-    batch.delete(doc.ref);
+  const docsToDelete = querySnapshot.docs;
+
+  // Delete existing in safe chunks
+  await commitInBatches(docsToDelete, (batch, docSnap) => {
+    batch.delete(docSnap.ref);
   });
 
-  risks.forEach((risk, index) => {
-    const id = risk.id || `baseline_${String(index).padStart(3, '0')}`;
-    const ref = doc(db, BASELINE_COLLECTION, id);
-    const { id: _, ...data } = risk; // Remove id from data
-    batch.set(ref, sanitizeData(data));
-  });
+  // Save new in safe chunks
+  const itemsToSave = risks.map((risk, index) => ({
+    id: risk.id || `baseline_${String(index).padStart(3, '0')}`,
+    data: (({ id: _, ...rest }) => rest)(risk)
+  }));
 
-  await batch.commit();
+  await commitInBatches(itemsToSave, (batch, item) => {
+    const ref = doc(db, BASELINE_COLLECTION, item.id);
+    batch.set(ref, sanitizeData(item.data));
+  });
 };
 
 // --- TOR & PROPOSAL RISK ASSESSMENT MANAGEMENT ---

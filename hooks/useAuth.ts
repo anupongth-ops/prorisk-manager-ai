@@ -3,14 +3,24 @@ import { UserProfile } from '../types';
 import { onAuthStateChange, fetchUserProfile, checkUserNeedsPasswordChange, isPermissionError, logoutUser } from '../services/firebaseService';
 
 export function useAuth() {
-    const [user, setUser] = useState<any>(null);
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-    const [authLoading, setAuthLoading] = useState(true);
+    const isDemo = typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('demo') === 'true' || localStorage.getItem('demo_mode') === 'true');
+
+    const [user, setUser] = useState<any>(() => isDemo ? { uid: 'demo-admin-01', email: 'anupong.th@gcmeapp.com', displayName: 'Anupong (Admin)' } : null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(() => isDemo ? {
+        id: 'demo-admin-01',
+        email: 'anupong.th@gcmeapp.com',
+        role: 'Admin',
+        assignedProjects: ['P26-001', 'P26-002', 'P25-089'],
+        isDefaultPassword: false,
+        createdAt: '2026-01-01T00:00:00.000Z'
+    } : null);
+    const [authLoading, setAuthLoading] = useState(!isDemo);
     const [mustChangePassword, setMustChangePassword] = useState(false);
     const [checkingProfile, setCheckingProfile] = useState(false);
     const [permissionDenied, setPermissionDenied] = useState(false);
 
     useEffect(() => {
+        if (isDemo) return;
         const unsubscribeAuth = onAuthStateChange(async (currentUser) => {
             setUser(currentUser);
 

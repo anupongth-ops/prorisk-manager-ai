@@ -1,0 +1,198 @@
+import { RiskItem, ImpactLevel, LikelihoodLevel, PossibleEffect, MitigationStrategy } from '../types';
+
+export const DEMO_RISKS: RiskItem[] = [
+  {
+    id: 'demo-1',
+    riskId: 'R-001',
+    projectNo: 'P26-001',
+    projectName: 'Clean Energy & Biomass Power Plant Phase 2',
+    pmName: 'Somchai Prasert',
+    email: 'somchai.p@gcmeapp.com',
+    industryType: 'Power Plants',
+    riskCategory: 'ENGINEERING',
+    description: 'เนื่องจาก ลูกค้าขอปรับเปลี่ยน P&ID และสเปก Boiler จึงเสี่ยงต่อ การออก Detail Drawing ล่าช้า ส่งผลให้ แผนงานก่อสร้างเลื่อนออกไป 4 สัปดาห์',
+    initialRisk: { impact: ImpactLevel.High, likelihood: LikelihoodLevel.High }, // 16 Red
+    possibleEffect: [PossibleEffect.Time, PossibleEffect.Cost],
+    mitigationStrategy: MitigationStrategy.Avoid,
+    actionToControl: 'จัดประชุม Freeze P&ID ร่วมกับเจ้าของโครงการ และนำเสนอ Cost/Time Impact Note เพื่อขอขยายระยะเวลาส่งมอบ',
+    residualRisk: { impact: ImpactLevel.Medium, likelihood: LikelihoodLevel.Low }, // 6 Yellow
+    owner: 'สมชาย ประเสริฐ (Lead Eng)',
+    raisedDate: '2026-01-15',
+    deadlineDate: '2026-04-30',
+    nextReviewDate: '2026-03-30',
+    status: 'In Progress',
+    comment: 'ลูกค้าอนุมัติหลักการแล้ว รอเซ็น Change Order',
+    updatedAt: new Date().toISOString(),
+    history: []
+  },
+  {
+    id: 'demo-2',
+    riskId: 'R-002',
+    projectNo: 'P26-001',
+    projectName: 'Clean Energy & Biomass Power Plant Phase 2',
+    pmName: 'Somchai Prasert',
+    email: 'somchai.p@gcmeapp.com',
+    industryType: 'Power Plants',
+    riskCategory: 'PROCUREMENT',
+    description: 'เนื่องจาก ความผันผวนของอัตราแลกเปลี่ยนเงินยูโรและค่าขนส่งทางเรือ จึงเสี่ยงต่อ ราคา Turbine และ Generator สูงกว่างบประมาณ ส่งผลให้ เกิด Cost Overrun',
+    initialRisk: { impact: ImpactLevel.High, likelihood: LikelihoodLevel.Medium }, // 12 Orange
+    possibleEffect: [PossibleEffect.Cost],
+    mitigationStrategy: MitigationStrategy.Transfer,
+    actionToControl: 'ทำสัญญา Hedging อัตราแลกเปลี่ยนล่วงหน้า และเจรจาสัญญาแบบ Lump Sum Fixed Price กับ Vendor หลัก',
+    residualRisk: { impact: ImpactLevel.Low, likelihood: LikelihoodLevel.Low }, // 4 Yellow
+    owner: 'วิชัย การค้า (Procurement Mgr)',
+    raisedDate: '2026-02-01',
+    deadlineDate: '2026-05-15',
+    nextReviewDate: '2026-03-15',
+    status: 'In Progress',
+    comment: 'ล็อกอัตราแลกเปลี่ยนเรียบร้อยแล้ว 80%',
+    updatedAt: new Date().toISOString(),
+    history: []
+  },
+  {
+    id: 'demo-3',
+    riskId: 'R-003',
+    projectNo: 'P26-001',
+    projectName: 'Clean Energy & Biomass Power Plant Phase 2',
+    pmName: 'Somchai Prasert',
+    email: 'somchai.p@gcmeapp.com',
+    industryType: 'Power Plants',
+    riskCategory: 'CONSTRUCTION',
+    description: 'เนื่องจาก ขาดแคลนช่างเชื่อมฝีมือแรงดันสูง (6G Welder) จึงเสี่ยงต่อ คุณภาพงานเชื่อมท่อ High Pressure Steam ไม่ผ่านเกณฑ์ ส่งผลให้ ต้องแก้ไขงานล่าช้า',
+    initialRisk: { impact: ImpactLevel.VeryHigh, likelihood: LikelihoodLevel.Medium }, // 15 Red
+    possibleEffect: [PossibleEffect.Quality, PossibleEffect.Time],
+    mitigationStrategy: MitigationStrategy.Mitigate,
+    actionToControl: 'จัดทดสอบทักษะช่างเชื่อมล่วงหน้า 30 วัน ร่วมกับสำนักทดสอบมาตรฐาน และจัดสรร Subcontractor สำรองอีก 1 ทีม',
+    residualRisk: { impact: ImpactLevel.Medium, likelihood: LikelihoodLevel.Low }, // 6 Yellow
+    owner: 'อำนาจ วิศวกรรม (Site Mgr)',
+    raisedDate: '2026-02-10',
+    deadlineDate: '2026-06-30',
+    nextReviewDate: '2026-04-10',
+    status: 'Open',
+    comment: 'อยู่ระหว่างตรวจสอบใบรับรองช่างเชื่อมชุดแรก',
+    updatedAt: new Date().toISOString(),
+    history: []
+  },
+  {
+    id: 'demo-4',
+    riskId: 'R-004',
+    projectNo: 'P26-001',
+    projectName: 'Clean Energy & Biomass Power Plant Phase 2',
+    pmName: 'Somchai Prasert',
+    email: 'somchai.p@gcmeapp.com',
+    industryType: 'Power Plants',
+    riskCategory: 'SHE',
+    description: 'เนื่องจาก มีการยกติดตั้งอุปกรณ์หนัก (Heavy Lift) บริเวณใกล้สายส่งไฟฟ้าแรงสูง จึงเสี่ยงต่อ อุบัติเหตุสัมผัสไฟฟ้า ส่งผลให้ เกิดการบาดเจ็บรุนแรงและงานหยุดชะงัก',
+    initialRisk: { impact: ImpactLevel.Severe, likelihood: LikelihoodLevel.Low }, // 10 Orange
+    possibleEffect: [PossibleEffect.HealthSafety, PossibleEffect.Reputation],
+    mitigationStrategy: MitigationStrategy.Mitigate,
+    actionToControl: 'จัดทำ Rigging Plan และ Lifting Permit ร่วมกับเจ้าหน้าที่ความปลอดภัย ติดตั้งระบบตัดกระแสไฟฟ้าชั่วคราวและกั้นแนวเขตหวงห้าม 100%',
+    residualRisk: { impact: ImpactLevel.Medium, likelihood: LikelihoodLevel.VeryLow }, // 3 Green
+    owner: 'กิตติพงษ์ สดใส (SHE Lead)',
+    raisedDate: '2026-01-20',
+    deadlineDate: '2026-03-25',
+    finishedDate: '2026-03-20',
+    nextReviewDate: '2026-03-25',
+    status: 'Closed',
+    comment: 'ดำเนินการยกติดตั้งสำเร็จเรียบร้อย ปลอดภัย 100%',
+    updatedAt: new Date().toISOString(),
+    history: []
+  },
+  {
+    id: 'demo-5',
+    riskId: 'R-005',
+    projectNo: 'P26-002',
+    projectName: 'Petrochemical Tank Farm Revamp & Piping',
+    pmName: 'Nipon Chaisaen',
+    email: 'nipon.c@gcmeapp.com',
+    industryType: 'Petrochemical Plants',
+    riskCategory: 'ENGINEERING',
+    description: 'เนื่องจาก ข้อมูล Tie-in ใต้ดินเดิมไม่ตรงกับ As-built Drawing จึงเสี่ยงต่อ การเจาะแนวท่อเดิมเสียหาย ส่งผลให้ สารเคมีรั่วไหลและต้องหยุดหน่วยผลิต',
+    initialRisk: { impact: ImpactLevel.Severe, likelihood: LikelihoodLevel.Medium }, // 15 Red
+    possibleEffect: [PossibleEffect.Environment, PossibleEffect.Cost, PossibleEffect.HealthSafety],
+    mitigationStrategy: MitigationStrategy.Avoid,
+    actionToControl: 'ใช้เทคโนโลยี 3D Laser Scan และ Ground Penetrating Radar (GPR) สแกนตำแหน่งท่อใต้ดินจริงก่อนเริ่มงานขุดเจาะ',
+    residualRisk: { impact: ImpactLevel.Low, likelihood: LikelihoodLevel.VeryLow }, // 2 Green
+    owner: 'นิพนธ์ ชัยแสง (PM)',
+    raisedDate: '2026-02-15',
+    deadlineDate: '2026-04-15',
+    nextReviewDate: '2026-03-15',
+    status: 'In Progress',
+    comment: 'ผลสแกน GPR ออกมาแล้ว พบแนวท่อเบี่ยง 1.2 เมตร ปรับแบบแนวเดินท่อใหม่แล้ว',
+    updatedAt: new Date().toISOString(),
+    history: []
+  },
+  {
+    id: 'demo-6',
+    riskId: 'R-006',
+    projectNo: 'P26-002',
+    projectName: 'Petrochemical Tank Farm Revamp & Piping',
+    pmName: 'Nipon Chaisaen',
+    email: 'nipon.c@gcmeapp.com',
+    industryType: 'Petrochemical Plants',
+    riskCategory: 'PROCUREMENT',
+    description: 'เนื่องจาก ท่อ Stainless Steel 316L สเปกพิเศษต้องนำเข้าจากยุโรป จึงเสี่ยงต่อ เรือขนส่งล่าช้าจากปัญหาคลองสุเอซ ส่งผลให้ ส่งมอบงาน Piping ไม่ทันกำหนด',
+    initialRisk: { impact: ImpactLevel.High, likelihood: LikelihoodLevel.High }, // 16 Red
+    possibleEffect: [PossibleEffect.Time],
+    mitigationStrategy: MitigationStrategy.Mitigate,
+    actionToControl: 'สั่งซื้อล่วงหน้าทันที (Early Ordering) และเจรจาขอ Stock สำรองจากสต็อกในประเทศบางส่วนมาใช้รองรับงานด่วน',
+    residualRisk: { impact: ImpactLevel.Medium, likelihood: LikelihoodLevel.Medium }, // 9 Orange
+    owner: 'ภานุมาศ ทรงเดช (Procurement)',
+    raisedDate: '2026-01-10',
+    deadlineDate: '2026-05-30',
+    nextReviewDate: '2026-02-28', // OVERDUE for demonstration!
+    status: 'Open',
+    comment: 'ติดตามของเข้าท่าเรือแหลมฉบัง วันที่ 20 มีนาคม',
+    updatedAt: new Date().toISOString(),
+    history: []
+  },
+  {
+    id: 'demo-7',
+    riskId: 'R-007',
+    projectNo: 'P25-089',
+    projectName: 'Data Center Facility & Power Infrastructure',
+    pmName: 'Thawatchai M.',
+    email: 'thawatchai.m@gcmeapp.com',
+    industryType: 'Data Centres',
+    riskCategory: 'COMMISSIONING',
+    description: 'เนื่องจาก การทดสอบ Load Bank ของระบบ UPS และ Generator 2N Redundancy มีความซับซ้อน จึงเสี่ยงต่อ ไม่ผ่านเกณฑ์ Tier III Uptime Institute',
+    initialRisk: { impact: ImpactLevel.High, likelihood: LikelihoodLevel.Medium }, // 12 Orange
+    possibleEffect: [PossibleEffect.Quality, PossibleEffect.Reputation],
+    mitigationStrategy: MitigationStrategy.Mitigate,
+    actionToControl: 'ว่าจ้าง Uptime Accredited Tier Specialist เข้ามาร่วมตรวจสอบขั้นตอน Commissioning Pre-test ตั้งแต่เริ่มติดตั้ง',
+    residualRisk: { impact: ImpactLevel.Low, likelihood: LikelihoodLevel.VeryLow }, // 2 Green
+    owner: 'ธวัชชัย มั่นคง (PM)',
+    raisedDate: '2026-02-05',
+    deadlineDate: '2026-07-20',
+    nextReviewDate: '2026-04-05',
+    status: 'In Progress',
+    comment: 'จัดทำ FAT Checklist ร่วมกับ Specialist แล้ว',
+    updatedAt: new Date().toISOString(),
+    history: []
+  },
+  {
+    id: 'demo-8',
+    riskId: 'R-008',
+    projectNo: 'P25-089',
+    projectName: 'Data Center Facility & Power Infrastructure',
+    pmName: 'Thawatchai M.',
+    email: 'thawatchai.m@gcmeapp.com',
+    industryType: 'Data Centres',
+    riskCategory: 'COMMERCIAL',
+    description: 'เนื่องจาก สัญญา TOR ระบุบทปรับส่งมอบล่าช้า (Liquidated Damages) สูงถึง 0.1% ต่อวัน จึงเสี่ยงต่อ ค่าปรับสะสมเกิน 5% ส่งผลให้ โครงการขาดทุน',
+    initialRisk: { impact: ImpactLevel.Severe, likelihood: LikelihoodLevel.Medium }, // 15 Red
+    possibleEffect: [PossibleEffect.Cost],
+    mitigationStrategy: MitigationStrategy.Avoid,
+    actionToControl: 'จัดทำ Qualification Clause ระบุเงื่อนไขยกเว้นกรณีลูกค้าส่งมอบพื้นที่ช้า และคำนวณ EMV Contingency Buffer 2.5 ล้านบาทสำรองไว้ในราคา',
+    residualRisk: { impact: ImpactLevel.Low, likelihood: LikelihoodLevel.Low }, // 4 Yellow
+    owner: 'ธวัชชัย มั่นคง (PM)',
+    raisedDate: '2026-01-05',
+    deadlineDate: '2026-03-01',
+    finishedDate: '2026-02-28',
+    nextReviewDate: '2026-03-01',
+    status: 'Closed',
+    comment: 'เจรจาเงื่อนไขสัญญากับฝ่ายกฎหมายเรียบร้อยแล้ว',
+    updatedAt: new Date().toISOString(),
+    history: []
+  }
+];

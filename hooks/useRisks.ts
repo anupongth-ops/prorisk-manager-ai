@@ -17,6 +17,8 @@ import {
 import { generateBaselineRiskItems, getIndustryBaselineScores } from '../services/riskBaselineService';
 import { ProjectModifier, PROJECT_MODIFIERS } from '../constants/riskConstants';
 
+import { DEMO_RISKS } from '../constants/demoData';
+
 export function useRisks(
     user: any,
     mustChangePassword: boolean,
@@ -26,11 +28,19 @@ export function useRisks(
     isAdmin?: boolean,
     setUserProfile?: React.Dispatch<React.SetStateAction<any>>
 ) {
-    const [risks, setRisks] = useState<RiskItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const isDemo = typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('demo') === 'true' || localStorage.getItem('demo_mode') === 'true');
+    const [risks, setRisks] = useState<RiskItem[]>(() => isDemo ? DEMO_RISKS : []);
+    const [isLoading, setIsLoading] = useState(!isDemo);
 
     // Subscription Effect
     useEffect(() => {
+        if (isDemo) {
+            setRisks(DEMO_RISKS);
+            setIsLoading(false);
+            setPermissionDenied(false);
+            return;
+        }
+
         if (!user || mustChangePassword) {
             setRisks([]);
             return;

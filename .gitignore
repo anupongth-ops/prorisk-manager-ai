@@ -28,4 +28,6 @@ test-*.xlsx
 *.zip
 .gemini/
 graphify-out/
+~$*
+scratch/slide_previews/
 

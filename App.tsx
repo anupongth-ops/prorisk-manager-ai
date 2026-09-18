@@ -64,22 +64,30 @@ function App() {
     matrixFilter, setMatrixFilter, sortConfig, handleSort, filteredRisks, currentBaselineScores
   } = useFilters(risks, uniqueProjectData);
 
-  const [viewMode, setViewMode] = useState<'dashboard' | 'excel' | 'tor-risk'>('dashboard');
-  const [editingRisk, setEditingRisk] = useState<RiskItem | undefined>(undefined);
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const paramView = (urlParams?.get('view') as 'dashboard' | 'excel' | 'tor-risk') || 'dashboard';
+  const paramModal = urlParams?.get('modal') || '';
+  const paramTheme = urlParams?.get('theme');
+
+  const [viewMode, setViewMode] = useState<'dashboard' | 'excel' | 'tor-risk'>(paramView);
+  const [editingRisk, setEditingRisk] = useState<RiskItem | undefined>(paramModal === 'risk-form' ? risks[0] : undefined);
   const [editingProject, setEditingProject] = useState<{ projectNo: string, projectName: string, pmName: string, email: string, industryType?: string } | undefined>(undefined);
-  const [showForm, setShowForm] = useState(false);
-  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [showForm, setShowForm] = useState(paramModal === 'risk-form');
+  const isProjectStep2 = paramModal === 'project-form-step2';
+  const [showProjectForm, setShowProjectForm] = useState(paramModal === 'project-form' || isProjectStep2);
   const [showSummary, setShowSummary] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [showExport, setShowExport] = useState(false);
+  const [showExport, setShowExport] = useState(paramModal === 'export');
   const [showAdmin, setShowAdmin] = useState(false);
   const [showRiskLibrary, setShowRiskLibrary] = useState(false);
   const [showUserAccount, setShowUserAccount] = useState(false);
   const [viewHistoryRisk, setViewHistoryRisk] = useState<RiskItem | null>(null);
   const [prefilledProject, setPrefilledProject] = useState<{ projectNo: string, projectName: string, pmName: string, email: string, industryType?: string } | null>(null);
-  const [showGuide, setShowGuide] = useState(false);
+  const [showGuide, setShowGuide] = useState(paramModal === 'guide');
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (paramTheme === 'light') return false;
+    if (paramTheme === 'dark') return true;
     const saved = localStorage.getItem('theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
@@ -325,6 +333,7 @@ function App() {
           existingProjects={uniqueProjectData}
           initialData={editingProject}
           isAdmin={isAdmin}
+          initialStep={isProjectStep2 ? 2 : 1}
           onDeleteProject={(projectNo) => handleDeleteProject(projectNo, () => {
             setShowProjectForm(false);
             setEditingProject(undefined);

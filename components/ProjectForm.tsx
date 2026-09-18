@@ -8,6 +8,7 @@ interface ProjectFormProps {
   existingProjects: { projectNo: string; projectName: string; industryType?: string; riskAppetite?: RiskAppetite; reviewFrequency?: ReviewFrequency }[];
   initialData?: { projectNo: string; projectName: string; pmName: string; email: string; industryType?: string; appliedModifiers?: string[]; riskAppetite?: RiskAppetite; reviewFrequency?: ReviewFrequency };
   isAdmin?: boolean;
+  initialStep?: number;
   onDeleteProject?: (projectNo: string) => void;
   onSuccess: (
     project: { projectNo: string; projectName: string; pmName: string; email: string; industryType?: string; appliedModifiers?: string[]; riskAppetite?: RiskAppetite; reviewFrequency?: ReviewFrequency },
@@ -17,17 +18,17 @@ interface ProjectFormProps {
   onCancel: () => void;
 }
 
-export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, initialData, isAdmin, onDeleteProject, onSuccess, onCancel }) => {
-  const [step, setStep] = useState(1);
-  const [projectNo, setProjectNo] = useState(initialData?.projectNo || '');
-  const [projectName, setProjectName] = useState(initialData?.projectName || '');
-  const [pmName, setPmName] = useState(initialData?.pmName || '');
-  const [email, setEmail] = useState(initialData?.email || '');
-  const [industryType, setIndustryType] = useState(initialData?.industryType || '');
+export const ProjectForm: React.FC<ProjectFormProps> = ({ existingProjects, initialData, isAdmin, initialStep = 1, onDeleteProject, onSuccess, onCancel }) => {
+  const [step, setStep] = useState(initialStep);
+  const [projectNo, setProjectNo] = useState(initialData?.projectNo || (initialStep === 2 ? 'PJ-2026-001' : ''));
+  const [projectName, setProjectName] = useState(initialData?.projectName || (initialStep === 2 ? 'Clean Fuel Expansion Project' : ''));
+  const [pmName, setPmName] = useState(initialData?.pmName || (initialStep === 2 ? 'Somchai Prasert' : ''));
+  const [email, setEmail] = useState(initialData?.email || (initialStep === 2 ? 'somchai.p@pttgcgroup.com' : ''));
+  const [industryType, setIndustryType] = useState(initialData?.industryType || (initialStep === 2 ? 'Petrochemical Plants' : ''));
   const [riskAppetite, setRiskAppetite] = useState<RiskAppetite>(initialData?.riskAppetite || DEFAULT_RISK_APPETITE);
   const [reviewFrequency, setReviewFrequency] = useState<ReviewFrequency>(initialData?.reviewFrequency || DEFAULT_REVIEW_FREQUENCY);
   const [copySourceProjectNo, setCopySourceProjectNo] = useState('');
-  const [selectedModifiers, setSelectedModifiers] = useState<string[]>(initialData?.appliedModifiers || []);
+  const [selectedModifiers, setSelectedModifiers] = useState<string[]>(initialData?.appliedModifiers || (initialStep === 2 ? ['Brownfield / Live Plant', 'Fast-track project', 'Proven Technology', 'Tight Milestone / COD', 'Long Lead Equipment'] : []));
 
   const isEditing = !!initialData;
 

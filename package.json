@@ -8,7 +8,8 @@
     "dev:all": "concurrently \"node export-server.cjs\" \"vite\" --names \"EXPORT,VITE\" --prefix-colors \"green,blue\"",
     "export-server": "node export-server.cjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:pptx": "node generate-presentation.cjs"
   },
   "dependencies": {
     "firebase": "^12.6.0",
@@ -25,6 +26,7 @@
     "@vitejs/plugin-react": "^5.0.0",
     "concurrently": "^10.0.3",
     "exceljs": "^4.4.0",
+    "pptxgenjs": "^4.0.1",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

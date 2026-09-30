@@ -74,7 +74,7 @@ async function generateExcel(risks, projectNo) {
 
   // Create a new workbook that will contain only the exported worksheets
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'E-PO-PM Risk Manager';
+  wb.creator = 'Smart Risk Management (E-PO-PM)';
   wb.created = new Date();
 
   // Get unique projects

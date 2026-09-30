@@ -182,8 +182,8 @@ export function Navbar({
                     </div>
                     <div className="leading-none">
                         <h1 className="text-sm font-bold text-gray-900 dark:text-slate-100 tracking-tight">
-                            <span className="sm:hidden">Risk Mgr</span>
-                            <span className="hidden sm:inline">Risk Manager E-PO-PM</span>
+                            <span className="sm:hidden">Smart Risk</span>
+                            <span className="hidden sm:inline">Smart Risk Management</span>
                         </h1>
                         <span className="hidden lg:inline text-[10px] text-blue-500 dark:text-blue-400 font-semibold tracking-wide">
                             AI Powered

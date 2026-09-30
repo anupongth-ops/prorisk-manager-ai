@@ -1,5 +1,5 @@
 /**
- * ProRisk Manager AI - Relational Database Migration & Backup Tool (CLI)
+ * Smart Risk Management - Relational Database Migration & Backup Tool (CLI)
  * 
  * Extracts collections from Firebase Firestore (users, baseline_risks, risks, tor_projects)
  * and generates clean SQL Dump files for PostgreSQL and MySQL.
@@ -35,7 +35,7 @@ function escapeSQL(val, dialect = 'postgresql') {
 
 async function runAdminMigration() {
   console.log("==================================================");
-  console.log("  PRORISK MANAGER AI - DATABASE MIGRATION UTILITY ");
+  console.log("  SMART RISK MANAGEMENT - DATABASE MIGRATION UTILITY ");
   console.log("==================================================");
 
   if (!fs.existsSync(SERVICE_ACCOUNT_FILE)) {
@@ -77,7 +77,7 @@ async function runAdminMigration() {
 
   // Build PostgreSQL Script
   const pgLines = [];
-  pgLines.push(`-- ProRisk Manager AI - PostgreSQL Database Backup Dump`);
+  pgLines.push(`-- Smart Risk Management - PostgreSQL Database Backup Dump`);
   pgLines.push(`-- Generated At: ${timestamp}`);
   pgLines.push(`BEGIN;\n`);
 

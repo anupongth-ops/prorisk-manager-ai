@@ -213,8 +213,8 @@ export const LoginPage: React.FC = () => {
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
             <AlertOctagon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-wide uppercase">Risk Manager E-PO-PM</h1>
-          <p className="text-blue-100 dark:text-blue-200 text-sm mt-2 font-medium">by GCME (E-PO-PM )</p>
+          <h1 className="text-2xl font-bold text-white tracking-wide uppercase">Smart Risk Management</h1>
+          <p className="text-blue-100 dark:text-blue-200 text-sm mt-2 font-medium">by GCME (E-PO-PM)</p>
         </div>
 
         {/* Tab Switcher */}

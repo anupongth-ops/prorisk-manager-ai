@@ -115,7 +115,7 @@ style: |
 <div style="text-align: center; margin-top: 45px;">
   <span class="badge badge-blue" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">USER QUICK START GUIDE • 2026 EDITION</span>
   <h1 style="font-size: 2.2rem; margin-top: 15px; color: #0f2c59; font-weight: 800;">
-    ProRisk Manager AI
+    Smart Risk Management
   </h1>
   <p style="font-size: 1.05rem; color: #475569; max-width: 800px; margin: 10px auto 0 auto; line-height: 1.4;">
     คู่มือแนะนำการใช้งานระบบบริหารความเสี่ยงโครงการ EPC อัจฉริยะ<br>

@@ -103,7 +103,7 @@ async function buildPresentation() {
     });
 
     // Footer
-    slide.addText('ProRisk Manager AI • User Quick Start Guide', {
+    slide.addText('Smart Risk Management • User Quick Start Guide', {
       x: 0.8, y: 7.02, w: 6.0, h: 0.25,
       fontSize: 8, fontFace: THEME.fonts.body, color: '94A3B8', valign: 'middle'
     });
@@ -219,7 +219,7 @@ async function buildPresentation() {
     });
 
     // Main Title
-    slide.addText('ProRisk Manager AI', {
+    slide.addText('Smart Risk Management', {
       x: 0.8, y: 1.30, w: 11.733, h: 0.95,
       fontSize: 44, fontFace: THEME.fonts.title, bold: true,
       color: 'FFFFFF', valign: 'middle'

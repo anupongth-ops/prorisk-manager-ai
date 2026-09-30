@@ -1,5 +1,5 @@
 /**
- * ProRisk Manager AI - SQL Backup & Database Export Service
+ * Smart Risk Management - SQL Backup & Database Export Service
  * Generates ready-to-execute SQL Dump files (PostgreSQL, MySQL, SQL Server)
  * from live Firestore collections (users, risks, baseline_risks, tor_projects).
  */
@@ -124,7 +124,7 @@ export function generatePostgreSqlDump(data: FullBackupData): string {
     const lines: string[] = [];
 
     lines.push(`-- ==============================================================================`);
-    lines.push(`-- ProRisk Manager AI - Complete PostgreSQL Database Backup Dump`);
+    lines.push(`-- Smart Risk Management - Complete PostgreSQL Database Backup Dump`);
     lines.push(`-- Generated At: ${data.timestamp}`);
     lines.push(`-- Statistics: ${data.stats.usersCount} users, ${data.stats.risksCount} risks, ${data.stats.baselineCount} baseline risks, ${data.stats.torCount} TOR projects`);
     lines.push(`-- ==============================================================================\n`);
@@ -359,7 +359,7 @@ export function generateMySqlDump(data: FullBackupData): string {
     const lines: string[] = [];
 
     lines.push(`-- ==============================================================================`);
-    lines.push(`-- ProRisk Manager AI - Complete MySQL / MariaDB Database Backup Dump`);
+    lines.push(`-- Smart Risk Management - Complete MySQL / MariaDB Database Backup Dump`);
     lines.push(`-- Generated At: ${data.timestamp}`);
     lines.push(`-- Statistics: ${data.stats.usersCount} users, ${data.stats.risksCount} risks, ${data.stats.baselineCount} baseline risks, ${data.stats.torCount} TOR projects`);
     lines.push(`-- ==============================================================================\n`);

@@ -83,7 +83,7 @@ export const DEMO_RISKS: RiskItem[] = [
     industryType: 'Power Plants',
     riskCategory: 'SHE',
     description: 'เนื่องจาก มีการยกติดตั้งอุปกรณ์หนัก (Heavy Lift) บริเวณใกล้สายส่งไฟฟ้าแรงสูง จึงเสี่ยงต่อ อุบัติเหตุสัมผัสไฟฟ้า ส่งผลให้ เกิดการบาดเจ็บรุนแรงและงานหยุดชะงัก',
-    initialRisk: { impact: ImpactLevel.Severe, likelihood: LikelihoodLevel.Low }, // 10 Orange
+    initialRisk: { impact: ImpactLevel.VeryHigh, likelihood: LikelihoodLevel.Low }, // 10 Orange
     possibleEffect: [PossibleEffect.HealthSafety, PossibleEffect.Reputation],
     mitigationStrategy: MitigationStrategy.Mitigate,
     actionToControl: 'จัดทำ Rigging Plan และ Lifting Permit ร่วมกับเจ้าหน้าที่ความปลอดภัย ติดตั้งระบบตัดกระแสไฟฟ้าชั่วคราวและกั้นแนวเขตหวงห้าม 100%',
@@ -108,7 +108,7 @@ export const DEMO_RISKS: RiskItem[] = [
     industryType: 'Petrochemical Plants',
     riskCategory: 'ENGINEERING',
     description: 'เนื่องจาก ข้อมูล Tie-in ใต้ดินเดิมไม่ตรงกับ As-built Drawing จึงเสี่ยงต่อ การเจาะแนวท่อเดิมเสียหาย ส่งผลให้ สารเคมีรั่วไหลและต้องหยุดหน่วยผลิต',
-    initialRisk: { impact: ImpactLevel.Severe, likelihood: LikelihoodLevel.Medium }, // 15 Red
+    initialRisk: { impact: ImpactLevel.VeryHigh, likelihood: LikelihoodLevel.Medium }, // 15 Red
     possibleEffect: [PossibleEffect.Environment, PossibleEffect.Cost, PossibleEffect.HealthSafety],
     mitigationStrategy: MitigationStrategy.Avoid,
     actionToControl: 'ใช้เทคโนโลยี 3D Laser Scan และ Ground Penetrating Radar (GPR) สแกนตำแหน่งท่อใต้ดินจริงก่อนเริ่มงานขุดเจาะ',
@@ -180,7 +180,7 @@ export const DEMO_RISKS: RiskItem[] = [
     industryType: 'Data Centres',
     riskCategory: 'COMMERCIAL',
     description: 'เนื่องจาก สัญญา TOR ระบุบทปรับส่งมอบล่าช้า (Liquidated Damages) สูงถึง 0.1% ต่อวัน จึงเสี่ยงต่อ ค่าปรับสะสมเกิน 5% ส่งผลให้ โครงการขาดทุน',
-    initialRisk: { impact: ImpactLevel.Severe, likelihood: LikelihoodLevel.Medium }, // 15 Red
+    initialRisk: { impact: ImpactLevel.VeryHigh, likelihood: LikelihoodLevel.Medium }, // 15 Red
     possibleEffect: [PossibleEffect.Cost],
     mitigationStrategy: MitigationStrategy.Avoid,
     actionToControl: 'จัดทำ Qualification Clause ระบุเงื่อนไขยกเว้นกรณีลูกค้าส่งมอบพื้นที่ช้า และคำนวณ EMV Contingency Buffer 2.5 ล้านบาทสำรองไว้ในราคา',

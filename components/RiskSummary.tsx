@@ -209,7 +209,7 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ risks, onClose, filter
 
         {/* Footer */}
         <div className="p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-200 dark:border-slate-800 text-center text-xs text-gray-500 dark:text-slate-500 transition-colors">
-          Generated automatically by ProRisk Manager AI
+          Generated automatically by Smart Risk Management
         </div>
       </div>
     </div>

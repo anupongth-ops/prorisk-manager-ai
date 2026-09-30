@@ -1,5 +1,5 @@
 -- =========================================================================
--- PRORISK MANAGER AI - MICROSOFT SQL SERVER (T-SQL) DATABASE SETUP SCHEMA
+-- SMART RISK MANAGEMENT - MICROSOFT SQL SERVER (T-SQL) DATABASE SETUP SCHEMA
 -- Target Engine: Microsoft SQL Server 2016 or newer (MS SQL Server / Azure SQL)
 -- Supported Language: Unicode Thai & English (using NVARCHAR columns)
 -- =========================================================================

@@ -1,4 +1,4 @@
-# ProRisk Manager AI - Developer Blueprint
+# Smart Risk Management - Developer Blueprint
 
 **Version:** 0.2.20260717
 **Date:** 2026-07-17
@@ -7,7 +7,7 @@
 
 ## 1. Project Overview
 
-**ProRisk Manager AI** is a React-based web application designed for project risk management. It enables Project Managers (PMs) and teams to identify, assess, and mitigate risks across various industries (Power Plants, Petrochemical, etc.).
+**Smart Risk Management** (E-PO-PM) is a React-based web application designed for project risk management. It enables Project Managers (PMs) and teams to identify, assess, and mitigate risks across various industries (Power Plants, Petrochemical, etc.).
 
 **Key Capabilities:**
 -   **Risk Register Management:** CRUD operations for risk items.

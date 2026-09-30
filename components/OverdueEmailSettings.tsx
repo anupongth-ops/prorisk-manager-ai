@@ -173,7 +173,7 @@ export const OverdueEmailSettings: React.FC<OverdueEmailSettingsProps> = ({
     const lines: string[] = [
       `เรียน คุณ${group.pmName} (Project Manager),`,
       ``,
-      `ระบบบริหารความเสี่ยง Risk Manager E-PO-PM ตรวจพบรายการความเสี่ยงที่เกินกำหนด (Overdue) ในโครงการของคุณ ดังนี้:`,
+      `ระบบบริหารความเสี่ยง Smart Risk Management ตรวจพบรายการความเสี่ยงที่เกินกำหนด (Overdue) ในโครงการของคุณ ดังนี้:`,
       ``,
       `📌 โครงการ: [${group.projectNo}] ${group.projectName}`,
       `จำนวนรายการที่เกินกำหนด: ${group.risks.length} รายการ`,
@@ -200,7 +200,7 @@ export const OverdueEmailSettings: React.FC<OverdueEmailSettingsProps> = ({
       `${window.location.origin}${window.location.pathname}`,
       ``,
       `ขอแสดงความนับถือ,`,
-      `ระบบบริหารความเสี่ยงโครงการ (Risk Manager AI System)`
+      `ระบบบริหารความเสี่ยงโครงการ (Smart Risk Management)`
     );
 
     return lines.join('\n');

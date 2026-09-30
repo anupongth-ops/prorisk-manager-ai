@@ -18,7 +18,7 @@ import { useRisks } from './hooks/useRisks';
 import { useFilters } from './hooks/useFilters';
 
 // UI Components
-import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
 import { DashboardStats } from './components/DashboardStats';
 import { DashboardControls } from './components/DashboardControls';
 import { RiskTable } from './components/RiskTable';
@@ -104,6 +104,15 @@ function App() {
     }
   }, [isDarkMode]);
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    const saved = localStorage.getItem('prorisk_sidebar_collapsed');
+    return saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('prorisk_sidebar_collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
   // Auth Guards
   if (authLoading || checkingProfile) {
     return (
@@ -128,8 +137,8 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col transition-colors duration-300">
-      <Navbar
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col lg:flex-row transition-colors duration-300">
+      <Sidebar
         user={user}
         userProfile={userProfile}
         isAdmin={isAdmin}
@@ -149,9 +158,12 @@ function App() {
         setShowUserAccount={setShowUserAccount}
         handleLogout={handleLogout}
         setShowGuide={setShowGuide}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
       />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         {permissionDenied ? (
           <div className="space-y-6">
             <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
@@ -293,22 +305,23 @@ function App() {
             />
           </>
         )}
-      </main>
+        </main>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 mt-auto transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-gray-700 dark:text-slate-300">Risk Manager E-PO-PM</span>
-            <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
-              v0.2.20260717
-            </span>
+        {/* Footer */}
+        <footer className="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 mt-auto transition-colors">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-700 dark:text-slate-300">Smart Risk Management</span>
+              <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                v0.2.20260717
+              </span>
+            </div>
+            <div className="text-gray-500 dark:text-slate-400">
+              Design by <span className="font-semibold text-gray-800 dark:text-slate-200">E-PO-PM</span>
+            </div>
           </div>
-          <div className="text-gray-500 dark:text-slate-400">
-            Design by <span className="font-semibold text-gray-800 dark:text-slate-200">E-PO-PM</span>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
 
       {/* Modals */}
       {showForm && (

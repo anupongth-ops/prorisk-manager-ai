@@ -833,7 +833,7 @@ const GlossaryTab: React.FC = () => (
           { label: 'เอกสารหลัก', value: 'EPM-03-014 Project Risk Management Rev F3 (01-Feb-26)' },
           { label: 'มาตรฐานสากล', value: 'ISO 31000:2018 Risk Management — Guidelines' },
           { label: 'แบบฟอร์ม', value: 'EPM-03-014AT1 – Typical Project Risk Register.xlsx' },
-          { label: 'ระบบ', value: 'Risk Manager E-PO-PM v0.2 (2026-07-17)' },
+          { label: 'ระบบ', value: 'Smart Risk Management v0.2 (2026-07-17)' },
         ].map(item => (
           <div key={item.label} className="flex gap-2">
             <span className="text-slate-400 flex-shrink-0">{item.label}:</span>

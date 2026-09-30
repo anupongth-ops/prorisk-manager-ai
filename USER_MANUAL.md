@@ -1,8 +1,8 @@
-# คู่มือการใช้งาน ProRisk Manager E-PO-PM
+# คู่มือการใช้งาน Smart Risk Management
 
 ## 📖 ภาพรวม
 
-**ProRisk Manager E-PO-PM** เป็นระบบบริหารความเสี่ยงสำหรับโครงการ EPC (Engineering, Procurement, Construction) พัฒนาด้วย React และ Firebase พร้อมระบบ AI สำหรับแนะนำกลยุทธ์การจัดการความเสี่ยง
+**Smart Risk Management** (E-PO-PM) เป็นระบบบริหารความเสี่ยงสำหรับโครงการ EPC (Engineering, Procurement, Construction) พัฒนาด้วย React และ Firebase พร้อมระบบ AI สำหรับแนะนำกลยุทธ์การจัดการความเสี่ยง
 
 ---
 

@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Risk Management - Video Training Player (Complete Series EP 01 - 09)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --panel-bg: #0f172a;
+      --panel-border: #1e293b;
+      --accent-blue: #2563eb;
+      --accent-blue-hover: #1d4ed8;
+      --accent-purple: #8b5cf6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Header Bar */
+    header {
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--panel-border);
+      backdrop-filter: blur(12px);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #2563eb, #8b5cf6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-tag {
+      background: rgba(37, 99, 235, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .part-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .mode-switch-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 3px;
+      border-radius: 8px;
+      margin-left: 12px;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: #10b981;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    }
+
+    .mode-btn.live-active {
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .ep-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ep-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .ep-btn.active {
+      background: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      display: flex;
+      flex: 1;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .video-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 16:9 Video Canvas Container */
+    .video-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #020617;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Simulated Screen Layers */
+    .screen-stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .scene-view {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      display: flex;
+      flex-direction: column;
+      background: #090d16;
+    }
+
+    .scene-view.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Callout Banner (Top of Video) */
+    .callout-banner {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      padding: 8px 16px;
+      border-radius: 10px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      animation: slideDown 0.4s ease;
+    }
+
+    .callout-pill {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .callout-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    /* Animated Cursor */
+    .virtual-cursor {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      z-index: 30;
+      pointer-events: none;
+      transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform: translate(-100px, -100px);
+    }
+
+    .cursor-pointer-icon {
+      width: 20px;
+      height: 20px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+    }
+
+    .cursor-glow {
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      width: 44px;
+      height: 44px;
+      background: rgba(245, 158, 11, 0.35);
+      border: 2px solid rgba(245, 158, 11, 0.8);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: pulseGlow 1.5s infinite;
+    }
+
+    .click-ripple {
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      width: 36px;
+      height: 36px;
+      border: 2px solid #38bdf8;
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(0.5);
+    }
+
+    .click-ripple.clicked {
+      animation: rippleAnim 0.5s ease-out;
+    }
+
+    /* Subtitles Container (Bottom of Video) */
+    .subtitles-container {
+      position: absolute;
+      bottom: 24px;
+      left: 5%;
+      right: 5%;
+      z-index: 25;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .subtitles-box {
+      display: inline-block;
+      max-width: 90%;
+      background: rgba(3, 7, 18, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.5;
+      letter-spacing: 0.2px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      transition: all 0.25s ease;
+    }
+
+    .subtitles-box .sub-highlight {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    /* Narrator Status Badge */
+    .narrator-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 20px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      margin-bottom: 6px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+      transition: all 0.25s ease;
+    }
+
+    .narrator-badge.finished {
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #34d399;
+      background: rgba(6, 78, 59, 0.85);
+    }
+
+    .audio-wave {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      height: 10px;
+    }
+
+    .audio-wave span {
+      display: inline-block;
+      width: 2px;
+      height: 10px;
+      background: currentColor;
+      border-radius: 1px;
+      animation: audioWaveAnim 0.7s ease-in-out infinite alternate;
+    }
+
+    .audio-wave span:nth-child(2) { animation-delay: 0.18s; height: 6px; }
+    .audio-wave span:nth-child(3) { animation-delay: 0.36s; height: 8px; }
+
+    @keyframes audioWaveAnim {
+      0% { transform: scaleY(0.3); }
+      100% { transform: scaleY(1); }
+    }
+
+    /* Media Player Controls Bar */
+    .player-controls {
+      background: rgba(15, 23, 42, 0.98);
+      border-top: 1px solid var(--panel-border);
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 25;
+    }
+
+    /* Timeline Scrubber */
+    .timeline-bar {
+      position: relative;
+      height: 6px;
+      background: #334155;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: height 0.15s;
+    }
+
+    .timeline-bar:hover {
+      height: 9px;
+    }
+
+    .timeline-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2563eb, #38bdf8);
+      border-radius: 3px;
+      pointer-events: none;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      top: -3px;
+      width: 2px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+    }
+
+    /* Control Buttons Row */
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .left-controls, .right-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-ctrl {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-ctrl:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-ctrl.primary {
+      background: var(--accent-blue);
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-ctrl.primary:hover {
+      background: var(--accent-blue-hover);
+      transform: scale(1.05);
+    }
+
+    .time-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: 6px;
+    }
+
+    .speed-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      background: #1e293b;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    /* Side Script & Notes Column */
+    .notes-column {
+      width: 440px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .notes-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .notes-title {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notes-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .scene-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .scene-card:hover {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .scene-card.active {
+      background: rgba(37, 99, 235, 0.15);
+      border-color: var(--accent-blue);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+
+    .scene-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .scene-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    .scene-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .scene-snippet {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* UI Simulation Components */
+    .mock-browser {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #0f172a;
+    }
+
+    .mock-browser-top {
+      height: 38px;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .mock-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mock-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .mock-url-bar {
+      flex: 1;
+      max-width: 500px;
+      height: 24px;
+      background: #0f172a;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+
+    .mock-url-bar .lock-icon {
+      color: #10b981;
+      margin-right: 6px;
+    }
+
+    .mock-app-navbar {
+      height: 52px;
+      background: #090e1a;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .mock-app-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      color: #f8fafc;
+    }
+
+    .mock-app-nav-items {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .mock-nav-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .mock-nav-btn.primary {
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .mock-content-canvas {
+      flex: 1;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Cards & Grids in Mockup */
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .pillar-card {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .pillar-card.highlight {
+      border-color: #38bdf8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+      transform: translateY(-4px);
+    }
+
+    .pillar-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .pillar-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .pillar-desc {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* Step Setup Modal Mockup */
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .setup-modal {
+      width: 620px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .setup-modal-header {
+      padding: 16px 24px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .setup-modal-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .form-input {
+      background: #020617;
+      border: 1px solid #334155;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: #f8fafc;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .form-input.focus-highlight {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Keyframes */
+    @keyframes slideDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.4); opacity: 0.3; }
+    }
+
+    @keyframes rippleAnim {
+      0% { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Spotlight helper */
+    .spotlight-ring {
+      position: absolute;
+      border: 2px solid #38bdf8;
+      box-shadow: 0 0 20px #38bdf8, inset 0 0 10px rgba(56, 189, 248, 0.5);
+      border-radius: 8px;
+      pointer-events: none;
+      transition: all 0.4s ease;
+      z-index: 15;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">SR</div>
+      <div>
+        <div class="brand-title">
+          Smart Risk Management
+          <span class="badge-tag">Complete Series (EP 01 - 09)</span>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted);">
+          Interactive Training Player • GCME E-PO-PM Standard
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px;">
+      <!-- Episode Switcher -->
+      <div class="part-selector">
+        <div style="display:flex; align-items:center; gap:3px; padding-right:5px; border-right:1px solid #334155;">
+          <span style="font-size:9.5px; font-weight:700; color:#60a5fa; padding:2px 5px; background:rgba(37,99,235,0.15); border-radius:4px; letter-spacing:0.5px;">P1</span>
+          <button class="ep-btn active" id="ep1Btn" onclick="switchEpisode(1)" title="EP 01: ภาพรวม & 4 เสาหลัก">EP 01</button>
+          <button class="ep-btn" id="ep2Btn" onclick="switchEpisode(2)" title="EP 02: Login & สิทธิ์">EP 02</button>
+          <button class="ep-btn" id="ep3Btn" onclick="switchEpisode(3)" title="EP 03: ตั้งค่า & ถ่วงน้ำหนัก">EP 03</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:3px; padding:0 5px; border-right:1px solid #334155;">
+          <span style="font-size:9.5px; font-weight:700; color:#c084fc; padding:2px 5px; background:rgba(192,132,252,0.15); border-radius:4px; letter-spacing:0.5px;">P2</span>
+          <button class="ep-btn" id="ep4Btn" onclick="switchEpisode(4)" title="EP 04: การประเมินความเสี่ยงและเมทริกซ์ 5x5 Heatmap">EP 04: 5x5</button>
+          <button class="ep-btn" id="ep5Btn" onclick="switchEpisode(5)" title="EP 05: ตัวช่วย AI อัจฉริยะ (AI Risk Copilot)">EP 05: AI</button>
+          <button class="ep-btn" id="ep6Btn" onclick="switchEpisode(6)" title="EP 06: โหมดตารางด่วน Excel Grid View">EP 06: Grid</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:3px; padding-left:2px;">
+          <span style="font-size:9.5px; font-weight:700; color:#34d399; padding:2px 5px; background:rgba(52,211,153,0.15); border-radius:4px; letter-spacing:0.5px;">P3</span>
+          <button class="ep-btn" id="ep7Btn" onclick="switchEpisode(7)" title="EP 07: โมดูลวิเคราะห์ TOR และคำนวณงบสำรอง EMV">EP 07: TOR</button>
+          <button class="ep-btn" id="ep8Btn" onclick="switchEpisode(8)" title="EP 08: การติดตามรอบทบทวนและการส่งออกรายงานทางการ">EP 08: Export</button>
+          <button class="ep-btn" id="ep9Btn" onclick="switchEpisode(9)" title="EP 09: กิจวัตร 5 นาทีประจำสัปดาห์และช่องทางสนับสนุน">EP 09: Routine</button>
+        </div>
+      </div>
+
+      <!-- Mode Switcher: Simulation vs Live Web -->
+      <div class="mode-switch-group">
+        <button class="mode-btn active" id="simModeBtn" onclick="switchMode('sim')" title="โหมดจำลองหน้าจออัตโนมัติ">
+          <span>💻</span> หน้าจำลอง (Simulation)
+        </button>
+        <button class="mode-btn" id="liveModeBtn" onclick="switchMode('live')" title="โหมดเชื่อมต่อเว็บจริง www.gcmeapp.com/epopm">
+          <span>🌐</span> เว็บจริง (Live Web)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <div class="workspace">
+    
+    <!-- Left: Video Viewport Column -->
+    <div class="video-column">
+      
+      <div class="video-viewport" id="videoViewport">
+        
+        <!-- Callout Banner -->
+        <div class="callout-banner" id="calloutBanner">
+          <span class="callout-pill" id="calloutPill">ISO 31000:2018</span>
+          <span class="callout-text" id="calloutText">คู่มือแนะนำการใช้งานระบบบริหารความเสี่ยงโครงการ EPC อัจฉริยะ</span>
+        </div>
+
+        <!-- Live Web Helper Banner (Visible in Live Mode) -->
+        <div id="liveHelperBanner" style="display:none; position:absolute; top:65px; left:20px; right:20px; z-index:22; background:rgba(15,23,42,0.95); border:1px solid #38bdf8; border-radius:10px; padding:10px 16px; backdrop-filter:blur(8px); box-shadow:0 8px 24px rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:space-between; animation:slideDown 0.3s ease;">
+          <div style="display:flex; align-items:center; gap:10px; font-size:12px;">
+            <span style="font-size:16px;">🔑</span>
+            <div>
+              <span style="font-weight:700; color:#38bdf8;">โหมดเว็บจริง (Live Web):</span>
+              <span id="liveHelperText" style="color:#e2e8f0; margin-left:6px;">ท่านสามารถคลิกและล็อกอินในหน้าเว็บด้านล่างได้โดยตรง</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="mock-nav-btn" onclick="togglePauseForLogin()" id="pauseLoginBtn" style="background:#f59e0b; color:#0f172a; font-weight:700; font-size:11px; padding:4px 10px;">
+              ⏸️ หยุดวิดีโอเพื่อล็อกอิน
+            </button>
+            <a href="https://www.gcmeapp.com/epopm/" target="_blank" class="mock-nav-btn" style="background:#1e293b; color:#38bdf8; font-size:11px; padding:4px 10px; text-decoration:none;" title="เปิดในหน้าต่างใหม่หากต้องการจอใหญ่">
+              ↗️ เปิดแท็บใหม่
+            </a>
+          </div>
+        </div>
+
+        <!-- Virtual Animated Mouse Cursor -->
+        <div class="virtual-cursor" id="virtualCursor">
+          <div class="cursor-glow"></div>
+          <svg class="cursor-pointer-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M5.5 3.5L18.5 11L11.5 13L8 19.5L5.5 3.5Z" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+          <div class="click-ripple" id="clickRipple"></div>
+        </div>
+
+        <!-- Spotlight Element -->
+        <div class="spotlight-ring" id="spotlightRing" style="display: none;"></div>
+
+        <!-- Canvas Stage for Scenes -->
+        <div class="screen-stage" id="screenStage">
+          <!-- Simulation Container -->
+          <div id="simStage" style="width:100%; height:100%; position:relative;"></div>
+          
+          <!-- Live Web Container (iframe) -->
+          <div id="liveStage" style="display:none; width:100%; height:100%; position:relative; flex-direction:column; background:#020617;">
+            <div style="height:34px; background:#1e293b; border-bottom:1px solid #334155; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:11px; font-family:'JetBrains Mono', monospace; color:#94a3b8;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="color:#10b981;">● LIVE</span>
+                <span>https://www.gcmeapp.com/epopm/</span>
+              </div>
+              <button onclick="reloadLiveFrame()" style="background:transparent; border:none; color:#38bdf8; cursor:pointer; font-size:11px; font-family:inherit;">
+                🔄 รีโหลดเว็บ
+              </button>
+            </div>
+            <iframe id="liveFrame" src="about:blank" style="flex:1; width:100%; height:calc(100% - 34px); border:none; background:#0f172a;" allow="clipboard-read; clipboard-write; popups; popups-to-escape-sandbox"></iframe>
+          </div>
+        </div>
+
+        <!-- Subtitles Overlay -->
+        <div class="subtitles-container">
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <div class="narrator-badge" id="narratorBadge" style="display:none;">
+              <div class="audio-wave" id="narratorWave">
+                <span></span><span></span><span></span>
+              </div>
+              <span id="narratorText">เสียงบรรยายภาษาไทย</span>
+            </div>
+            <div class="subtitles-box" id="subtitlesBox">
+              ยินดีต้อนรับสู่ระบบ Smart Risk Management
+            </div>
+          </div>
+        </div>
+
+        <!-- Player Controls Bar -->
+        <div class="player-controls">
+          <!-- Timeline Scrubber -->
+          <div class="timeline-bar" id="timelineBar" onclick="scrubTimeline(event)">
+            <div class="timeline-fill" id="timelineFill"></div>
+            <!-- Marker ticks will be inserted dynamically -->
+          </div>
+
+          <div class="control-row">
+            <div class="left-controls">
+              <!-- Prev Scene -->
+              <button class="btn-ctrl" onclick="prevScene()" title="ฉากก่อนหน้า (ArrowLeft)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+              </button>
+              
+              <!-- Play / Pause -->
+              <button class="btn-ctrl primary" id="playBtn" onclick="togglePlay()" title="เล่น / หยุดชั่วคราว (Space)">
+                <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+
+              <!-- Next Scene -->
+              <button class="btn-ctrl" onclick="nextScene()" title="ฉากถัดไป (ArrowRight)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              </button>
+
+              <div class="time-display" id="timeDisplay">00:00 / 03:00</div>
+            </div>
+
+            <div class="right-controls">
+              <!-- Speech Voice Toggle -->
+              <button class="btn-ctrl" id="ttsBtn" onclick="toggleTTS()" title="เปิด/ปิดเสียงพากย์สังเคราะห์ Thai TTS">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              </button>
+
+              <!-- Playback Speed -->
+              <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()">1.0x</button>
+
+              <!-- Fullscreen -->
+              <button class="btn-ctrl" onclick="toggleFullscreen()" title="โหมดเต็มหน้าจอ (F)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Episode Quick Info Footer -->
+      <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); padding: 0 4px;">
+        <span>กด <b>Spacebar</b> เพื่อเล่น/หยุด • กดลูกศร <b>Left/Right</b> เพื่อเปลี่ยนฉาก</span>
+        <span>Corporate Project Management Division (E-PO-PM)</span>
+      </div>
+
+    </div>
+
+    <!-- Right: Script & Storyboard Drawer -->
+    <div class="notes-column">
+      <div class="notes-header">
+        <div class="notes-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color: #60a5fa;"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+          <span id="drawerTitle">สคริปต์บทพากย์ EP 01</span>
+        </div>
+        <span class="badge-tag" id="sceneCountTag">5 ฉาก</span>
+      </div>
+
+      <div class="notes-body" id="scriptList">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Helper to render authentic real screenshot with responsive spotlight rings
+    function renderRealScene(bgImage, spotlights = [], customOverlay = '') {
+      return `
+        <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#020617; overflow:hidden;">
+          <img src="${bgImage}" style="width:100%; height:100%; object-fit:contain; pointer-events:none; user-select:none;" alt="Real Screen UI" />
+          ${spotlights.map(s => `
+            <div style="position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; height:${s.h}%; border:3px solid ${s.color || '#38bdf8'}; border-radius:${s.radius || '8px'}; box-shadow:0 0 25px ${s.color || '#38bdf8'}, inset 0 0 15px ${s.color || 'rgba(56,189,248,0.4)'}; pointer-events:none; animation:pulseGlow 2s infinite;">
+              ${s.label ? `<span style="position:absolute; top:-26px; left:0; background:${s.color || '#2563eb'}; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.5);">${s.label}</span>` : ''}
+            </div>
+          `).join('')}
+          ${customOverlay}
+        </div>
+      `;
+    }
+
+    // ==========================================
+    // EPISODE & SCENE DATA DEFINITIONS (PART 1)
+    // ==========================================
+    const EPISODES = {
+      1: {
+        title: "EP 01: ทำความรู้จัก Smart Risk Management & 4 เสาหลัก",
+        slideRef: "Slide 1 – 2",
+        totalTime: 180,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:25",
+            title: "ยินดีต้อนรับสู่ระบบ Smart Risk Management",
+            pill: "ISO 31000:2018 & COSO ERM",
+            callout: "คู่มือแนะนำการใช้งานระบบบริหารความเสี่ยงโครงการ EPC อัจฉริยะ",
+            subtitles: "สวัสดีครับ ขอต้อนรับทุกท่านเข้าสู่คู่มือการใช้งาน <span class='sub-highlight'>Smart Risk Management</span> ระบบบริหารความเสี่ยงโครงการ EPC อัจฉริยะที่พัฒนาขึ้นเพื่อตอบโจทย์วิศวกรและผู้จัดการโครงการยุคใหม่",
+            duration: 10,
+            cursorTarget: { x: 50, y: 30, click: false },
+            render: () => renderRealScene('./assets/slide_1.png', [
+              { x: 5.5, y: 10, w: 26, h: 5.5, color: '#38bdf8', label: 'USER QUICK START GUIDE' },
+              { x: 5.5, y: 46, w: 27, h: 42, color: '#3b82f6', label: 'Cloud Web App' },
+              { x: 36, y: 46, w: 27, h: 42, color: '#8b5cf6', label: 'AI Risk Copilot' },
+              { x: 66, y: 46, w: 27, h: 42, color: '#10b981', label: 'Excel & SQL Ready' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:25 - 1:00",
+            title: "เข้าใช้งานบน Cloud ทุกที่ทุกเวลา",
+            pill: "Cloud Web App",
+            callout: "URL: www.gcmeapp.com/epopm • ใช้งานได้บน PC, Tablet และ Mobile",
+            subtitles: "จุดเด่นแรกของระบบคือความสะดวกสบายครับ คุณสามารถเข้าใช้งานผ่านเว็บเบราว์เซอร์ได้ทันทีที่ <span class='sub-highlight'>www.gcmeapp.com/epopm</span> โดยไม่ต้องติดตั้งโปรแกรมใดๆ รองรับ Microsoft SSO",
+            duration: 12,
+            cursorTarget: { x: 50, y: 74, click: false },
+            render: () => renderRealScene('./assets/screen_login.png', [
+              { x: 38.3, y: 20.5, w: 23.4, h: 59, color: '#38bdf8', label: '🌐 URL: www.gcmeapp.com/epopm' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:00 - 1:45",
+            title: "4 เสาหลัก: เสาที่ 1 Dashboard & เสาที่ 2 Excel Grid",
+            pill: "System Architecture",
+            callout: "เสาหลักที่ 1 Dashboard 5x5 และ เสาหลักที่ 2 Excel Grid Mode",
+            subtitles: "ระบบถูกออกแบบบน 4 เสาหลักสำคัญ ได้แก่ เสาหลักที่ 1 <span class='sub-highlight'>Dashboard & 5x5 Heatmap</span> สรุปสถานะวิกฤตใน 3 วินาที และเสาหลักที่ 2 <span class='sub-highlight'>Excel Register Grid</span> แก้ไขข้อมูลด่วนเสมือน Excel",
+            duration: 14,
+            cursorTarget: { x: 27, y: 45, click: false },
+            render: () => renderRealScene('./assets/slide_2.png', [
+              { x: 5.5, y: 20, w: 21, h: 70, color: '#3b82f6', label: 'เสาหลักที่ 1: Dashboard & Heatmap' },
+              { x: 28, y: 20, w: 21, h: 70, color: '#10b981', label: 'เสาหลักที่ 2: Excel Register Grid' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "1:45 - 2:30",
+            title: "4 เสาหลัก: เสาที่ 3 TOR AI & เสาที่ 4 Official Export",
+            pill: "Pre-Bid & Exports",
+            callout: "เสาหลักที่ 3 สแกน TOR สกัด LDs และ เสาหลักที่ 4 ส่งออกรายงาน EPM-03-014AT1",
+            subtitles: "เสาหลักที่ 3 คือ <span class='sub-highlight'>TOR AI Assessment</span> สแกนสัญญาและคำนวณงบสำรอง EMV ก่อนยื่นซองราคา และเสาหลักที่ 4 <span class='sub-highlight'>Official Export</span> ส่งออกรายงานมาตรฐาน 1-Click พร้อมประชุม",
+            duration: 14,
+            cursorTarget: { x: 73, y: 45, click: false },
+            render: () => renderRealScene('./assets/slide_2.png', [
+              { x: 50.5, y: 20, w: 21, h: 70, color: '#8b5cf6', label: 'เสาหลักที่ 3: TOR AI Assessment' },
+              { x: 73, y: 20, w: 21, h: 70, color: '#f59e0b', label: 'เสาหลักที่ 4: Alerts & Official Export' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "2:30 - 3:00",
+            title: "สรุปตอนที่ 1 & เตรียมเข้าสู่ EP 02",
+            pill: "Next Episode",
+            callout: "ตอนต่อไป: EP 02 การเข้าสู่ระบบ Microsoft SSO และการจัดการสิทธิ์",
+            subtitles: "ในตอนต่อไป เราจะมาเริ่มต้นที่ขั้นตอนการล็อกอินเข้าสู่ระบบและการตั้งค่าสิทธิ์ความปลอดภัยกันครับ",
+            duration: 8,
+            cursorTarget: { x: 50, y: 55, click: true },
+            render: () => renderRealScene('./assets/slide_2.png', [], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.78); backdrop-filter:blur(4px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:40px; margin-bottom:12px;">🚀</div>
+                <h3 style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;">จบบทนำภาพรวมระบบ (EP 01)</h3>
+                <p style="font-size:14px; color:#cbd5e1; max-width:500px; margin-bottom:24px;">พร้อมเข้าสู่บทเรียนถัดไปเพื่อเริ่มใช้งานจริง</p>
+                <button class="mock-nav-btn primary" onclick="switchEpisode(2)" style="font-size:14px; padding:10px 24px; box-shadow:0 4px 14px rgba(37,99,235,0.5);">
+                  เข้าสู่ EP 02: Access & Security →
+                </button>
+              </div>
+            `)
+          }
+        ]
+      },
+      2: {
+        title: "EP 02: การเข้าใช้งานและระบบความปลอดภัย (Access & Security)",
+        slideRef: "Slide 3",
+        totalTime: 150,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:35",
+            title: "หน้าล็อกอิน GCME Authentication Portal",
+            pill: "Single Sign-On",
+            callout: "ปุ่ม 'Sign in with Microsoft' เชื่อมต่อบัญชีบริษัทได้ในคลิกเดียว",
+            subtitles: "ในตอนนี้เราจะมาดูวิธีการเข้าใช้งานระบบ Smart Risk Management และการทำความเข้าใจระดับสิทธิ์กันครับ เมื่อท่านเปิดเบราว์เซอร์เข้ามาจะพบปุ่ม <span class='sub-highlight'>Sign in with Microsoft</span>",
+            duration: 10,
+            cursorTarget: { x: 50, y: 74, click: true },
+            render: () => renderRealScene('./assets/screen_login.png', [
+              { x: 39.8, y: 71.5, w: 20.4, h: 5.5, color: '#f59e0b', label: '🔑 Sign in with Microsoft (SSO)' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:35 - 1:15",
+            title: "รหัสผ่านเริ่มต้น & การบังคับเปลี่ยนรหัสผ่านครั้งแรก",
+            pill: "Security Policy",
+            callout: "รหัสผ่านเริ่มต้น: gcme1234567 • ระบบบังคับเปลี่ยนทันทีในการเข้าสู่ระบบครั้งแรก",
+            subtitles: "สำหรับผู้ใช้งานใหม่ รหัสผ่านเริ่มต้นคือ <span class='sub-highlight'>gcme1234567</span> ครับ และระบบจะบังคับให้ท่านเปลี่ยนรหัสผ่านทันทีเพื่อความปลอดภัยระดับองค์กร",
+            duration: 12,
+            cursorTarget: { x: 50, y: 55, click: false },
+            render: () => renderRealScene('./assets/screen_login.png', [
+              { x: 39.8, y: 49, w: 20.4, h: 4.8, color: '#38bdf8', label: '📧 Email บริษัท (name@pttgcgroup.com)' },
+              { x: 39.8, y: 57, w: 20.4, h: 4.8, color: '#ef4444', label: '🔒 รหัสเริ่มต้น: gcme1234567' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:15 - 1:55",
+            title: "ระดับสิทธิ์ในระบบ (Admin vs PM/User)",
+            pill: "Role Matrix",
+            callout: "Admin: สิทธิ์ทั้งองค์กร & สำรอง DB • PM / User: เฉพาะโครงการที่ได้รับมอบหมาย",
+            subtitles: "ระบบแบ่งสิทธิ์เป็น 2 ระดับหลัก: สิทธิ์ <span class='sub-highlight'>Admin</span> สำหรับทีมบริหารโครงการกลาง และสิทธิ์ <span class='sub-highlight'>PM/User</span> สำหรับเข้าถึงเฉพาะโครงการที่ท่านรับผิดชอบ",
+            duration: 14,
+            cursorTarget: { x: 26, y: 68, click: false },
+            render: () => renderRealScene('./assets/slide_3.png', [
+              { x: 7, y: 59, w: 38, h: 18, color: '#3b82f6', label: 'สิทธิ์ Admin vs PM/User' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "1:55 - 2:30",
+            title: "คำแนะนำ Pro-Tip & ติดต่อทีม Admin",
+            pill: "Help & Support",
+            callout: "หากพบ Permission Denied แจ้ง Admin ทีม E-PO-PM ผ่าน MS Teams ทันที",
+            subtitles: "หากเข้าสู่ระบบแล้วพบข้อความ Permission Denied สามารถติดต่อทีมงาน E-PO-PM เพื่อขอ Assign สิทธิ์ได้อย่างรวดเร็วครับ และอย่าลืมบุ๊กมาร์กหน้าเว็บไว้นะครับ",
+            duration: 10,
+            cursorTarget: { x: 26, y: 82, click: false },
+            render: () => renderRealScene('./assets/slide_3.png', [
+              { x: 7, y: 76, w: 38, h: 12, color: '#10b981', label: '💡 Pro-Tip & Support' }
+            ])
+          }
+        ]
+      },
+      3: {
+        title: "EP 03: การเริ่มต้นโครงการใหม่และการถ่วงน้ำหนักความเสี่ยง (Project Setup & Weighting)",
+        slideRef: "Slide 4 – 5",
+        totalTime: 240,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:40",
+            title: "Step 1: กำหนดข้อมูลพื้นฐาน & รหัส ERP",
+            pill: "Project Setup",
+            callout: "กำหนด Project No ให้ตรงกับ SAP/ERP และระบุ PM ผู้รับผิดชอบ",
+            subtitles: "เริ่มต้นโครงการใหม่ ให้คลิกปุ่ม <span class='sub-highlight'>+ New Project</span> ด้านบน กำหนด Project No ให้ตรงกับรหัส SAP/ERP ระบุชื่อ PM และประเภทโรงงาน",
+            duration: 12,
+            cursorTarget: { x: 50, y: 35, click: false },
+            render: () => renderRealScene('./assets/screen_project_form.png', [
+              { x: 39.2, y: 31.8, w: 21.6, h: 5.2, color: '#38bdf8', label: '1. Project No (ERP/SAP)' },
+              { x: 39.2, y: 40.5, w: 21.6, h: 5.2, color: '#3b82f6', label: '2. Project Name' },
+              { x: 39.2, y: 48.8, w: 21.6, h: 5.2, color: '#3b82f6', label: '3. PM Name' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:40 - 1:20",
+            title: "Data Inheritance ดึงมาตรการเดิมมาต่อยอด",
+            pill: "Data Inheritance",
+            callout: "ดึงฐานข้อมูลความเสี่ยงและมาตรการจากโครงการเดิมมาใช้งานต่อได้ทันที",
+            subtitles: "จุดสำคัญใน Step 1 นี้คือ <span class='sub-highlight'>Data Inheritance</span> ครับ สามารถดึงมาตรการควบคุมจากโครงการเดิมมาใช้ต่อได้ทันที ช่วยประหยัดเวลาได้อย่างมหาศาล",
+            duration: 12,
+            cursorTarget: { x: 56, y: 90, click: true },
+            render: () => renderRealScene('./assets/screen_project_form.png', [
+              { x: 39.2, y: 16.5, w: 21.6, h: 11.5, color: '#10b981', label: '⚡ Data Inheritance (Optional)' },
+              { x: 52, y: 88.5, w: 8.8, h: 4.5, color: '#2563eb', label: 'Next: Step 2 →' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:20 - 2:40",
+            title: "Step 2: ถ่วงน้ำหนักความเสี่ยง 7 หมวดหมู่",
+            pill: "Weighting Factors",
+            callout: "Brownfield (+2 Both) • Proven Tech (-1 Negative Adj.) • Fast-track (+2)",
+            subtitles: "ขั้นตอนที่ 2 การเลือก <span class='sub-highlight'>Weighting Factors</span> 7 หมวดหมู่ เช่น งานในโรงงานเดิม Brownfield (+2) หรือเทคโนโลยีมาตรฐาน Proven Tech (-1 Negative Adjustment)",
+            duration: 16,
+            cursorTarget: { x: 58, y: 28, click: false },
+            render: () => renderRealScene('./assets/screen_weighting_factors.png', [
+              { x: 49.8, y: 24.8, w: 16.5, h: 6.5, color: '#f59e0b', label: 'Brownfield (+2 Both)' },
+              { x: 33.6, y: 32.2, w: 15.6, h: 6.5, color: '#f59e0b', label: 'Fast-track (+2 Impact)' },
+              { x: 33.6, y: 52, w: 15.6, h: 6.5, color: '#10b981', label: 'Proven Tech (-1 Likelihood)' },
+              { x: 49.8, y: 71.8, w: 16.5, h: 6.5, color: '#f59e0b', label: 'Tight Milestone / COD' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "2:40 - 3:30",
+            title: "สร้างชุดความเสี่ยงตั้งต้น 31 รายการทันที",
+            pill: "31 Baseline Risks",
+            callout: "กด 'Initialize Baseline Risks' สร้างความเสี่ยงตั้งต้น 31 รายการพร้อมค่าน้ำหนัก",
+            subtitles: "เมื่อคลิกปุ่ม <span class='sub-highlight'>Initialize Baseline Risks</span> ระบบจะนำค่าน้ำหนักที่เลือกไปคำนวณและสร้างชุดความเสี่ยงตั้งต้น 31 รายการให้ทันทีครับ",
+            duration: 12,
+            cursorTarget: { x: 53, y: 89, click: true },
+            render: () => renderRealScene('./assets/screen_weighting_factors.png', [
+              { x: 39.5, y: 86.8, w: 26.5, h: 4.8, color: '#2563eb', label: '⚡ Initialize Baseline Risks' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "3:30 - 4:00",
+            title: "สรุป Part 1 พร้อมเข้าสู่ Part 2",
+            pill: "Part 1 Complete",
+            callout: "จบ Part 1: การตั้งค่าพร้อมแล้ว • ตอนต่อไป Part 2: การประเมิน & AI Copilot",
+            subtitles: "โครงการของท่านมีฐานข้อมูลความเสี่ยงพร้อมบริหารจัดการแล้วครับ ใน Part 2 เราจะไปดูการอ่านค่า Dashboard และการใช้ AI Copilot กันครับ",
+            duration: 8,
+            cursorTarget: { x: 50, y: 60, click: true },
+            render: () => renderRealScene('./assets/screen_dashboard.png', [
+              { x: 18.2, y: 14.5, w: 14, h: 24, color: '#10b981', label: '✅ Total Risks: 8 & Review Due: 6' },
+              { x: 18.2, y: 79.5, w: 63, h: 19.5, color: '#38bdf8', label: '📊 5x5 Heatmap (Pre & Post Mitigation)' }
+            ], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.75); backdrop-filter:blur(3px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:36px; margin-bottom:10px;">✨</div>
+                <h3 style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;">จบหลักสูตร Part 1 เรียบร้อย</h3>
+                <p style="font-size:14px; color:#cbd5e1; max-width:480px; margin-bottom:20px;">พร้อมเข้าสู่ Part 2: เมทริกซ์ 5x5, AI Risk Copilot และโหมด Excel Grid</p>
+                <button class="mock-nav-btn primary" onclick="switchEpisode(4)" style="font-size:14px; padding:10px 24px; box-shadow:0 4px 14px rgba(37,99,235,0.5);">
+                  เข้าสู่ Part 2 (EP 04: 5x5 Heatmap) →
+                </button>
+              </div>
+            `)
+          }
+        ]
+      },
+      4: {
+        title: "EP 04: การประเมินความเสี่ยงและเมทริกซ์ 5x5 Heatmap Matrix",
+        slideRef: "Slide 6",
+        totalTime: 210,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:45",
+            title: "5x5 Heatmap Matrix & โครงสร้าง ISO 31000",
+            pill: "ISO 31000:2018",
+            callout: "Likelihood: โอกาสเกิด (1-5) • Impact: ผลกระทบ (1-5) รวม 25 ช่อง",
+            subtitles: "ยินดีต้อนรับสู่ตอนที่ 4 ครับ หัวใจสำคัญของการติดตามความเสี่ยงอยู่ที่ <span class='sub-highlight'>Executive Risk Dashboard</span> ซึ่งถูกออกแบบตามมาตรฐานสากล ISO 31000 เมทริกซ์ที่ท่านเห็นอยู่นี้คือตาราง 5x5 รวม 25 ช่อง โดยแกนตั้งคือ Likelihood โอกาสเกิด และแกนนอนคือ Impact ผลกระทบครับ",
+            duration: 12,
+            cursorTarget: { x: 26, y: 52, click: false },
+            render: () => renderRealScene('./assets/slide_6.png', [
+              { x: 5.5, y: 14, w: 42, h: 74, color: '#38bdf8', label: '📊 5x5 Risk Matrix' },
+              { x: 50, y: 14, w: 44, h: 36, color: '#8b5cf6', label: 'Impact x Likelihood Formula' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:45 - 1:35",
+            title: "4 ระดับสีมาตรฐาน & Initial vs Residual Score",
+            pill: "Severity Levels",
+            callout: "🟢 Low (1-3) • 🟡 Medium (4-8) • 🟠 High (9-14) • 🔴 Critical (≥15)",
+            subtitles: "ระบบแบ่งเกณฑ์ความรุนแรงออกเป็น 4 ระดับสีมาตรฐาน: สีเขียว <span class='sub-highlight'>Low (1-3)</span>, สีเหลือง <span class='sub-highlight'>Medium (4-8)</span>, สีส้ม <span class='sub-highlight'>High (9-14)</span>, และสีแดง <span class='sub-highlight'>Critical (≥15)</span> โดยระบบจะแสดงเปรียบเทียบทั้ง <span class='sub-highlight'>Initial Heatmap</span> ก่อนดำเนินมาตรการ และ <span class='sub-highlight'>Residual Heatmap</span> หลังดำเนินมาตรการควบคุมแล้วครับ",
+            duration: 14,
+            cursorTarget: { x: 33, y: 88, click: false },
+            render: () => renderRealScene('./assets/screen_dashboard.png', [
+              { x: 18.2, y: 79.5, w: 30, h: 19.5, color: '#ef4444', label: '1. Initial Heatmap (Pre-Mitigation)' },
+              { x: 50.5, y: 79.5, w: 30, h: 19.5, color: '#10b981', label: '2. Residual Heatmap (Post-Mitigation)' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:35 - 2:25",
+            title: "3 KPIs สำคัญบน Dashboard (Review Due & Exceeds Appetite)",
+            pill: "Executive KPIs",
+            callout: "Total Risks: 8 • Review Due: 6 • Exceeds Appetite: 1 • Overdue by Level: 6",
+            subtitles: "ด้านบนของแดชบอร์ด จะมี 3 KPIs สำคัญที่ PM ต้องคอยจับตาดู: ตัวแรกคือ <span class='sub-highlight'>Review Due</span> รายการที่ถึงรอบต้องทบทวนตาม ISO 31000 ตัวที่สองคือ <span class='sub-highlight'>Exceeds Appetite</span> เตือนทันทีเมื่อมีความเสี่ยงเกินเพดานที่บริษัทยอมรับได้ และตัวที่สามคือ <span class='sub-highlight'>Overdue By Level</span> แจกแจงงานมาตรการที่เลยกำหนดเวลาครับ",
+            duration: 14,
+            cursorTarget: { x: 25, y: 26, click: false },
+            render: () => renderRealScene('./assets/screen_dashboard.png', [
+              { x: 18.2, y: 14.5, w: 14, h: 24, color: '#38bdf8', label: 'KPIs: Total Risks (8) & Review Due (6)' },
+              { x: 18.2, y: 31, w: 14, h: 8, color: '#ef4444', label: '⚠️ Exceeds Appetite: 1' },
+              { x: 61.2, y: 42, w: 20, h: 35, color: '#f59e0b', label: 'Status: 6 OVERDUE' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "2:25 - 3:00",
+            title: "Interactive Filtering เจาะลึกข้อมูลใน 1 คลิก",
+            pill: "Interactive Filter",
+            callout: "คลิกช่อง Matrix หรือกราฟแท่งเพื่อกรองตารางรายการความเสี่ยงด้านล่างทันที",
+            subtitles: "ความพิเศษของแดชบอร์ดนี้คือความ <span class='sub-highlight'>Interactive</span> ครับ ท่านสามารถนำเมาส์ไปคลิกที่ช่องใดช่องหนึ่งบน Heatmap หรือคลิกที่แท่งกราฟหมวดหมู่งาน ระบบจะทำการกรองตารางรายการความเสี่ยงด้านล่างให้แสดงเฉพาะรายการในกลุ่มนั้นทันที ช่วยให้เจาะลึกวิเคราะห์ข้อมูลได้อย่างรวดเร็วครับ",
+            duration: 12,
+            cursorTarget: { x: 28, y: 88, click: true },
+            render: () => renderRealScene('./assets/screen_dashboard.png', [
+              { x: 34.2, y: 8.8, w: 47, h: 30, color: '#8b5cf6', label: 'Risk Level Distribution (Filter Bar)' },
+              { x: 22, y: 84, w: 6, h: 6, color: '#ef4444', label: '🎯 Drill-Down Selected' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "3:00 - 3:30",
+            title: "เป้าหมายหลัก: ผลักดัน Residual Score เข้าสู่โซนเขียว",
+            pill: "Target Mitigation",
+            callout: "เป้าหมายหลัก: ดึงคะแนน Residual ลงสู่โซนเขียว (Low) หรือเหลือง (Medium)",
+            subtitles: "จำไว้เสมอครับว่า เป้าหมายหลักของพวกเรา ไม่ใช่การทำให้ไม่มีความเสี่ยง แต่คือการปฏิบัติตาม <span class='sub-highlight'>Action Plan</span> เพื่อลดระดับคะแนน Residual ลงมาอยู่ในโซนสีเขียวหรือสีเหลืองให้ได้ก่อนวันตรวจรับงานครับ พร้อมแล้วเข้าสู่ EP 05 ตัวช่วย AI Copilot กันเลยครับ",
+            duration: 10,
+            cursorTarget: { x: 50, y: 55, click: true },
+            render: () => renderRealScene('./assets/slide_6.png', [
+              { x: 50, y: 52, w: 45, h: 38, color: '#10b981', label: '🎯 Target Residual Zone (Green & Yellow)' }
+            ], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.78); backdrop-filter:blur(4px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:36px; margin-bottom:10px;">🎯</div>
+                <h3 style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;">จบตอนที่ 4: การประเมิน & 5x5 Heatmap</h3>
+                <p style="font-size:14px; color:#cbd5e1; max-width:500px; margin-bottom:20px;">เรียนรู้การใช้ AI ช่วยคิดมาตรการควบคุมและลดความเสี่ยงใน 3 วินาที</p>
+                <button class="mock-nav-btn primary" onclick="switchEpisode(5)" style="font-size:14px; padding:10px 24px; box-shadow:0 4px 14px rgba(37,99,235,0.5);">
+                  เข้าสู่ EP 05: AI Risk Copilot →
+                </button>
+              </div>
+            `)
+          }
+        ]
+      },
+      5: {
+        title: "EP 05: ตัวช่วย AI อัจฉริยะในการวางมาตรการควบคุม (AI Risk Copilot)",
+        slideRef: "Slide 7",
+        totalTime: 210,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:40",
+            title: "แนะนำ AI Risk Copilot (Gemini 3.7 Flash & Llama 3)",
+            pill: "AI Risk Copilot",
+            callout: "ขับเคลื่อนด้วย Google Gemini 3.7 Flash และ Llama 3 บนระบบ Cloud แบบเรียลไทม์",
+            subtitles: "เมื่อพบความเสี่ยงใหม่ขึ้นในไซต์งาน ความยากที่สุดคือการคิดมาตรการควบคุมที่รัดกุมและถูกต้องตามหลักวิศวกรรม Smart Risk Management จึงได้นำเทคโนโลยี <span class='sub-highlight'>AI Copilot</span> ระดับแนวหน้าอย่าง Google Gemini 3.7 Flash และ Llama 3 เข้ามาช่วยวิศวกรและ PM แบบเรียลไทม์ครับ",
+            duration: 12,
+            cursorTarget: { x: 26, y: 55, click: false },
+            render: () => renderRealScene('./assets/slide_7.png', [
+              { x: 5, y: 22, w: 42, h: 68, color: '#8b5cf6', label: '🤖 Gemini 3.7 Flash & Llama 3' },
+              { x: 50, y: 22, w: 45, h: 68, color: '#38bdf8', label: '3 Seconds Mitigation Engine' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:40 - 1:25",
+            title: "เขียนคำอธิบายตามไวยากรณ์ ISO 31000",
+            pill: "ISO 31000 Syntax",
+            callout: "เนื่องจาก [สาเหตุ] จึงเสี่ยงต่อ [เหตุการณ์] ส่งผลให้ [ผลกระทบ]",
+            subtitles: "เริ่มต้นด้วยการระบุคำอธิบายความเสี่ยงตามไวยากรณ์มาตรฐาน <span class='sub-highlight'>ISO 31000</span> ครับ คือ 'เนื่องจาก [สาเหตุ] จึงเสี่ยงต่อ [เหตุการณ์] ส่งผลให้ [ผลกระทบ]' ตัวอย่างเช่น 'เนื่องจากผู้ผลิตวาล์วหลักขาดแคลนวัตถุดิบ จึงเสี่ยงต่อส่งมอบล่าช้า กระทบต่องานทดสอบระบบ' จากนั้นเลือกผลกระทบ เช่น ด้าน Cost และ Time ครับ",
+            duration: 14,
+            cursorTarget: { x: 38, y: 48, click: false },
+            render: () => renderRealScene('./assets/screen_risk_form.png', [
+              { x: 23.5, y: 44.5, w: 29.5, h: 8.5, color: '#38bdf8', label: '✍️ ISO 31000 Syntax Description' },
+              { x: 23.5, y: 56.5, w: 23, h: 4, color: '#f59e0b', label: 'Possible Effect: Cost & Time' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:25 - 2:10",
+            title: "กดปุ่ม ✨ AI Suggest ร่างแผนใน 3 วินาที",
+            pill: "✨ AI Suggest (3s)",
+            callout: "ประมวลผล 3 วินาที: เสนอกลยุทธ์ Mitigate, แผนปฏิบัติการ, ผู้รับผิดชอบ และ Residual",
+            subtitles: "จากนั้น คลิกที่ปุ่มสีม่วง <span class='sub-highlight'>✨ AI Suggest</span> ด้านขวาได้เลยครับ ระบบจะส่งข้อมูลไปยัง AI Model ที่ได้รับการเทรนด้วยคลังความรู้โครงการ EPC และเพียง 3 วินาที AI จะตอบกลับมาครบทั้ง: กลยุทธ์ Mitigate, แผน Action to Control เป็นภาษาไทยอย่างละเอียด พร้อมระบุผู้รับผิดชอบ และเป้าหมาย Residual ให้อัตโนมัติครับ",
+            duration: 15,
+            cursorTarget: { x: 71.5, y: 81.8, click: true },
+            render: () => renderRealScene('./assets/screen_risk_form.png', [
+              { x: 68.5, y: 80.5, w: 6.5, h: 2.8, color: '#8b5cf6', label: '✨ AI Suggest (Click Here)' },
+              { x: 54.5, y: 64, w: 22, h: 16, color: '#10b981', label: 'AI Generated Mitigation Action Plan' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "2:10 - 2:55",
+            title: "Interactive Heatmap Picker & บันทึกขึ้น Cloud",
+            pill: "Heatmap Picker",
+            callout: "คลิกเลือก Likelihood และ Impact บนตารางย่อได้ทันที พร้อมกด Save Risk",
+            subtitles: "นอกจากนี้ในฟอร์มยังมี <span class='sub-highlight'>Interactive Heatmap Picker</span> ให้ท่านคลิกเลือกคะแนน Likelihood และ Impact ลงบนตารางขนาดเล็กได้โดยตรง เมื่อตรวจสอบเนื้อหาที่ AI ร่างไว้ และปรับให้ตรงกับข้อตกลงหน้างานเรียบร้อยแล้ว ให้กดปุ่ม Save ข้อมูลทั้งหมดจะถูกบันทึกขึ้นสู่ Cloud ทันทีครับ",
+            duration: 14,
+            cursorTarget: { x: 64, y: 50, click: true },
+            render: () => renderRealScene('./assets/screen_risk_form.png', [
+              { x: 54.5, y: 37, w: 20, h: 26, color: '#f59e0b', label: '📍 Heatmap Picker (Major 4 x Likely 4 = 16 Critical)' },
+              { x: 70, y: 94.5, w: 6.5, h: 3, color: '#2563eb', label: '💾 Save Risk' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "2:55 - 3:30",
+            title: "สรุปประสิทธิภาพ AI Copilot (ประหยัดเวลา 95%)",
+            pill: "Productivity Boost",
+            callout: "จากเดิมร่างแผนใช้เวลา 1 ชั่วโมง → ด้วย AI Copilot เหลือเพียง 3 วินาที",
+            subtitles: "เห็นไหมครับ จากเดิมที่ต้องใช้เวลาเปิดตำราหรือนั่งร่างแผนนานนับชั่วโมง ด้วยปุ่ม AI Suggest เพียงปุ่มเดียว ช่วยให้วิศวกรได้มาตรการควบคุมที่สอดคล้องกับมาตรฐานสากลได้ในเวลาไม่ถึงครึ่งนาทีครับ ต่อไปเราจะไปดูโหมดตารางด่วน Excel Grid กันครับ",
+            duration: 10,
+            cursorTarget: { x: 50, y: 55, click: true },
+            render: () => renderRealScene('./assets/slide_7.png', [
+              { x: 50, y: 68, w: 45, h: 22, color: '#10b981', label: '⚡ 3-Second Engineering Response' }
+            ], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.78); backdrop-filter:blur(4px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:36px; margin-bottom:10px;">🤖</div>
+                <h3 style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;">จบตอนที่ 5: ตัวช่วย AI Risk Copilot</h3>
+                <p style="font-size:14px; color:#cbd5e1; max-width:500px; margin-bottom:20px;">พร้อมเข้าสู่โหมดกรอกข้อมูลความเร็วสูง Excel Register Grid</p>
+                <button class="mock-nav-btn primary" onclick="switchEpisode(6)" style="font-size:14px; padding:10px 24px; box-shadow:0 4px 14px rgba(37,99,235,0.5);">
+                  เข้าสู่ EP 06: Excel Grid Mode →
+                </button>
+              </div>
+            `)
+          }
+        ]
+      },
+      6: {
+        title: "EP 06: โหมดตารางด่วน Excel Grid View (Productivity Mode)",
+        slideRef: "Slide 8",
+        totalTime: 210,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:40",
+            title: "เปิดใช้งานโหมดตารางด่วน Excel Grid View",
+            pill: "Excel Grid Mode",
+            callout: "โหมด Spreadsheet ความเร็วสูง จัดการความเสี่ยงหลายสิบรายการได้พร้อมกัน",
+            subtitles: "สำหรับ PM หรือผู้ที่ต้องจัดการข้อมูลความเสี่ยงครั้งละหลายสิบรายการ การเปิดทีละฟอร์มอาจจะไม่ทันใจ ระบบจึงมีโหมดพิเศษที่เรียกว่า <span class='sub-highlight'>Excel Grid</span> ครับ เพียงคลิกปุ่ม Excel Grid บนแถบเมนูด้านบน หน้าจอจะเปลี่ยนเป็นตาราง Spreadsheet ที่ใช้งานง่ายและคุ้นเคยเหมือนทำงานบนโปรแกรม Excel จริงๆ เลยครับ",
+            duration: 12,
+            cursorTarget: { x: 36.5, y: 3, click: true },
+            render: () => renderRealScene('./assets/screen_excel.png', [
+              { x: 34, y: 1.5, w: 5.5, h: 3.2, color: '#10b981', label: '📑 Excel Grid (Active Tab)' },
+              { x: 18.2, y: 22, w: 63, h: 6.5, color: '#38bdf8', label: 'Project Summary & Quick Filter' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:40 - 1:30",
+            title: "Inline Grid Editing & 4 ขั้นตอนมาตรฐาน EPM-03-014",
+            pill: "Inline Grid Editing",
+            callout: "4 แถบสี: 1. Identify (น้ำเงิน) • 2. Assess (ส้ม) • 3. Treat (เขียว) • 4. Control (ม่วง)",
+            subtitles: "ในโหมดนี้ ท่านสามารถทำ <span class='sub-highlight'>Inline Grid Editing</span> ได้ทันที ดับเบิลคลิกพิมพ์แก้ไขรายละเอียด, เปลี่ยนชื่อผู้รับผิดชอบ หรือกดเลือกระดับคะแนนได้โดยตรงในเซลล์ สังเกตแถบสีที่หัวตารางนะครับ ระบบจัดเรียงตาม 4 ขั้นตอนมาตรฐาน EPM-03-014: สีน้ำเงิน Identify, สีส้ม Assess, สีเขียว Treat, และสีม่วง Control ครับ",
+            duration: 15,
+            cursorTarget: { x: 45, y: 41, click: true },
+            render: () => renderRealScene('./assets/screen_excel.png', [
+              { x: 18.2, y: 30, w: 63, h: 4.8, color: '#38bdf8', label: '1. Identify | 2. Assess | 3. Treat | 4. Control' },
+              { x: 18.2, y: 39, w: 63, h: 5.5, color: '#f59e0b', label: 'Inline Cell Edit: RSK-001 (Piping Material Shortage)' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:30 - 2:15",
+            title: "Hover Header Guides คำอธิบายเกณฑ์ผลกระทบ 1-5",
+            pill: "Hover Header Guides",
+            callout: "ชี้เมาส์ที่หัวคอลัมน์เพื่อดูคำอธิบายเกณฑ์ความเสียหาย: งบประมาณ, เวลา, ความปลอดภัย",
+            subtitles: "และหากท่านไม่แน่ใจว่าเกณฑ์การให้คะแนน Impact แต่ละระดับวัดจากอะไร นำเมาส์ไปชี้ที่หัวคอลัมน์ได้เลยครับ ระบบมี <span class='sub-highlight'>Hover Header Guides</span> แสดงคำอธิบายเกณฑ์ความเสียหาย ทั้งด้านงบประมาณ ระยะเวลาล่าช้า และความปลอดภัย ตามระเบียบบริษัทอย่างชัดเจนครับ",
+            duration: 14,
+            cursorTarget: { x: 26, y: 68, click: false },
+            render: () => renderRealScene('./assets/slide_8.png', [
+              { x: 6, y: 48, w: 42, h: 42, color: '#3b82f6', label: '💡 Hover Tooltips & Inline Editing' },
+              { x: 50, y: 48, w: 45, h: 42, color: '#10b981', label: '⚡ Bulk Operations & Quick Save' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "2:15 - 2:55",
+            title: "Unsaved Changes Shield & Save All Changes",
+            pill: "Unsaved Changes Shield",
+            callout: "🛡️ ระบบล็อกป้องกันข้อมูลสูญหาย • 💾 กด 'Save All Changes' บันทึกทุกแถวพร้อมกัน",
+            subtitles: "ระหว่างที่ท่านกำลังพิมพ์ข้อมูล ไม่ต้องกังวลว่าข้อมูลจะหายจากระบบ Real-time sync นะครับ เพราะเรามีระบบ <span class='sub-highlight'>Unsaved Changes Shield</span> คอยล็อกข้อมูลที่กำลังแก้ไขไว้ และเมื่อแก้ไขครบทุกแถวแล้ว ให้กดปุ่ม <span class='sub-highlight'>Save All Changes</span> เพียงคลิกเดียว ทุกแถวจะถูกบันทึกลงสู่ Cloud พร้อมกันทันทีครับ",
+            duration: 14,
+            cursorTarget: { x: 76, y: 12.8, click: true },
+            render: () => renderRealScene('./assets/screen_excel.png', [
+              { x: 72, y: 11, w: 8.5, h: 3.5, color: '#10b981', label: '💾 Save All Changes (Click)' },
+              { x: 65, y: 11, w: 6.5, h: 3.5, color: '#38bdf8', label: '+ Add Row' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "2:55 - 3:30",
+            title: "สรุปภาพรวม Part 2 (ลดเวลาทำงานเอกสาร 60%)",
+            pill: "Part 2 Complete",
+            callout: "ลดเวลาทำงานลง 60% • ตอนต่อไป Part 3: TOR AI Assessment & Official Export",
+            subtitles: "โหมด Excel Grid นี้ ช่วยลดเวลาการทำงานเอกสารของทีมงานลงได้มากกว่า 60% รวดเร็ว ปลอดภัย และลดความผิดพลาดได้อย่างสมบูรณ์แบบครับ จบหลักสูตร Part 2 แล้ว ใน Part 3 เราจะมาดูโมดูลวิเคราะห์สัญญา TOR และการส่งออกรายงาน EPM-03-014AT1 กันครับ",
+            duration: 10,
+            cursorTarget: { x: 50, y: 55, click: true },
+            render: () => renderRealScene('./assets/slide_8.png', [], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.78); backdrop-filter:blur(4px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:40px; margin-bottom:12px;">🎉</div>
+                <h3 style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;">จบการอบรม Part 2: การประเมิน & AI Copilot</h3>
+                <p style="font-size:14px; color:#cbd5e1; max-width:520px; margin-bottom:20px;">ท่านได้เรียนรู้การอ่าน Dashboard 5x5, การใช้ AI Risk Copilot และโหมดด่วน Excel Grid เรียบร้อยแล้ว</p>
+                <div style="display:flex; gap:12px;">
+                  <button class="mock-nav-btn" onclick="switchEpisode(4)" style="background:#1e293b; color:#38bdf8; font-size:13px; padding:10px 20px;">
+                    ทบทวน EP 04 ↺
+                  </button>
+                  <button class="mock-nav-btn primary" onclick="switchEpisode(7)" style="font-size:13px; padding:10px 20px; box-shadow:0 4px 14px rgba(37,99,235,0.5);">
+                    เข้าสู่ Part 3 (EP 07: TOR AI) →
+                  </button>
+                </div>
+              </div>
+            `)
+          }
+        ]
+      },
+      7: {
+        title: "EP 07: โมดูลวิเคราะห์ TOR และคำนวณงบสำรอง EMV (Pre-Bid & Proposal)",
+        slideRef: "Slide 9",
+        totalTime: 270,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:45",
+            title: "แนะนำโมดูล TOR Risk & เวิร์กโฟลว์ 5 ขั้นตอน (Slide 9)",
+            pill: "Pre-Bid & Proposal",
+            callout: "โมดูลวิเคราะห์ TOR • ป้องกันโครงการขาดทุนตั้งแต่ก่อนยื่นซองราคา (Slide 9)",
+            subtitles: "การบริหารความเสี่ยงที่ดีที่สุด ต้องเริ่มต้นตั้งแต่ก่อนเซ็นสัญญาครับ ในตอนนี้เราจะมาดูโมดูลสำคัญสำหรับทีมยื่นซองและทำราคา นั่นคือ <span class='sub-highlight'>TOR Risk Assessment</span> เพื่อสกัดเงื่อนไขสัญญา บทปรับ LDs และคำนวณงบสำรองความเสี่ยง EMV Buffer ป้องกันโครงการขาดทุนตั้งแต่ก่อนยื่นซองราคาครับ",
+            duration: 14,
+            cursorTarget: { x: 26.2, y: 28.0, click: false },
+            render: () => renderRealScene('./assets/slide_9.png', [
+              { x: 5.9, y: 5.0, w: 60.0, h: 12.0, color: '#38bdf8', label: 'PRE-BID & PROPOSAL: โมดูลวิเคราะห์ TOR' },
+              { x: 6.0, y: 20.0, w: 40.5, h: 67.5, color: '#10b981', label: '📋 วิธีวิเคราะห์ TOR และ 5 ขั้นตอน Workflow' },
+              { x: 48.5, y: 20.3, w: 45.3, h: 47.0, color: '#f59e0b', label: '💻 หน้าต่างจำลอง TOR Risk Assessment Module' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:45 - 1:40",
+            title: "คลิกปุ่ม ✨ AI Scan TOR สแกนเงื่อนไขสัญญา & LDs",
+            pill: "AI Scan TOR",
+            callout: "คลิกปุ่ม ✨ AI Scan TOR ด้านบน • สกัด Liquidated Damages (LDs 0.1%/วัน สูงสุด 10%)",
+            subtitles: "เมื่อเปิดเข้ามาในหน้าต่าง <span class='sub-highlight'>TOR Risk</span> ของโครงการ PROP-2026-001 ให้คลิกปุ่มสีส้ม <span class='sub-highlight'>✨ AI Scan TOR</span> ด้านบนขวา ระบบ AI จะอ่านเอกสารสัญญาและสกัดเงื่อนไขสำคัญ เช่น บทปรับส่งมอบล่าช้า LDs 0.1% ต่อวัน สูงสุด 10% พร้อมจำแนกความเสี่ยงออกเป็น 8 มิติให้ทันทีครับ",
+            duration: 16,
+            cursorTarget: { x: 58.8, y: 10.7, click: true },
+            render: () => renderRealScene('./assets/screen_tor.png', [
+              { x: 39.0, y: 1.2, w: 4.6, h: 2.8, color: '#38bdf8', label: '📑 แท็บ TOR Risk บน Navbar' },
+              { x: 56.0, y: 9.2, w: 5.6, h: 3.0, color: '#f59e0b', label: '✨ AI Scan TOR (คลิกเพื่อสแกนสัญญา)' },
+              { x: 70.0, y: 43.3, w: 8.0, h: 3.2, color: '#8b5cf6', label: '✨ วิเคราะห์ TOR ด้วย AI' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:40 - 2:35",
+            title: "Workflow 5 ขั้นตอน สู่การบริหารความเสี่ยงสัญญา",
+            pill: "5 Workflow Steps",
+            callout: "1. ขอบเขต ➔ 2. ระบุเสี่ยง & TOR ➔ 3. 5x5 ➔ 4. Contingency & Buffer ➔ 5. ติดตาม",
+            subtitles: "การประเมินจะดำเนินไปตาม <span class='sub-highlight'>Workflow 5 ขั้นตอน</span> อย่างเป็นระบบ: ขั้นที่ 1 ขอบเขตและบริบท, ขั้นที่ 2 ระบุความเสี่ยงและเชื่อมโยง TOR, ขั้นที่ 3 ประเมินบนเมทริกซ์ 5x5, ขั้นที่ 4 วางมาตรการและคำนวณ Contingency และขั้นที่ 5 ติดตามผลและข้อเสนอแนะครับ",
+            duration: 14,
+            cursorTarget: { x: 27.2, y: 32.4, click: false },
+            render: () => renderRealScene('./assets/screen_tor.png', [
+              { x: 21.0, y: 29.4, w: 12.5, h: 6.0, color: '#2563eb', label: '1. ขอบเขตและบริบท (Scope & Context)' },
+              { x: 33.5, y: 29.4, w: 11.0, h: 6.0, color: '#64748b', label: '2. ระบุความเสี่ยง & TOR' },
+              { x: 44.5, y: 29.4, w: 11.0, h: 6.0, color: '#64748b', label: '3. เมทริกซ์ 5x5' },
+              { x: 55.5, y: 29.4, w: 11.5, h: 6.0, color: '#64748b', label: '4. มาตรการ & Contingency' },
+              { x: 67.0, y: 29.4, w: 11.5, h: 6.0, color: '#64748b', label: '5. ติดตาม & ข้อเสนอแนะ' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "2:35 - 3:35",
+            title: "คำนวณเงินสำรองความเสี่ยง EMV Buffer (2.6M THB)",
+            pill: "EMV Calculation",
+            callout: "สูตร EMV = โอกาสเกิด (%) × ความเสียหาย (THB) • สรุปยอด Contingency Buffer 2,600,000 THB (5.20%)",
+            subtitles: "ระบบใช้หลักการ <span class='sub-highlight'>Expected Monetary Value (EMV)</span> โดยนำความน่าจะเป็นร้อยละ คูณด้วยมูลค่าความเสียหายที่ประเมินเป็นตัวเงินบาท ในหน้านี้ระบบสรุปยอดงบประมาณ 50 ล้านบาท และคำนวณ <span class='sub-highlight'>งบสำรอง EMV รวม 2,600,000 บาท</span> หรือ 5.2% เพื่อนำไปตั้งงบสำรองได้อย่างแม่นยำครับ",
+            duration: 18,
+            cursorTarget: { x: 65.4, y: 20.8, click: false },
+            render: () => renderRealScene('./assets/screen_tor.png', [
+              { x: 52.8, y: 17.5, w: 8.0, h: 6.5, color: '#38bdf8', label: 'งบประมาณเสนอราคา: 50,000,000 THB' },
+              { x: 61.2, y: 17.5, w: 8.5, h: 6.5, color: '#10b981', label: '💰 งบสำรอง EMV: 2,600,000 (5.20%)' },
+              { x: 70.2, y: 17.5, w: 7.5, h: 6.5, color: '#f59e0b', label: 'ความเสี่ยงทั้งหมด (2 รายการ)' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "3:35 - 4:30",
+            title: "สรุปรายงาน 1-Click Executive PDF (Pre-Bid Shield)",
+            pill: "Pre-Bid Shield",
+            callout: "คลิกปุ่ม 📄 รายงาน PDF ด้านบนขวา • สร้างรายงานสรุปสำหรับผู้บริหารพร้อมพื้นที่ลงนาม",
+            subtitles: "ปิดท้ายด้วยการคลิกปุ่มสีน้ำเงิน <span class='sub-highlight'>📄 รายงาน PDF</span> ด้านบนขวา ระบบจะสร้างรายงานสรุปสำหรับผู้บริหาร พร้อมตัวเลขหลักฐานและพื้นที่ลงนามอนุมัติทันที นี่คือเกราะป้องกัน Pre-Bid Shield ที่ช่วยให้องค์กรไม่ตัดราคาจนขาดทุนตั้งแต่ขั้นตอนยื่นซองครับ",
+            duration: 15,
+            cursorTarget: { x: 65.3, y: 10.7, click: true },
+            render: () => renderRealScene('./assets/screen_tor.png', [
+              { x: 62.6, y: 9.2, w: 5.4, h: 3.0, color: '#2563eb', label: '📄 รายงาน PDF (1-Click Executive PDF)' },
+              { x: 72.8, y: 9.2, w: 6.8, h: 3.0, color: '#8b5cf6', label: '💾 บันทึกโครงการ' }
+            ], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.78); backdrop-filter:blur(4px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:36px; margin-bottom:10px;">🛡️</div>
+                <h3 style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;">จบตอนที่ 7: โมดูล TOR & งบสำรอง EMV</h3>
+                <p style="font-size:14px; color:#cbd5e1; max-width:500px; margin-bottom:20px;">พร้อมเข้าสู่ EP 08 การติดตามรอบทบทวนและการส่งออกรายงานทางการ</p>
+                <button class="mock-nav-btn primary" onclick="switchEpisode(8)" style="font-size:14px; padding:10px 24px; box-shadow:0 4px 14px rgba(37,99,235,0.5);">
+                  เข้าสู่ EP 08: Monitoring & Exports →
+                </button>
+              </div>
+            `)
+          }
+        ]
+      },
+      8: {
+        title: "EP 08: การติดตามรอบทบทวนและการส่งออกรายงานทางการ (Monitoring & Exports)",
+        slideRef: "Slide 10",
+        totalTime: 210,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:45",
+            title: "Next Review Date & แท็ก Overdue ตาม ISO 31000 Cl.6.6",
+            pill: "Next Review Date",
+            callout: "ISO 31000 Cl.6.6: คำนวณรอบทบทวนอัตโนมัติ (Monthly 30 วัน / Quarterly 90 วัน)",
+            subtitles: "ความเสี่ยงไม่ใช่เรื่องที่ประเมินครั้งเดียวแล้วจบไปครับ ตามมาตรฐาน <span class='sub-highlight'>ISO 31000 ข้อกำหนด 6.6</span> ระบุว่าต้องมีการทบทวนอย่างสม่ำเสมอ บนแดชบอร์ดระบบจะแสดงการ์ด <span class='sub-highlight'>REVIEW DUE</span> จำนวน 6 รายการ และแจกแจงรายการที่ค้างทบทวนในกล่อง <span class='sub-highlight'>OVERDUE BY LEVEL</span> ไว้อย่างชัดเจนครับ",
+            duration: 14,
+            cursorTarget: { x: 25.5, y: 23.7, click: false },
+            render: () => renderRealScene('./assets/screen_dashboard.png', [
+              { x: 19.2, y: 21.4, w: 12.7, h: 4.6, color: '#38bdf8', label: '⏰ REVIEW DUE: 6 รายการ (ISO 31000 Review Cycle)' },
+              { x: 59.9, y: 38.0, w: 21.5, h: 33.9, color: '#ef4444', label: '⚠️ OVERDUE BY LEVEL (งานค้างทบทวนตามระดับความรุนแรง)' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:45 - 1:35",
+            title: "Email Alert Notification & ส่งสรุปเข้า MS Teams",
+            pill: "Email Alerts",
+            callout: "✉️ 1-Click Dispatch: สรุปงานค้างส่งเมลหา PM • 💬 Copy to MS Teams ในคลิกเดียว",
+            subtitles: "ไม่เพียงเท่านั้น ระบบยังมีกลไก <span class='sub-highlight'>Email Alert Notification</span> เมื่อกดปุ่ม 1-Click Dispatch ระบบจะดึงสรุปรายการความเสี่ยงที่ค้างทบทวน มาเปิดในโปรแกรมอีเมลเพื่อส่งแจ้งเตือน PM ผู้รับผิดชอบได้ทันที หรือจะกดคัดลอกข้อความสรุปไปวางในห้องแชท Microsoft Teams ก็ทำได้ในพริบตาเดียวครับ",
+            duration: 15,
+            cursorTarget: { x: 26.2, y: 45.8, click: false },
+            render: () => renderRealScene('./assets/slide_10.png', [
+              { x: 5.9, y: 5.0, w: 60.0, h: 12.0, color: '#38bdf8', label: 'MONITORING & EXPORTS: การติดตามและส่งออกรายงาน' },
+              { x: 7.4, y: 40.7, w: 37.6, h: 10.2, color: '#38bdf8', label: '✉️ ข้อ 3: Email Alert Notification (1-Click Dispatch & Teams)' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:35 - 2:30",
+            title: "ส่งออกรายงานทางการเทมเพลต EPM-03-014AT1",
+            pill: "Official Excel Export",
+            callout: "เทมเพลตทางการ EPM-03-014AT1 • จัดฟอนต์ เส้นขอบ แถบสี Matrix ถูกต้อง 100% พร้อมประชุม",
+            subtitles: "เมื่อถึงรอบการประชุมบอร์ด หรือต้องส่งรายงานให้ลูกค้า ท่านไม่ต้องเสียเวลาก็อปปี้ข้อมูลไปจัดหน้าใหม่ครับ เพียงคลิกปุ่ม <span class='sub-highlight'>Export</span> และเลือกเทมเพลตทางการ EPM-03-014AT1 ระบบจะดึงข้อมูลทั้งหมดลงในฟอร์มมาตรฐานของ GCME พร้อมจัดฟอนต์ ใส่เส้นขอบ และแถบสี Matrix Badge ถูกต้องสมบูรณ์แบบ 100% พร้อมเปิดเข้าประชุมได้ทันทีครับ",
+            duration: 16,
+            cursorTarget: { x: 56.0, y: 67.8, click: true },
+            render: () => renderRealScene('./assets/screen_export.png', [
+              { x: 36.5, y: 28.0, w: 26.6, h: 44.2, color: '#38bdf8', label: '📋 Export Risk Register Modal (EPM-03-014AT1)' },
+              { x: 37.8, y: 38.4, w: 24.1, h: 12.6, color: '#f59e0b', label: 'โครงสร้างไฟล์: รูปแบบ สี ฟอนต์ Matrix ถูกต้อง 100%' },
+              { x: 50.2, y: 66.1, w: 11.7, h: 3.4, color: '#10b981', label: '📥 คลิกดาวน์โหลด: Export Excel (.xlsx)' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "2:30 - 3:00",
+            title: "สำรองฐานข้อมูล 1-Click Database SQL Dump",
+            pill: "Database Backup",
+            callout: "💾 1-Click SQL Dump • สำรองฐานข้อมูล PostgreSQL / MySQL ได้ตลอดเวลา ปลอดภัย 100%",
+            subtitles: "และสำหรับผู้ดูแลระบบหรือกรณีที่ต้องการสำรองข้อมูลเชิงลึก เรายังมีฟังก์ชัน <span class='sub-highlight'>1-Click SQL Dump</span> ให้ท่านดาวน์โหลดไฟล์ฐานข้อมูลสำรองได้ตลอดเวลา เพื่อความมั่นใจในความปลอดภัยและความต่อเนื่องทางธุรกิจครับ",
+            duration: 12,
+            cursorTarget: { x: 26.2, y: 65.2, click: false },
+            render: () => renderRealScene('./assets/slide_10.png', [
+              { x: 7.4, y: 61.1, w: 37.6, h: 8.3, color: '#8b5cf6', label: '💾 ข้อ 5: 1-Click SQL Dump (สำรองฐานข้อมูล PostgreSQL / MySQL)' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "3:00 - 3:30",
+            title: "สรุปความพร้อมรายงานทางการ & เตรียมเข้าสู่ตอนสุดท้าย",
+            pill: "Official Reporting",
+            callout: "รายงานทางการครบถ้วน ถูกต้องตามระเบียบบริษัท • ลดเวลาจัดเอกสารลง 100%",
+            subtitles: "ความถูกต้องตามระเบียบองค์กร และความรวดเร็วในการจัดทำรายงาน จะช่วยให้การประชุมติดตามความก้าวหน้าโครงการของท่านราบรื่นและเป็นมืออาชีพที่สุดครับ ในตอนสุดท้ายเราจะไปดู Best Practices กิจวัตร 5 นาทีต่อสัปดาห์กันครับ",
+            duration: 12,
+            cursorTarget: { x: 26.2, y: 79.1, click: false },
+            render: () => renderRealScene('./assets/slide_10.png', [
+              { x: 7.4, y: 76.7, w: 37.6, h: 4.9, color: '#10b981', label: '📋 รายงานพร้อมประชุม: ได้ไฟล์ Excel ทางการในคลิกเดียว' },
+              { x: 48.5, y: 69.0, w: 45.3, h: 18.5, color: '#38bdf8', label: '📊 ดึงข้อมูลลงแบบฟอร์มมาตรฐานของ GCME ถูกต้อง 100%' }
+            ], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.78); backdrop-filter:blur(4px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:36px; margin-bottom:10px;">📋</div>
+                <h3 style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;">จบตอนที่ 8: การติดตาม & รายงานทางการ</h3>
+                <p style="font-size:14px; color:#cbd5e1; max-width:500px; margin-bottom:20px;">เข้าสู่บทสรุปตอนสุดท้าย: กิจวัตร 5 นาทีต่อสัปดาห์เพื่อความสำเร็จของโครงการ</p>
+                <button class="mock-nav-btn primary" onclick="switchEpisode(9)" style="font-size:14px; padding:10px 24px; box-shadow:0 4px 14px rgba(37,99,235,0.5);">
+                  เข้าสู่ EP 09: Weekly Routine & Summary →
+                </button>
+              </div>
+            `)
+          }
+        ]
+      },
+      9: {
+        title: "EP 09: กิจวัตร 5 นาทีประจำสัปดาห์และช่องทางสนับสนุน (Weekly Routine & Support)",
+        slideRef: "Slide 11",
+        totalTime: 180,
+        scenes: [
+          {
+            id: 1,
+            timeLabel: "0:00 - 0:30",
+            title: "Weekly 4-Step Routine (5 นาทีต่อสัปดาห์)",
+            pill: "Weekly Routine",
+            callout: "⏱️ สละเวลาเพียง 5 นาทีต่อสัปดาห์ • บริหารความเสี่ยงให้เกิดประสิทธิผลสูงสุด",
+            subtitles: "มาถึงตอนสุดท้ายของซีรีส์นี้แล้วครับ เพื่อให้การบริหารความเสี่ยงเกิดประสิทธิผลสูงสุด โดยไม่เพิ่มภาระงานให้กับผู้จัดการโครงการ ฝ่ายบริหารโครงการกลางขอแนะนำ <span class='sub-highlight'>Weekly 4-Step Routine</span> กิจวัตร 4 ขั้นตอนง่ายๆ ที่ใช้เวลาเพียง 5 นาทีต่อสัปดาห์เท่านั้นครับ",
+            duration: 12,
+            cursorTarget: { x: 27.4, y: 24.5, click: false },
+            render: () => renderRealScene('./assets/slide_11.png', [
+              { x: 5.9, y: 5.0, w: 60.0, h: 12.0, color: '#38bdf8', label: '⏱️ สรุป 4 กิจวัตรประจำสัปดาห์สำหรับ PM: ดูแลความเสี่ยงใน 5 นาที' },
+              { x: 6.0, y: 20.0, w: 42.8, h: 70.0, color: '#10b981', label: '📋 Weekly 4-Step Routine สำหรับ PM (5 นาที/สัปดาห์)' }
+            ])
+          },
+          {
+            id: 2,
+            timeLabel: "0:30 - 1:25",
+            title: "เจาะลึก 4 สเต็ปปฏิบัติการประจำสัปดาห์",
+            pill: "4-Step Execution",
+            callout: "1. ตรวจ Dashboard ➔ 2. เคลียร์ Overdue ➔ 3. อัปเดต Excel Grid ➔ 4. ปิดความเสี่ยง Closed",
+            subtitles: "<span class='sub-highlight'>ขั้นที่ 1 ตรวจสอบ Dashboard:</span> เช็คความเสี่ยงสีส้มและแดง <span class='sub-highlight'>ขั้นที่ 2 เคลียร์ Overdue:</span> อัปเดตความคืบหน้ามาตรการที่เลยกำหนด <span class='sub-highlight'>ขั้นที่ 3 อัปเดตใน Excel Grid:</span> ใช้โหมดตารางด่วนบันทึก Action แล้วกด Save All Changes และ <span class='sub-highlight'>ขั้นที่ 4 ปิดความเสี่ยง:</span> ปรับสถานะเป็น Closed เพื่อลดคะแนน Residual ลงอย่างเป็นทางการครับ",
+            duration: 18,
+            cursorTarget: { x: 27.4, y: 50.0, click: false },
+            render: () => renderRealScene('./assets/slide_11.png', [
+              { x: 7.8, y: 26.0, w: 39.1, h: 48.0, color: '#38bdf8', label: '1. ตรวจ Dashboard | 2. เคลียร์ Overdue | 3. อัปเดต Excel | 4. ปิดความเสี่ยง' },
+              { x: 7.8, y: 76.7, w: 39.1, h: 10.6, color: '#f59e0b', label: '💡 สละเวลาเพียง 5 นาทีต่อสัปดาห์ ป้องกันต้นทุนบานปลาย' }
+            ])
+          },
+          {
+            id: 3,
+            timeLabel: "1:25 - 1:55",
+            title: "เมนู Risk Guide คู่มือออนไลน์ 24 ชั่วโมง",
+            pill: "Online Risk Guide",
+            callout: "📖 เมนู 'Risk Guide / คู่มือ' บนแถบ Navbar • ศึกษาขั้นตอนละเอียดได้ตลอด 24 ชั่วโมง",
+            subtitles: "เพียงสละเวลา 5 นาทีทุกวันจันทร์หรือวันศุกร์ ท่านจะสามารถดักจับปัญหาเล็กๆ ไม่ให้ลุกลามเป็นวิกฤตต้นทุนได้ครับ หากระหว่างการใช้งาน ท่านมีข้อสงสัย สามารถคลิกที่เมนู <span class='sub-highlight'>Risk Guide / คู่มือ</span> บน Navbar เพื่ออ่านคู่มือและวิธีใช้งานฉบับสมบูรณ์ได้ตลอด 24 ชั่วโมงครับ",
+            duration: 14,
+            cursorTarget: { x: 72.5, y: 40.7, click: false },
+            render: () => renderRealScene('./assets/slide_11.png', [
+              { x: 52.9, y: 28.7, w: 39.2, h: 7.4, color: '#64748b', label: '🌐 ข้อ 1: เว็บแอปพลิเคชัน www.gcmeapp.com/epopm' },
+              { x: 52.9, y: 37.0, w: 39.2, h: 7.4, color: '#38bdf8', label: '📖 ข้อ 2: คู่มือการใช้งานออนไลน์ (เมนู Risk Guide บน Navbar)' }
+            ])
+          },
+          {
+            id: 4,
+            timeLabel: "1:55 - 2:30",
+            title: "ช่องทางติดต่อทีมงานบริหารโครงการกลาง (E-PO-PM Support)",
+            pill: "Support & Contact",
+            callout: "Corporate Project Management Division (E-PO-PM) • พร้อมสนับสนุนผ่าน MS Teams & Email",
+            subtitles: "และหากท่านต้องการเพิ่มผู้ใช้งาน, ขอเปิดสิทธิ์โครงการใหม่ หรือต้องการคำปรึกษาเชิงเทคนิค ทีมงานฝ่ายบริหารโครงการกลาง <span class='sub-highlight'>E-PO-PM</span> พร้อมให้การสนับสนุนทุกท่านในทุกวันทำการผ่านทาง Microsoft Teams และ Email ครับ",
+            duration: 14,
+            cursorTarget: { x: 72.5, y: 82.0, click: false },
+            render: () => renderRealScene('./assets/slide_11.png', [
+              { x: 52.9, y: 45.4, w: 39.2, h: 8.3, color: '#f59e0b', label: '🛡️ ข้อ 3: ติดต่อ Admin เพื่อขอสิทธิ์เข้าถึง / Assign โครงการใหม่' },
+              { x: 52.9, y: 76.7, w: 39.2, h: 10.6, color: '#10b981', label: '🎯 ทีมงาน E-PO-PM สนับสนุนทุกวันทำการผ่าน MS Teams & Email' }
+            ])
+          },
+          {
+            id: 5,
+            timeLabel: "2:30 - 3:00",
+            title: "สรุปจบหลักสูตร Smart Risk Management ทั้ง 9 ตอน",
+            pill: "Course Complete",
+            callout: "🎉 สำเร็จหลักสูตร Smart Risk Management ครบทั้ง 9 ตอน • พร้อมส่งมอบโครงการสำเร็จ ปลอดภัย ในงบประมาณ",
+            subtitles: "ขอให้ทุกท่านสนุกกับการใช้งาน <span class='sub-highlight'>Smart Risk Management</span> และส่งมอบโครงการได้อย่างสำเร็จ ปลอดภัย และอยู่ในงบประมาณครับ ขอขอบคุณทุกท่านที่ติดตามรับชมจนจบหลักสูตร สวัสดีครับ",
+            duration: 12,
+            cursorTarget: { x: 50, y: 50, click: true },
+            render: () => renderRealScene('./assets/slide_11.png', [], `
+              <div style="position:absolute; inset:0; background:rgba(2,6,23,0.85); backdrop-filter:blur(6px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div style="font-size:48px; margin-bottom:12px;">🏆</div>
+                <h2 style="font-size:26px; font-weight:800; color:#fff; margin-bottom:8px;">ยินดีด้วย! ท่านผ่านการอบรมครบทั้ง 9 ตอนเรียบร้อยแล้ว</h2>
+                <p style="font-size:15px; color:#cbd5e1; max-width:580px; margin-bottom:24px;">Smart Risk Management พร้อมช่วยให้ท่านบริหารความเสี่ยงโครงการได้อย่างแม่นยำ รวดเร็ว ตามมาตรฐานสากล ISO 31000 และ COSO ERM</p>
+                <div style="display:flex; gap:14px;">
+                  <button class="mock-nav-btn" onclick="switchEpisode(1)" style="background:#1e293b; color:#38bdf8; font-size:14px; padding:12px 24px;">
+                    กลับไปเริ่มต้น EP 01 🏠
+                  </button>
+                  <a href="https://www.gcmeapp.com/epopm/" target="_blank" class="mock-nav-btn primary" style="font-size:14px; padding:12px 24px; text-decoration:none; box-shadow:0 4px 16px rgba(37,99,235,0.6);">
+                    เข้าสู่ระบบจริง GCME Smart Risk 🚀
+                  </a>
+                </div>
+              </div>
+            `)
+          }
+        ]
+      }
+    };
+
+    // ==========================================
+    // DYNAMIC DURATION CALIBRATION
+    // Ensures scene duration accommodates Thai narration with max 2.5s transition gap (<= 4s)
+    // ==========================================
+    const MAX_POST_SPEECH_DELAY = 2.5; // Strictly <= 4 seconds interval between narrations
+
+    function calibrateDurations() {
+      for (const epKey in EPISODES) {
+        const ep = EPISODES[epKey];
+        let total = 0;
+        ep.scenes.forEach(scene => {
+          const clean = scene.subtitles.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+          // Thai speech at normal rate is ~11 characters per second
+          // Add 2.5s buffer (strictly <= 4s)
+          const estSec = Math.ceil(clean.length / 11) + MAX_POST_SPEECH_DELAY;
+          scene.duration = estSec;
+          scene.initialDuration = estSec;
+          total += scene.duration;
+        });
+        ep.totalTime = total;
+      }
+    }
+    calibrateDurations();
+
+    // ==========================================
+    // PLAYER STATE & CONTROLLER
+    // ==========================================
+    let currentEpisode = 1;
+    let currentSceneIndex = 0;
+    let currentMode = 'sim'; // 'sim' | 'live'
+    let isPlaying = false;
+    let isPausedForLogin = false;
+    let playbackSpeed = 1.0;
+    let timerInterval = null;
+    let sceneElapsedTime = 0;
+    let postSpeechElapsed = 0;
+    let ttsEnabled = true;
+    let currentUtterance = null;
+    let isSpeaking = false;
+    let speechDone = false;
+    let ttsKeepAliveTimer = null;
+
+    // DOM Elements
+    const screenStage = document.getElementById('screenStage');
+    const simStage = document.getElementById('simStage');
+    const liveStage = document.getElementById('liveStage');
+    const liveFrame = document.getElementById('liveFrame');
+    const liveHelperBanner = document.getElementById('liveHelperBanner');
+    const liveHelperText = document.getElementById('liveHelperText');
+    const pauseLoginBtn = document.getElementById('pauseLoginBtn');
+    const simModeBtn = document.getElementById('simModeBtn');
+    const liveModeBtn = document.getElementById('liveModeBtn');
+
+    const subtitlesBox = document.getElementById('subtitlesBox');
+    const narratorBadge = document.getElementById('narratorBadge');
+    const narratorWave = document.getElementById('narratorWave');
+    const narratorText = document.getElementById('narratorText');
+    const calloutBanner = document.getElementById('calloutBanner');
+    const calloutPill = document.getElementById('calloutPill');
+    const calloutText = document.getElementById('calloutText');
+    const virtualCursor = document.getElementById('virtualCursor');
+    const clickRipple = document.getElementById('clickRipple');
+    const spotlightRing = document.getElementById('spotlightRing');
+    const timelineFill = document.getElementById('timelineFill');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const scriptList = document.getElementById('scriptList');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const sceneCountTag = document.getElementById('sceneCountTag');
+    const ttsBtn = document.getElementById('ttsBtn');
+    const speedBtn = document.getElementById('speedBtn');
+
+    // Update narrator UI badge status
+    function updateNarratorUI(speaking, message) {
+      if (!narratorBadge || !narratorText) return;
+      if (!ttsEnabled) {
+        narratorBadge.style.display = 'none';
+        return;
+      }
+      narratorBadge.style.display = 'inline-flex';
+      if (speaking) {
+        narratorBadge.className = 'narrator-badge';
+        if (narratorWave) narratorWave.style.display = 'inline-flex';
+        narratorText.innerText = message || '🔊 กำลังอ่านเสียงบรรยาย... (รออ่านจบก่อนเปลี่ยนหัวข้อ)';
+      } else {
+        narratorBadge.className = 'narrator-badge finished';
+        if (narratorWave) narratorWave.style.display = 'none';
+        narratorText.innerText = message || '✅ อ่านเสียงบรรยายจบครบถ้วนแล้ว';
+      }
+    }
+
+    // Switch between Simulation Mode and Live Web Mode
+    function switchMode(mode) {
+      currentMode = mode;
+      simModeBtn.classList.toggle('active', mode === 'sim');
+      liveModeBtn.classList.toggle('live-active', mode === 'live');
+      
+      if (mode === 'live') {
+        simStage.style.display = 'none';
+        liveStage.style.display = 'flex';
+        liveHelperBanner.style.display = 'flex';
+        virtualCursor.style.display = 'none';
+        if (liveFrame.src === 'about:blank' || !liveFrame.src) {
+          liveFrame.src = 'https://www.gcmeapp.com/epopm/';
+        }
+      } else {
+        simStage.style.display = 'block';
+        liveStage.style.display = 'none';
+        liveHelperBanner.style.display = 'none';
+        virtualCursor.style.display = 'block';
+      }
+      renderScene(currentSceneIndex);
+    }
+
+    function reloadLiveFrame() {
+      if (liveFrame) {
+        liveFrame.src = 'https://www.gcmeapp.com/epopm/';
+      }
+    }
+
+    function togglePauseForLogin() {
+      if (!isPausedForLogin) {
+        pause();
+        isPausedForLogin = true;
+        pauseLoginBtn.innerHTML = '▶️ ล็อกอินแล้ว (คลิกเพื่อไปต่อ)';
+        pauseLoginBtn.style.background = '#10b981';
+        pauseLoginBtn.style.color = '#fff';
+      } else {
+        isPausedForLogin = false;
+        pauseLoginBtn.innerHTML = '⏸️ หยุดวิดีโอเพื่อล็อกอิน';
+        pauseLoginBtn.style.background = '#f59e0b';
+        pauseLoginBtn.style.color = '#0f172a';
+        play();
+      }
+    }
+
+    // Web Audio Click & Chime Synth
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq = 600, duration = 0.08, type = 'sine') {
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // TTS Synthesis with Guaranteed Full-Completion Sync
+    function speakText(text, onComplete) {
+      if (!ttsEnabled || !window.speechSynthesis) {
+        isSpeaking = false;
+        speechDone = true;
+        updateNarratorUI(false, 'โหมดปิดเสียงพากย์');
+        if (onComplete) onComplete();
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      clearInterval(ttsKeepAliveTimer);
+
+      const cleanText = text.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+      if (!cleanText) {
+        isSpeaking = false;
+        speechDone = true;
+        updateNarratorUI(false, 'ไม่มีข้อความบรรยาย');
+        if (onComplete) onComplete();
+        return;
+      }
+
+      currentUtterance = new SpeechSynthesisUtterance(cleanText);
+      currentUtterance.lang = 'th-TH';
+      currentUtterance.rate = 1.0 * playbackSpeed;
+      
+      // Try to find a Thai voice if available
+      const voices = window.speechSynthesis.getVoices();
+      const thaiVoice = voices.find(v => v.lang.startsWith('th') || v.name.includes('Thai') || v.name.includes('Premwadee') || v.name.includes('Niwat') || v.name.includes('Pattara'));
+      if (thaiVoice) currentUtterance.voice = thaiVoice;
+
+      isSpeaking = true;
+      speechDone = false;
+      postSpeechElapsed = 0;
+      updateNarratorUI(true, '🔊 กำลังอ่านเสียงบรรยาย... (รออ่านจบก่อนเปลี่ยนหัวข้อ)');
+
+      currentUtterance.onstart = () => {
+        isSpeaking = true;
+        speechDone = false;
+        postSpeechElapsed = 0;
+        updateNarratorUI(true, '🔊 กำลังอ่านเสียงบรรยาย... (รออ่านจบก่อนเปลี่ยนหัวข้อ)');
+      };
+
+      currentUtterance.onend = () => {
+        isSpeaking = false;
+        speechDone = true;
+        postSpeechElapsed = 0;
+        clearInterval(ttsKeepAliveTimer);
+        const curEp = EPISODES[currentEpisode];
+        if (curEp && curEp.scenes[currentSceneIndex]) {
+          curEp.scenes[currentSceneIndex].duration = sceneElapsedTime + MAX_POST_SPEECH_DELAY;
+        }
+        updateNarratorUI(false, `✅ อ่านจบแล้ว • ไปหัวข้อถัดไปใน ${MAX_POST_SPEECH_DELAY} วิ`);
+        if (onComplete) onComplete();
+      };
+
+      currentUtterance.onerror = (e) => {
+        isSpeaking = false;
+        speechDone = true;
+        postSpeechElapsed = 0;
+        clearInterval(ttsKeepAliveTimer);
+        const curEp = EPISODES[currentEpisode];
+        if (curEp && curEp.scenes[currentSceneIndex]) {
+          curEp.scenes[currentSceneIndex].duration = sceneElapsedTime + 1.0;
+        }
+        updateNarratorUI(false, 'พร้อมเปลี่ยนหัวข้อ');
+        if (onComplete) onComplete();
+      };
+
+      window.speechSynthesis.speak(currentUtterance);
+
+      // Chrome keep-alive heartbeat for long utterances
+      ttsKeepAliveTimer = setInterval(() => {
+        if (window.speechSynthesis && window.speechSynthesis.speaking && isSpeaking) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        } else {
+          clearInterval(ttsKeepAliveTimer);
+        }
+      }, 7000);
+    }
+
+    function stopTTS() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      isSpeaking = false;
+      speechDone = true;
+      postSpeechElapsed = 0;
+      clearInterval(ttsKeepAliveTimer);
+      updateNarratorUI(false, 'หยุดเสียงบรรยาย');
+    }
+
+    // Switch Episode
+    function switchEpisode(epNum) {
+      stopTTS();
+      pause();
+      currentEpisode = epNum;
+      currentSceneIndex = 0;
+      sceneElapsedTime = 0;
+      postSpeechElapsed = 0;
+      speechDone = false;
+      isSpeaking = false;
+      
+      // Update Episode Tabs
+      document.querySelectorAll('.ep-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === epNum);
+      });
+
+      drawerTitle.innerText = `สคริปต์บทพากย์ EP 0${epNum}`;
+      sceneCountTag.innerText = `${EPISODES[epNum].scenes.length} ฉาก`;
+
+      renderDrawerScripts();
+      renderScene(0);
+      updateTimeline();
+    }
+
+    // Render Scene Script Drawer
+    function renderDrawerScripts() {
+      const ep = EPISODES[currentEpisode];
+      scriptList.innerHTML = ep.scenes.map((s, idx) => `
+        <div class="scene-card ${idx === currentSceneIndex ? 'active' : ''}" onclick="jumpToScene(${idx})">
+          <div class="scene-card-header">
+            <span class="scene-name">${s.title}</span>
+            <span class="scene-time">${s.timeLabel}</span>
+          </div>
+          <div class="scene-snippet">${s.subtitles.replace(/<[^>]*>/g, '')}</div>
+        </div>
+      `).join('');
+    }
+
+    // Render Current Scene on Viewport
+    function renderScene(index) {
+      const ep = EPISODES[currentEpisode];
+      if (index < 0 || index >= ep.scenes.length) return;
+      
+      stopTTS();
+      currentSceneIndex = index;
+      sceneElapsedTime = 0;
+      postSpeechElapsed = 0;
+      speechDone = false;
+      isSpeaking = false;
+      const scene = ep.scenes[index];
+
+      // Update Callout Banner
+      calloutPill.innerText = scene.pill;
+      calloutText.innerText = scene.callout;
+
+      // Update Subtitles
+      subtitlesBox.innerHTML = scene.subtitles;
+
+      if (currentMode === 'sim') {
+        simStage.style.display = 'block';
+        liveStage.style.display = 'none';
+        virtualCursor.style.display = 'block';
+        liveHelperBanner.style.display = 'none';
+
+        // Update Scene Content in Simulation
+        simStage.innerHTML = `
+          <div class="scene-view active">
+            ${scene.render()}
+          </div>
+        `;
+
+        // Cursor movement & animation (percentage-based relative to stage)
+        if (scene.cursorTarget) {
+          const rect = screenStage.getBoundingClientRect();
+          const targetX = (scene.cursorTarget.x / 100) * rect.width;
+          const targetY = (scene.cursorTarget.y / 100) * rect.height;
+          virtualCursor.style.transform = `translate(${targetX}px, ${targetY}px)`;
+          if (scene.cursorTarget.click) {
+            setTimeout(() => {
+              clickRipple.classList.add('clicked');
+              playBeep(880, 0.05);
+              setTimeout(() => clickRipple.classList.remove('clicked'), 500);
+            }, 800);
+          }
+        }
+      } else {
+        // LIVE WEB MODE
+        simStage.style.display = 'none';
+        liveStage.style.display = 'flex';
+        virtualCursor.style.display = 'none';
+        liveHelperBanner.style.display = 'flex';
+
+        // Update live helper message based on episode
+        if (currentEpisode === 2) {
+          liveHelperText.innerHTML = '🔑 <b>ขั้นตอน Login:</b> ท่านสามารถกรอก Email หรือคลิก <i>Sign in with Microsoft</i> บนเว็บด้านล่างเพื่อเข้าสู่ระบบจริงได้เลยครับ';
+        } else if (currentEpisode === 3) {
+          liveHelperText.innerHTML = '➕ <b>ขั้นตอนสร้างโครงการ:</b> คลิกปุ่ม <i>+ New Project</i> บน Navbar ของเว็บจริงเพื่อทำตามสเต็ป';
+        } else if (currentEpisode === 4) {
+          liveHelperText.innerHTML = '📊 <b>ขั้นตอนแดชบอร์ด:</b> คลิกที่เมนู <i>Dashboard</i> หรือคลิกบนช่องเมทริกซ์ 5x5 เพื่อกรองข้อมูลจริง';
+        } else if (currentEpisode === 5) {
+          liveHelperText.innerHTML = '🤖 <b>ขั้นตอน AI Copilot:</b> เปิดฟอร์มความเสี่ยงแล้วคลิกปุ่ม <i>✨ AI Suggest</i> เพื่อทดสอบสร้างมาตรการอัตโนมัติ';
+        } else if (currentEpisode === 6) {
+          liveHelperText.innerHTML = '📑 <b>ขั้นตอน Excel Grid:</b> คลิกที่แท็บ <i>Excel Grid</i> บน Navbar เพื่อทดลองแก้ไขตารางแบบ Real-time';
+        } else if (currentEpisode === 7) {
+          liveHelperText.innerHTML = '🎯 <b>ขั้นตอน Pre-Bid TOR Scanner:</b> คลิกแท็บ <i>TOR Risk Assessment</i> บนเว็บจริง แล้วลากวางไฟล์ TOR (PDF/Word) เพื่อให้ AI สแกน LDs และคำนวณ EMV ครับ';
+        } else if (currentEpisode === 8) {
+          liveHelperText.innerHTML = '📥 <b>ขั้นตอน Export & Monitoring:</b> คลิกแท็บ <i>Export</i> เพื่อดาวน์โหลดรายงานแบบฟอร์มทางการ EPM-03-014AT1 หรือดูสถานะแจ้งเตือน Review Overdue ครับ';
+        } else if (currentEpisode === 9) {
+          liveHelperText.innerHTML = '🌟 <b>ขั้นตอน 5-Minute Routine:</b> ปฏิบัติตาม 4 สเต็ปประจำสัปดาห์ หรือคลิก <i>Online Risk Guide</i> บน Navbar เพื่อดูคู่มือฉบับเต็มได้เลยครับ';
+        } else {
+          liveHelperText.innerHTML = '🌐 <b>เว็บจริง:</b> ท่านสามารถใช้งานเว็บจริงด้านล่างควบคู่ไปกับคำบรรยายได้ทันที';
+        }
+      }
+
+      // Update active card in script list
+      document.querySelectorAll('.scene-card').forEach((card, idx) => {
+        card.classList.toggle('active', idx === currentSceneIndex);
+      });
+
+      playBeep(440, 0.1);
+      if (isPlaying) {
+        speakText(scene.subtitles);
+      } else {
+        updateNarratorUI(false, '⏸️ หยุดชั่วคราว (กด Spacebar เพื่อเริ่มบรรยาย)');
+      }
+    }
+
+    // Playback Loop
+    function togglePlay() {
+      if (isPlaying) {
+        pause();
+      } else {
+        play();
+      }
+    }
+
+    function play() {
+      isPlaying = true;
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'block';
+
+      const ep = EPISODES[currentEpisode];
+      const scene = ep.scenes[currentSceneIndex];
+
+      if (window.speechSynthesis && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        isSpeaking = true;
+        updateNarratorUI(true, '🔊 กำลังอ่านเสียงบรรยายต่อ... (รออ่านจบก่อนเปลี่ยนหัวข้อ)');
+      } else if (!isSpeaking && !speechDone) {
+        speakText(scene.subtitles);
+      }
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        const curEp = EPISODES[currentEpisode];
+        const curScene = curEp.scenes[currentSceneIndex];
+
+        let canAdvance = false;
+
+        if (ttsEnabled) {
+          if (!speechDone) {
+            // While speech is actively reciting, increment elapsed time smoothly
+            sceneElapsedTime += 0.2 * playbackSpeed;
+          } else {
+            // Speech is done! Transition gap strictly <= 4 seconds (MAX_POST_SPEECH_DELAY = 2.5s)
+            postSpeechElapsed += 0.2 * playbackSpeed;
+            sceneElapsedTime += 0.2 * playbackSpeed;
+            const remaining = Math.max(0, MAX_POST_SPEECH_DELAY - postSpeechElapsed);
+            if (remaining > 0) {
+              updateNarratorUI(false, `✅ อ่านจบแล้ว • ไปหัวข้อถัดไปใน ${remaining.toFixed(1)} วิ`);
+            }
+            if (postSpeechElapsed >= MAX_POST_SPEECH_DELAY) {
+              canAdvance = true;
+            }
+          }
+        } else {
+          // If TTS is disabled, advance when time reaches duration
+          sceneElapsedTime += 0.2 * playbackSpeed;
+          if (sceneElapsedTime >= curScene.duration) {
+            canAdvance = true;
+          }
+        }
+
+        if (canAdvance) {
+          // Advance to next scene
+          if (currentSceneIndex < curEp.scenes.length - 1) {
+            nextScene();
+          } else {
+            // End of episode
+            if (currentEpisode < 9) {
+              switchEpisode(currentEpisode + 1);
+              play();
+            } else {
+              pause();
+            }
+          }
+        }
+        updateTimeline();
+      }, 200);
+    }
+
+    function pause() {
+      isPlaying = false;
+      playIcon.style.display = 'block';
+      pauseIcon.style.display = 'none';
+      if (timerInterval) clearInterval(timerInterval);
+      clearInterval(ttsKeepAliveTimer);
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+      }
+      updateNarratorUI(false, '⏸️ หยุดชั่วคราว');
+    }
+
+    function nextScene() {
+      const ep = EPISODES[currentEpisode];
+      if (currentSceneIndex < ep.scenes.length - 1) {
+        renderScene(currentSceneIndex + 1);
+      }
+    }
+
+    function prevScene() {
+      if (currentSceneIndex > 0) {
+        renderScene(currentSceneIndex - 1);
+      }
+    }
+
+    function jumpToScene(idx) {
+      renderScene(idx);
+    }
+
+    function updateTimeline() {
+      const ep = EPISODES[currentEpisode];
+      let accumulated = 0;
+      let totalDuration = 0;
+      
+      ep.scenes.forEach((s, idx) => {
+        if (idx < currentSceneIndex) accumulated += s.duration;
+        totalDuration += s.duration;
+      });
+      accumulated += Math.min(sceneElapsedTime, ep.scenes[currentSceneIndex].duration);
+
+      const pct = Math.min(100, (accumulated / Math.max(1, totalDuration)) * 100);
+      timelineFill.style.width = `${pct}%`;
+
+      const curM = Math.floor(accumulated / 60).toString().padStart(2, '0');
+      const curS = Math.floor(accumulated % 60).toString().padStart(2, '0');
+      const totM = Math.floor(totalDuration / 60).toString().padStart(2, '0');
+      const totS = Math.floor(totalDuration % 60).toString().padStart(2, '0');
+
+      timeDisplay.innerText = `${curM}:${curS} / ${totM}:${totS}`;
+    }
+
+    function scrubTimeline(e) {
+      const bar = document.getElementById('timelineBar');
+      const rect = bar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+
+      const ep = EPISODES[currentEpisode];
+      const targetSceneIndex = Math.min(
+        ep.scenes.length - 1,
+        Math.floor(ratio * ep.scenes.length)
+      );
+      renderScene(targetSceneIndex);
+    }
+
+    function cycleSpeed() {
+      const speeds = [1.0, 1.25, 1.5];
+      const curIdx = speeds.indexOf(playbackSpeed);
+      playbackSpeed = speeds[(curIdx + 1) % speeds.length];
+      speedBtn.innerText = `${playbackSpeed.toFixed(1)}x`;
+      if (isPlaying) {
+        speakText(EPISODES[currentEpisode].scenes[currentSceneIndex].subtitles);
+      }
+    }
+
+    function toggleTTS() {
+      ttsEnabled = !ttsEnabled;
+      ttsBtn.style.color = ttsEnabled ? '#cbd5e1' : '#64748b';
+      if (!ttsEnabled) {
+        stopTTS();
+        updateNarratorUI(false, 'ปิดเสียงพากย์');
+      } else {
+        updateNarratorUI(false, 'เปิดเสียงพากย์');
+        if (isPlaying) {
+          speakText(EPISODES[currentEpisode].scenes[currentSceneIndex].subtitles);
+        }
+      }
+    }
+
+    function toggleFullscreen() {
+      const elem = document.getElementById('videoViewport');
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === 'ArrowRight') {
+        nextScene();
+      } else if (e.code === 'ArrowLeft') {
+        prevScene();
+      } else if (e.code === 'KeyF') {
+        toggleFullscreen();
+      } else if (e.code === 'KeyM') {
+        toggleTTS();
+      }
+    });
+
+    // Initialize voices
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = () => {};
+    }
+
+    // Initial mount
+    switchEpisode(1);
+  </script>
+</body>
+</html>

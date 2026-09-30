@@ -1,4 +1,4 @@
-# ProRisk Manager AI — ขั้นตอนการทำงานและคู่มือการใช้งาน
+# Smart Risk Management — ขั้นตอนการทำงานและคู่มือการใช้งาน
 
 **Version:** 0.2.20260717 | **Updated:** 17 กรกฎาคม 2026
 
@@ -6,7 +6,7 @@
 
 ## 📌 ภาพรวมระบบ (System Overview)
 
-**ProRisk Manager AI** เป็นเว็บแอปพลิเคชันสำหรับบริหารจัดการความเสี่ยงของโครงการ EPC (Engineering, Procurement, Construction) พัฒนาด้วย React + TypeScript บน Firebase โดยมีระบบ AI (Groq Llama-3) ช่วยแนะนำแผนการจัดการความเสี่ยงอัตโนมัติ
+**Smart Risk Management** (E-PO-PM) เป็นเว็บแอปพลิเคชันสำหรับบริหารจัดการความเสี่ยงของโครงการ EPC (Engineering, Procurement, Construction) พัฒนาด้วย React + TypeScript บน Firebase โดยมีระบบ AI (Groq Llama-3) ช่วยแนะนำแผนการจัดการความเสี่ยงอัตโนมัติ
 
 ### กลุ่มผู้ใช้งาน
 
@@ -459,5 +459,5 @@ User Browser
 
 ---
 
-*เอกสารนี้ครอบคลุมการทำงานของ ProRisk Manager AI v0.2*  
+*เอกสารนี้ครอบคลุมการทำงานของ Smart Risk Management v0.2*  
 *สร้าง: มีนาคม 2026*

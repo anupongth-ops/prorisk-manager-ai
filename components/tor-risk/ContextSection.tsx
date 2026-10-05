@@ -6,7 +6,6 @@ import {
     DollarSign,
     Target,
     Layers,
-    AlertTriangle,
     Plus,
     Trash2,
     Sparkles,

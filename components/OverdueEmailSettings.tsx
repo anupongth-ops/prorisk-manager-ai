@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Mail, Clock, Bell, CheckCircle2, AlertTriangle, Send, Copy,
-  Check, Save, RefreshCw, Info, Calendar, ShieldCheck, UserCheck, ChevronRight, Filter
+  Check, Save, RefreshCw, Info, ShieldCheck, UserCheck
 } from 'lucide-react';
-import { RiskItem, getRiskLevel, getRiskLevelColor, formatDateDisplay } from '../types';
+import { RiskItem, getRiskLevel, formatDateDisplay } from '../types';
 import { db } from '../services/firebaseService';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 

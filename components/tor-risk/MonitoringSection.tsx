@@ -2,12 +2,8 @@ import React from 'react';
 import {
     ClipboardCheck,
     UserCheck,
-    Calendar,
-    Clock,
     FileSignature,
-    CheckCircle2,
     Shield,
-    Sparkles,
     FileText
 } from 'lucide-react';
 import {

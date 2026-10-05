@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Users, Database, Shield, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle, Clock, ShieldAlert, Edit2, Save, FolderLock, UserPlus, Info, Zap, Mail } from 'lucide-react';
-import { fetchAllUsers, deleteUserRecord, createSystemBackup, updateUserPermissions } from '../services/adminService';
+import { X, Users, Database, Shield, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle, ShieldAlert, Edit2, Save, FolderLock, UserPlus, Info, Zap, Mail } from 'lucide-react';
+import { fetchAllUsers, deleteUserRecord, updateUserPermissions } from '../services/adminService';
 import { isPermissionError, registerWithDefaultPassword } from '../services/firebaseService';
 import { fetchCompleteDatabase, generatePostgreSqlDump, generateMySqlDump } from '../services/sqlBackupService';
 import { PermissionsGuide } from './PermissionsGuide';

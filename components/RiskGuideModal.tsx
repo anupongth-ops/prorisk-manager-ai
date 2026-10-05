@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
   X, BookOpen, AlertTriangle, Activity, TrendingDown, CheckCircle2,
-  RotateCcw, Eye, ChevronRight, Info, Zap, Shield, Clock, Target,
+  RotateCcw, Eye, ChevronRight, Info, Zap, Shield, Clock,
   BarChart2, ArrowRight, Circle, Play, Award
 } from 'lucide-react';
-import { getRiskLevel, IMPACT_LABELS, LIKELIHOOD_LABELS, getRiskLevelColor, getRiskScore } from '../types';
+import { getRiskLevel, IMPACT_LABELS, LIKELIHOOD_LABELS, getRiskScore } from '../types';
 
 interface RiskGuideModalProps {
   onClose: () => void;
@@ -145,19 +145,6 @@ const StepBadge: React.FC<{ step: number; label: string; color: string }> = ({ s
       {step}
     </div>
     <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{label}</h3>
-  </div>
-);
-
-const InfoCard: React.FC<{ title: string; desc: string; example?: string; color?: string; score?: string }> = ({
-  title, desc, example, color = 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700', score
-}) => (
-  <div className={`border rounded-xl p-4 space-y-1 ${color}`}>
-    <div className="flex items-center justify-between">
-      <span className="font-semibold text-gray-900 dark:text-slate-100 text-sm">{title}</span>
-      {score && <span className="text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full px-2 py-0.5 text-gray-600 dark:text-slate-300 font-mono">{score}</span>}
-    </div>
-    <p className="text-xs text-gray-600 dark:text-slate-400">{desc}</p>
-    {example && <p className="text-[11px] text-gray-400 dark:text-slate-500 italic">ตัวอย่าง: {example}</p>}
   </div>
 );
 
@@ -833,7 +820,7 @@ const GlossaryTab: React.FC = () => (
           { label: 'เอกสารหลัก', value: 'EPM-03-014 Project Risk Management Rev F3 (01-Feb-26)' },
           { label: 'มาตรฐานสากล', value: 'ISO 31000:2018 Risk Management — Guidelines' },
           { label: 'แบบฟอร์ม', value: 'EPM-03-014AT1 – Typical Project Risk Register.xlsx' },
-          { label: 'ระบบ', value: 'Smart Risk Management v0.2 (2026-07-17)' },
+          { label: 'ระบบ', value: 'Smart Risk Management v0.3 (2026-10-05)' },
         ].map(item => (
           <div key={item.label} className="flex gap-2">
             <span className="text-slate-400 flex-shrink-0">{item.label}:</span>

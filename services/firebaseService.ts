@@ -9,12 +9,13 @@ import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, updatePassword, User, Auth,
   sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential,
-  OAuthProvider, signInWithPopup
+  OAuthProvider, signInWithPopup, signInAnonymously
 } from 'firebase/auth';
 import { RiskItem, UserProfile, RiskAppetite, ReviewFrequency } from '../types';
 import { TorProject } from '../types/torRisk';
 import { BASELINE_RISKS, ProjectModifier } from '../constants/riskConstants';
 import { calculateAdjustedScore } from './riskBaselineService';
+import { KNOWN_EMPLOYEE_ACCOUNTS } from './gcmeAuthService';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCAyFUBlA6dYUs0DybaMIO1ar1RkA9k3sY",
@@ -50,7 +51,16 @@ if (isConfigured()) {
 const COLLECTION_NAME = 'risks';
 const USERS_COLLECTION = 'users';
 const DEFAULT_PASSWORD = 'gcme1234567';
-const ADMIN_EMAIL = 'anupong.th@gmail.com';
+export const ADMIN_EMAILS = [
+  'anupong.th@gmail.com',
+  'anupong.th@pttgcgroup.com',
+  '26004950@pttgcgroup.com',
+  'epopmgcme@gmail.com'
+];
+export const isAdminEmail = (email?: string): boolean => {
+  if (!email) return false;
+  return ADMIN_EMAILS.some(a => a.toLowerCase() === email.toLowerCase());
+};
 const BASELINE_COLLECTION = 'baseline_risks';
 
 // Listener Registry for cleanup before logout
@@ -100,14 +110,14 @@ export const loginWithEmail = async (email: string, password: string) => {
     if (!docSnap.exists()) {
       await setDoc(docRef, {
         email: email,
-        role: email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'Admin' : 'User',
+        role: isAdminEmail(email) ? 'Admin' : 'User',
         assignedProjects: [],
         isDefaultPassword: password === DEFAULT_PASSWORD,
         createdAt: new Date().toISOString()
       });
     } else {
       // Auto-promote default admin if they were just a 'User'
-      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && (docSnap.data() as any).role !== 'Admin') {
+      if (isAdminEmail(email) && (docSnap.data() as any).role !== 'Admin') {
         await updateDoc(docRef, { role: 'Admin' });
       }
     }
@@ -133,19 +143,265 @@ export const loginWithMicrosoft = async () => {
     if (!docSnap.exists()) {
       await setDoc(docRef, {
         email: userEmail,
-        role: userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'Admin' : 'User',
+        role: isAdminEmail(userEmail) ? 'Admin' : 'User',
         assignedProjects: [],
         isDefaultPassword: false,
         createdAt: new Date().toISOString()
       });
     } else {
-      if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase() && (docSnap.data() as any).role !== 'Admin') {
+      if (isAdminEmail(userEmail) && (docSnap.data() as any).role !== 'Admin') {
         await updateDoc(docRef, { role: 'Admin' });
       }
     }
   }
 
   return credential;
+};
+
+/**
+ * Create or update a Firestore user profile for a GCME SSO user, and ensure
+ * the user is signed in to Firebase Auth so that Firestore Security Rules
+ * (`request.auth != null`) allow database read/write operations.
+ *
+ * DEDUPLICATION STRATEGY:
+ * 1. Search for existing profile by email, employeeId, username FIRST.
+ * 2. If found, reuse that document. Delete any duplicates.
+ * 3. Only then do Firebase Auth sign-in (using the canonical email).
+ * 4. If no existing profile, sign in/up to Firebase Auth, then create profile under that UID.
+ *
+ * @param userInfo - User information returned from GCME SSO / JWT token
+ * @returns An authenticated user object compatible with the app's auth context.
+ */
+export const loginWithGCMEUser = async (userInfo: {
+  sub: string;
+  email: string;
+  name?: string;
+  given_name?: string;
+  family_name?: string;
+  department?: string;
+  jobTitle?: string;
+  username?: string;
+  rawPayload?: Record<string, any>;
+}) => {
+  if (!db) throw new Error('auth-not-initialized');
+
+  let email = userInfo.email.trim().toLowerCase();
+  const employeeId = (userInfo.username || (email.includes('@') ? email.split('@')[0] : '')).trim();
+  const known = employeeId ? KNOWN_EMPLOYEE_ACCOUNTS[employeeId] : undefined;
+  if (known?.email) {
+    email = known.email.trim().toLowerCase();
+  }
+
+  // ─────────────────────────────────────────────────────
+  // STEP 1: Search for ALL existing profile candidates
+  // ─────────────────────────────────────────────────────
+  type CandidateDoc = { id: string; data: any; source: string };
+  const candidateMap = new Map<string, CandidateDoc>();
+
+  const addCandidate = (snap: QuerySnapshot<DocumentData>, source: string) => {
+    snap.forEach(d => {
+      if (!candidateMap.has(d.id)) {
+        candidateMap.set(d.id, { id: d.id, data: d.data(), source });
+      }
+    });
+  };
+
+  // 1a. Search by email
+  if (email) {
+    try {
+      const qEmail = query(collection(db, USERS_COLLECTION), where('email', '==', email));
+      addCandidate(await getDocs(qEmail), 'email');
+    } catch (_) { /* ignore */ }
+  }
+
+  // 1b. Search by known corporate email if different
+  if (known?.email && known.email.toLowerCase() !== email) {
+    try {
+      const qKnown = query(collection(db, USERS_COLLECTION), where('email', '==', known.email.toLowerCase()));
+      addCandidate(await getDocs(qKnown), 'knownEmail');
+    } catch (_) { /* ignore */ }
+  }
+
+  // 1c. Search by employeeId (numeric username like "26004950")
+  if (employeeId && /^\d+$/.test(employeeId)) {
+    try {
+      const qEmp = query(collection(db, USERS_COLLECTION), where('employeeId', '==', employeeId));
+      addCandidate(await getDocs(qEmp), 'employeeId');
+    } catch (_) { /* ignore */ }
+    try {
+      const qUser = query(collection(db, USERS_COLLECTION), where('username', '==', employeeId));
+      addCandidate(await getDocs(qUser), 'username');
+    } catch (_) { /* ignore */ }
+  }
+
+  // 1d. Search by numeric email variant (e.g. 26004950@pttgcgroup.com)
+  if (employeeId && /^\d+$/.test(employeeId) && !email.startsWith(employeeId)) {
+    try {
+      const numericEmail = `${employeeId}@pttgcgroup.com`;
+      const qNum = query(collection(db, USERS_COLLECTION), where('email', '==', numericEmail));
+      addCandidate(await getDocs(qNum), 'numericEmail');
+    } catch (_) { /* ignore */ }
+  }
+
+  const allCandidates = Array.from(candidateMap.values());
+
+  // ─────────────────────────────────────────────────────
+  // STEP 2: Pick the CANONICAL document
+  // Prefer named corporate email document over numeric email document
+  // ─────────────────────────────────────────────────────
+  let canonicalDoc: CandidateDoc | null = null;
+  if (allCandidates.length > 0) {
+    allCandidates.sort((a, b) => {
+      const aIsNamed = a.data.email && !/^\d+@/.test(a.data.email);
+      const bIsNamed = b.data.email && !/^\d+@/.test(b.data.email);
+      if (aIsNamed && !bIsNamed) return -1;
+      if (!aIsNamed && bIsNamed) return 1;
+      return (a.data.createdAt || '9999').localeCompare(b.data.createdAt || '9999');
+    });
+    canonicalDoc = allCandidates[0];
+  }
+
+  // ─────────────────────────────────────────────────────
+  // STEP 3: Delete duplicate documents (keep only canonical)
+  // ─────────────────────────────────────────────────────
+  if (canonicalDoc && allCandidates.length > 1) {
+    for (const dup of allCandidates.slice(1)) {
+      try {
+        console.log(`[GCME SSO] Deleting duplicate profile doc: ${dup.id} (keeping: ${canonicalDoc.id})`);
+        await deleteDoc(doc(db, USERS_COLLECTION, dup.id));
+      } catch (e) {
+        console.warn('[GCME SSO] Failed to delete duplicate:', dup.id, e);
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────
+  // STEP 4: Determine the effective email & display info
+  // ─────────────────────────────────────────────────────
+  const existingData = canonicalDoc?.data || {};
+  // Prefer existing corporate email over numeric employee-id email
+  const effectiveEmail = (existingData.email && !/^\d+@/.test(existingData.email))
+    ? existingData.email
+    : (known?.email || (!/^\d+@/.test(email) ? email : (existingData.email || email)));
+
+  const displayName = (userInfo.name && !/^\d+$/.test(userInfo.name))
+    ? userInfo.name
+    : (existingData.displayName || known?.name || `${userInfo.given_name ?? ''} ${userInfo.family_name ?? ''}`.trim() || effectiveEmail);
+  const department = (userInfo.department && userInfo.department !== 'GCME')
+    ? userInfo.department
+    : (existingData.department || known?.department || userInfo.department || '');
+  const jobTitle = (userInfo.jobTitle && userInfo.jobTitle !== 'Staff')
+    ? userInfo.jobTitle
+    : (existingData.jobTitle || known?.jobTitle || userInfo.jobTitle || '');
+
+  // ─────────────────────────────────────────────────────
+  // STEP 5: Firebase Auth sign-in (for Firestore security rules)
+  // ─────────────────────────────────────────────────────
+  let firebaseUser: User | null = auth?.currentUser || null;
+
+  if (auth && effectiveEmail) {
+    if (!firebaseUser || firebaseUser.email?.toLowerCase() !== effectiveEmail.toLowerCase()) {
+      try {
+        const cred = await signInWithEmailAndPassword(auth, effectiveEmail, DEFAULT_PASSWORD);
+        firebaseUser = cred.user;
+      } catch (err: any) {
+        const code = err.code || '';
+        // ONLY call createUserWithEmailAndPassword if the user definitely does NOT exist in Auth
+        if (code === 'auth/user-not-found') {
+          try {
+            const cred = await createUserWithEmailAndPassword(auth, effectiveEmail, DEFAULT_PASSWORD);
+            firebaseUser = cred.user;
+          } catch (signUpErr: any) {
+            console.warn('[GCME SSO] Firebase Auth auto-signup note:', signUpErr?.message);
+            // Fall back to safe anonymous auth bridge
+            try {
+              const anon = await signInAnonymously(auth);
+              firebaseUser = anon.user;
+            } catch (_) {}
+          }
+        } else {
+          // If error is invalid-credential, wrong password, or user already exists:
+          // NEVER call createUserWithEmailAndPassword (that would create duplicate accounts!)
+          // Instead, sign in anonymously to satisfy Firestore request.auth != null rule safely
+          console.log('[GCME SSO] Using secure anonymous auth session to protect existing credentials');
+          try {
+            const anon = await signInAnonymously(auth);
+            firebaseUser = anon.user;
+          } catch (anonErr) {
+            console.warn('[GCME SSO] Anonymous bridge warning:', anonErr);
+          }
+        }
+      }
+    }
+  }
+
+  const firebaseUid = firebaseUser?.uid || `gcme_${userInfo.sub}`;
+
+  // ─────────────────────────────────────────────────────
+  // STEP 6: Upsert the canonical Firestore profile
+  // ─────────────────────────────────────────────────────
+  // If we found an existing doc, use its ID. Otherwise use Firebase UID.
+  const canonicalUid = canonicalDoc?.id || firebaseUid;
+  const docRef = doc(db, USERS_COLLECTION, canonicalUid);
+
+  if (!canonicalDoc) {
+    // CREATE new profile
+    await setDoc(docRef, {
+      email: effectiveEmail,
+      role: isAdminEmail(effectiveEmail) ? 'Admin' : 'User',
+      assignedProjects: [],
+      isDefaultPassword: false,
+      displayName,
+      department,
+      jobTitle,
+      employeeId,
+      username: employeeId,
+      authProvider: 'gcme',
+      gcmeTokenClaims: userInfo.rawPayload || {},
+      lastLoginAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    });
+  } else {
+    // UPDATE existing profile
+    const data = canonicalDoc.data;
+    const updates: Record<string, any> = {
+      lastLoginAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      authProvider: 'gcme',
+    };
+    if (userInfo.rawPayload && Object.keys(userInfo.rawPayload).length > 0) {
+      updates.gcmeTokenClaims = userInfo.rawPayload;
+    }
+    if (isAdminEmail(effectiveEmail) && data.role !== 'Admin') {
+      updates.role = 'Admin';
+    }
+    if (effectiveEmail && effectiveEmail !== data.email && !/^\d+@/.test(effectiveEmail)) {
+      updates.email = effectiveEmail;
+    }
+    if (displayName && (!data.displayName || data.displayName === email || data.displayName === employeeId || /^\d+$/.test(data.displayName))) {
+      updates.displayName = displayName;
+    }
+    if (department && department !== 'GCME' && data.department !== department) {
+      updates.department = department;
+    }
+    if (jobTitle && jobTitle !== 'Staff' && data.jobTitle !== jobTitle) {
+      updates.jobTitle = jobTitle;
+    }
+    if (employeeId && (!data.employeeId || !data.username)) {
+      updates.employeeId = employeeId;
+      updates.username = employeeId;
+    }
+    await updateDoc(docRef, updates);
+  }
+
+  return {
+    uid: canonicalUid,
+    email: effectiveEmail,
+    displayName: displayName || existingData.displayName,
+    department: department || existingData.department,
+    jobTitle: jobTitle || existingData.jobTitle,
+    authProvider: 'gcme',
+  };
 };
 
 export const registerWithDefaultPassword = async (email: string) => {
@@ -155,7 +411,7 @@ export const registerWithDefaultPassword = async (email: string) => {
   if (user) {
     await setDoc(doc(db, USERS_COLLECTION, user.uid), {
       email: email,
-      role: email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'Admin' : 'User',
+      role: isAdminEmail(email) ? 'Admin' : 'User',
       assignedProjects: [],
       isDefaultPassword: true,
       createdAt: new Date().toISOString()
@@ -177,7 +433,7 @@ export const fetchUserProfile = async (uid: string): Promise<UserProfile | null>
     const data = docSnap.data() as any;
 
     // Auto-promote default admin if they were just a 'User'
-    if (data.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase() && data.role !== 'Admin') {
+    if (isAdminEmail(data.email) && data.role !== 'Admin') {
       await updateDoc(docRef, { role: 'Admin', updatedAt: new Date().toISOString() });
       return { id: docSnap.id, ...data, role: 'Admin' } as UserProfile;
     }
@@ -185,6 +441,12 @@ export const fetchUserProfile = async (uid: string): Promise<UserProfile | null>
     return { id: docSnap.id, ...data } as UserProfile;
   }
   return null;
+};
+
+export const updateUserProfileData = async (uid: string, data: Partial<UserProfile>): Promise<void> => {
+  if (!db) throw new Error("auth-not-initialized");
+  const docRef = doc(db, USERS_COLLECTION, uid);
+  await updateDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
 };
 
 export const checkUserNeedsPasswordChange = async (uid: string): Promise<boolean> => {

@@ -285,8 +285,8 @@ export function Navbar({
                             <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                                 {(user?.email?.[0] ?? 'U').toUpperCase()}
                             </div>
-                            <span className="hidden xl:block max-w-[120px] truncate text-gray-700 dark:text-slate-300 text-xs">
-                                {user?.email?.split('@')[0]}
+                            <span className="hidden xl:block max-w-[180px] truncate text-gray-700 dark:text-slate-300 text-xs" title={user?.email || ''}>
+                                {user?.email}
                             </span>
                             <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-150 ${dropdownOpen ? 'rotate-180' : ''}`} />
                         </button>

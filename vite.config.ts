@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    base: '/epopm/',
+    base: '/',
     plugins: [react(), exportApiPlugin(), torAiPlugin()],
     build: {
       outDir: 'dist',

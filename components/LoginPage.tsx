@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { AlertOctagon, Lock, Mail, Loader2, Info, UserPlus, LogIn, CheckCircle, Settings, Copy, ExternalLink, ShieldAlert, KeyRound, ArrowLeft, X } from 'lucide-react';
-import { loginWithEmail, loginWithMicrosoft, registerWithDefaultPassword, isConfigured, resetUserPassword } from '../services/firebaseService';
+import { AlertOctagon, Lock, Mail, Loader2, Info, CheckCircle, Settings, Copy, ExternalLink, ShieldAlert, KeyRound, ArrowLeft, X } from 'lucide-react';
+import { loginWithEmail, isConfigured, resetUserPassword } from '../services/firebaseService';
+import { initiateGCMELogin } from '../services/gcmeAuthService';
 
-const MicrosoftIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
-  <svg className={className} viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="1" y="1" width="9" height="9" fill="#f25022" />
-    <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
-    <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
-    <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+const GCMEIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" fill="#1a56db" />
+    <path d="M12 7v5l3.5 2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" stroke="white" strokeWidth="1.5" fill="none" />
   </svg>
 );
 
 export const LoginPage: React.FC = () => {
-  const [mode, setMode] = useState<'login' | 'register' | 'forgot-password'>('login');
+  const [mode, setMode] = useState<'login' | 'forgot-password'>('login');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loadingMicrosoft, setLoadingMicrosoft] = useState(false);
+  const [loadingGCME, setLoadingGCME] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authDomainError, setAuthDomainError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [registerSuccess, setRegisterSuccess] = useState<string | null>(null);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
   const [configMissing, setConfigMissing] = useState(false);
 
@@ -72,18 +71,10 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setRegisterSuccess(null);
     setAuthDomainError(null);
 
     try {
-      if (mode === 'login') {
-        await loginWithEmail(email.trim(), password);
-      } else if (mode === 'register') {
-        await registerWithDefaultPassword(email.trim());
-        setRegisterSuccess("Account created successfully!");
-        setMode('login');
-        setPassword('');
-      }
+      await loginWithEmail(email.trim(), password);
     } catch (err: any) {
       console.error("Auth Error Object:", err);
 
@@ -110,9 +101,6 @@ export const LoginPage: React.FC = () => {
       else if (code === 'auth/invalid-email') {
         setError("The email address is badly formatted.");
       }
-      else if (code === 'auth/email-already-in-use') {
-        setError("This email address is already registered. Please sign in instead.");
-      }
       // Handle Rate Limiting
       else if (code === 'auth/too-many-requests') {
         setError("Access has been temporarily disabled due to many failed login attempts. Please reset your password or try again later.");
@@ -130,41 +118,19 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleMicrosoftLogin = async () => {
-    setLoadingMicrosoft(true);
+  const handleGCMELogin = async () => {
+    setLoadingGCME(true);
     setError(null);
-    setRegisterSuccess(null);
     setAuthDomainError(null);
 
     try {
-      await loginWithMicrosoft();
+      // Initiates redirect to https://login.gcmeapps.com/
+      await initiateGCMELogin();
+      // Browser will redirect away — no further code runs here
     } catch (err: any) {
-      console.error("Microsoft Auth Error:", err);
-      const code = err.code || '';
-      const msg = err.message || '';
-
-      // Unauthorized Domain Check
-      if (code === 'auth/unauthorized-domain' || msg.includes('unauthorized-domain')) {
-        setAuthDomainError(window.location.hostname);
-        return;
-      }
-
-      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-        // User closed popup without signing in
-        return;
-      }
-
-      if (code === 'auth/account-exists-with-different-credential') {
-        setError("An account already exists with the same email address using a different sign-in method.");
-      } else if (code === 'auth/popup-blocked') {
-        setError("The login popup was blocked by your browser. Please allow popups for this site and try again.");
-      } else if (code === 'auth/operation-not-allowed') {
-        setError("Microsoft Sign-In is not enabled in Firebase Authentication console. Please enable Microsoft provider in the Firebase Console.");
-      } else {
-        setError(msg || "Failed to sign in with Microsoft. Please try again.");
-      }
-    } finally {
-      setLoadingMicrosoft(false);
+      console.error('GCME SSO Error:', err);
+      setError(err.message || 'Failed to initiate GCME sign-in. Please try again.');
+      setLoadingGCME(false);
     }
   };
 
@@ -201,11 +167,11 @@ export const LoginPage: React.FC = () => {
 
         {/* Header */}
         <div className="bg-blue-600 dark:bg-blue-800 p-8 text-center relative transition-colors">
-          {(mode === 'forgot-password' || mode === 'register') && (
+          {mode === 'forgot-password' && (
             <button
-              onClick={() => { setMode('login'); setError(null); setResetSuccess(null); setRegisterSuccess(null); }}
+              onClick={() => { setMode('login'); setError(null); setResetSuccess(null); }}
               className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10"
-              title="Back to Login"
+              title="Back to Sign In"
             >
               <X className="w-5 h-5" />
             </button>
@@ -216,24 +182,6 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-wide uppercase">Smart Risk Management</h1>
           <p className="text-blue-100 dark:text-blue-200 text-sm mt-2 font-medium">by GCME (E-PO-PM)</p>
         </div>
-
-        {/* Tab Switcher */}
-        {mode !== 'forgot-password' && (
-          <div className="flex border-b border-gray-200 dark:border-slate-800">
-            <button
-              onClick={() => { setMode('login'); setError(null); setRegisterSuccess(null); setAuthDomainError(null); }}
-              className={`flex-1 py-4 text-sm font-bold text-center transition-colors ${mode === 'login' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/10' : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300'}`}
-            >
-              SIGN IN
-            </button>
-            <button
-              onClick={() => { setMode('register'); setError(null); setRegisterSuccess(null); setAuthDomainError(null); }}
-              className={`flex-1 py-4 text-sm font-bold text-center transition-colors ${mode === 'register' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/10' : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300'}`}
-            >
-              REGISTER
-            </button>
-          </div>
-        )}
 
         {/* Form Body */}
         <div className="p-8">
@@ -305,13 +253,6 @@ export const LoginPage: React.FC = () => {
             </div>
           ) : (
             <>
-              {registerSuccess && (
-                <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm mb-6 flex items-center gap-2 transition-colors">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>{registerSuccess}</span>
-                </div>
-              )}
-
               {authDomainError ? (
                 <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
                   <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl p-5 shadow-inner transition-colors">
@@ -359,7 +300,7 @@ export const LoginPage: React.FC = () => {
                     onClick={() => setAuthDomainError(null)}
                     className="w-full py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 uppercase tracking-widest"
                   >
-                    Back to Login
+                    Back to Sign In
                   </button>
                 </div>
               ) : (
@@ -388,43 +329,42 @@ export const LoginPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {mode === 'login' && (
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Password</label>
-                        <button
-                          type="button"
-                          onClick={() => { setMode('forgot-password'); setError(null); }}
-                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
-                        >
-                          Forgot Password?
-                        </button>
-                      </div>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Lock className="h-5 w-5 text-gray-400 dark:text-slate-500" />
-                        </div>
-                        <input
-                          type="password"
-                          required
-                          className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition bg-white dark:bg-slate-800 dark:text-slate-100 sm:text-sm hover:border-gray-300 dark:hover:border-slate-600"
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                        />
-                      </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Password</label>
+                      <button
+                        type="button"
+                        onClick={() => { setMode('forgot-password'); setError(null); }}
+                        className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
+                      >
+                        Forgot Password?
+                      </button>
                     </div>
-                  )}
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400 dark:text-slate-500" />
+                      </div>
+                      <input
+                        type="password"
+                        required
+                        autoComplete="current-password"
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition bg-white dark:bg-slate-800 dark:text-slate-100 sm:text-sm hover:border-gray-300 dark:hover:border-slate-600"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
 
                   <button
                     type="submit"
-                    disabled={loading || loadingMicrosoft}
+                    disabled={loading || loadingGCME}
                     className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all active:scale-[0.98] uppercase tracking-widest"
                   >
                     {loading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      mode === 'login' ? 'Sign In' : 'Create Account'
+                      'Sign In'
                     )}
                   </button>
 
@@ -440,19 +380,19 @@ export const LoginPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Microsoft Sign-In Button */}
+                  {/* GCME SSO Button */}
                   <button
                     type="button"
-                    onClick={handleMicrosoftLogin}
-                    disabled={loading || loadingMicrosoft}
-                    className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 dark:border-slate-700 rounded-xl shadow-sm text-sm font-semibold text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all active:scale-[0.98]"
+                    onClick={handleGCMELogin}
+                    disabled={loading || loadingGCME}
+                    className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-blue-200 dark:border-blue-800/50 rounded-xl shadow-sm text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-all active:scale-[0.98]"
                   >
-                    {loadingMicrosoft ? (
+                    {loadingGCME ? (
                       <Loader2 className="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" />
                     ) : (
                       <>
-                        <MicrosoftIcon className="w-5 h-5 flex-shrink-0" />
-                        <span>Sign in with Microsoft</span>
+                        <GCMEIcon className="w-5 h-5 flex-shrink-0" />
+                        <span>Sign in with GCME</span>
                       </>
                     )}
                   </button>

@@ -4,8 +4,6 @@ import {
     Plus,
     Trash2,
     Search,
-    Filter,
-    Tag,
     FileCode,
     Sparkles,
     Copy

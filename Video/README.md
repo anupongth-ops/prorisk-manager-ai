@@ -1,6 +1,6 @@
 # แผนการผลิตวิดีโออบรมพนักงาน: Smart Risk Management (User Training Video Series)
 
-> **อ้างอิงจากเอกสารประกอบการอบรม:** `ProRisk_Manager_AI_User_Guide.pptx` (E-PO-PM System v0.2.20260717)  
+> **อ้างอิงจากเอกสารประกอบการอบรม:** `ProRisk_Manager_AI_User_Guide.pptx` (E-PO-PM System v0.3.20261005)  
 > **หน่วยงานผู้รับผิดชอบ:** ฝ่ายบริหารโครงการกลาง (Corporate Project Management Division: E-PO-PM)  
 > **กลุ่มเป้าหมาย:** Project Manager (PM), Project Engineer (PE), ทีมงานประเมินราคา/ยื่นซอง (Pre-Bid & Commercial), และทีมวิศวกรโครงการ
 

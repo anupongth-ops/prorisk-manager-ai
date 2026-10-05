@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import Papa from 'papaparse';
-import { X, Upload, Download, AlertTriangle, CheckCircle, FileSpreadsheet, Loader2 } from 'lucide-react';
-import { RiskItem, ImpactLevel, LikelihoodLevel, PossibleEffect, MitigationStrategy, RISK_CATEGORIES } from '../types';
+import { X, Upload, Download, AlertTriangle, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { RiskItem, PossibleEffect, MitigationStrategy, RISK_CATEGORIES } from '../types';
 import { fetchRisksByProject, batchSaveRisks } from '../services/firebaseService';
 
 interface RiskImportModalProps {
@@ -345,9 +345,6 @@ export const RiskImportModal: React.FC<RiskImportModalProps> = ({ onClose }) => 
     const mapped = parts.map(p => parseOneEffect(p));
     return mapped.length > 0 ? mapped : [PossibleEffect.Cost];
   };
-
-  // Keep legacy single-effect parse for old CSVs
-  const parseEffect = (val: string): PossibleEffect => parseOneEffect(val?.trim().toUpperCase() ?? '');
 
   const parseStrategy = (val: string): MitigationStrategy => {
     const v = val?.trim().toUpperCase();

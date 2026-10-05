@@ -1,12 +1,12 @@
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
-    X, Search, BookOpen, Filter, Sparkles, CheckSquare, Square,
+    X, Search, BookOpen, Sparkles, CheckSquare, Square,
     ChevronDown, AlertTriangle, Loader2, ArrowRight, Info, RotateCcw
 } from 'lucide-react';
 import {
-    RiskItem, RISK_CATEGORIES, getRiskLevel, getRiskLevelColor,
-    getRiskScore, formatEffects, normalizeEffects, UserProfile
+    RiskItem, RISK_CATEGORIES, getRiskLevel,
+    getRiskScore, UserProfile
 } from '../types';
 import { scoreRiskSimilarity, RiskLibraryItem, ScoredRisk } from '../services/groqService';
 

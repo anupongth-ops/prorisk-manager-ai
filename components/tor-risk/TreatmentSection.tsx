@@ -5,14 +5,8 @@ import {
     DollarSign,
     Percent,
     PieChart,
-    Sparkles,
-    CheckCircle2,
-    TrendingUp,
-    FileCheck,
-    Info,
     ChevronDown,
     ChevronUp,
-    HelpCircle,
     BookOpen
 } from 'lucide-react';
 import {

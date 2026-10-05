@@ -7,24 +7,16 @@ import {
     AlertCircle,
     Loader2,
     X,
-    Building2,
-    DollarSign,
-    Layers,
-    FileCode,
-    Cpu,
-    ArrowRight,
     Key,
     ExternalLink,
     ChevronDown,
     ChevronUp,
-    Bot,
-    Zap
+    Bot
 } from 'lucide-react';
 import { TorProject } from '../../types/torRisk';
 import {
     analyzeTorDocument,
     TorAnalysisInput,
-    getGeminiApiKey,
     AvailableAiModel,
     AI_MODEL_OPTIONS
 } from '../../services/geminiService';

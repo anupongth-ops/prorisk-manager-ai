@@ -1,7 +1,7 @@
 # Smart Risk Management - Developer Blueprint
 
-**Version:** 0.2.20260717
-**Date:** 2026-07-17
+**Version:** 0.3.20261005
+**Date:** 2026-10-05
 
 ---
 

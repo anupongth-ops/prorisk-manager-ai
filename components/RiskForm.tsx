@@ -4,8 +4,8 @@ import {
   RiskItem, ImpactLevel, LikelihoodLevel, PossibleEffect,
   MitigationStrategy, IMPACT_LABELS, LIKELIHOOD_LABELS,
   EFFECT_LABELS, STRATEGY_LABELS, RISK_CATEGORIES, getRiskLevel, getRiskLevelColor, UserProfile,
-  normalizeEffects, RiskAppetite, DEFAULT_RISK_APPETITE, isExceedingAppetite, getRiskScore,
-  ReviewFrequency, DEFAULT_REVIEW_FREQUENCY, calculateNextReviewDate
+  normalizeEffects, DEFAULT_RISK_APPETITE, isExceedingAppetite, getRiskScore,
+  DEFAULT_REVIEW_FREQUENCY, calculateNextReviewDate
 } from '../types';
 import { Sparkles, Save, X, Lock, AlertTriangle } from 'lucide-react';
 import { generateMitigationSuggestion } from '../services/groqService';

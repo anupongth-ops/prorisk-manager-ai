@@ -8,8 +8,7 @@ import {
   RiskItem, ImpactLevel, LikelihoodLevel, PossibleEffect,
   MitigationStrategy, CostToMitigate, ProbabilityOfSuccess,
   getRiskLevel, getRiskLevelColor, getRiskScore,
-  RISK_CATEGORIES, EFFECT_LABELS, STRATEGY_LABELS,
-  formatDateDisplay, UserProfile
+  RISK_CATEGORIES, EFFECT_LABELS, UserProfile
 } from '../types';
 
 interface ExcelRiskRegisterGridProps {
@@ -730,7 +729,6 @@ export function ExcelRiskRegisterGrid({
               ) : (
                 displayedItems.map((item, idx) => {
                   const isDirty = dirtyRowIds.has(item.id);
-                  const isNew = newRowIds.has(item.id);
                   const canModify = canModifyProject(item.projectNo);
 
                   // Calculate Initial Risk Level & Score

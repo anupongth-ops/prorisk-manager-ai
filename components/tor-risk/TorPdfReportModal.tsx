@@ -2,22 +2,10 @@ import React from 'react';
 import {
     Printer,
     X,
-    FileText,
-    Building2,
-    Shield,
-    Calendar,
-    DollarSign,
-    CheckCircle2,
-    Layers,
-    Activity,
-    Calculator,
-    ClipboardCheck,
-    FileSignature
+    FileText
 } from 'lucide-react';
 import {
     TorProject,
-    TOR_RISK_CATEGORIES,
-    TOR_TREATMENT_STRATEGIES,
     getTorRiskLevelColor,
 } from '../../types/torRisk';
 

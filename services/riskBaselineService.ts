@@ -1,6 +1,6 @@
 
 import { RiskItem, PossibleEffect, MitigationStrategy } from '../types';
-import { BASELINE_RISKS, PROJECT_MODIFIERS, ProjectModifier } from '../constants/riskConstants';
+import { BASELINE_RISKS, ProjectModifier } from '../constants/riskConstants';
 
 export const calculateAdjustedScore = (
     baseScore: number,

@@ -53,6 +53,14 @@ export interface UserProfile {
   isDefaultPassword: boolean;
   createdAt: string;
   updatedAt?: string;
+  displayName?: string;
+  department?: string;
+  jobTitle?: string;
+  authProvider?: string;
+  employeeId?: string;
+  username?: string;
+  lastLoginAt?: string;
+  gcmeTokenClaims?: Record<string, any>;
 }
 
 export type CostToMitigate = 'H' | 'M' | 'L' | '';

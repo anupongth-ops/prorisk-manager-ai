@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { RiskItem, RiskSnapshot, RiskChange, RiskAppetite, ReviewFrequency, calculateNextReviewDate, DEFAULT_REVIEW_FREQUENCY, getRiskLevel } from '../types';
+import { RiskItem, RiskSnapshot, RiskChange, RiskAppetite, ReviewFrequency, calculateNextReviewDate, DEFAULT_REVIEW_FREQUENCY } from '../types';
 import {
     subscribeToRisks,
     saveRiskToFirestore,
@@ -14,8 +14,8 @@ import {
     fetchBaselineRisks,
     deleteProjectRisks
 } from '../services/firebaseService';
-import { generateBaselineRiskItems, getIndustryBaselineScores } from '../services/riskBaselineService';
-import { ProjectModifier, PROJECT_MODIFIERS } from '../constants/riskConstants';
+import { generateBaselineRiskItems } from '../services/riskBaselineService';
+import { ProjectModifier } from '../constants/riskConstants';
 
 import { DEMO_RISKS } from '../constants/demoData';
 

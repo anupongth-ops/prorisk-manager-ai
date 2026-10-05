@@ -2,15 +2,11 @@ import React, { useState } from 'react';
 import {
     Activity,
     Grid,
-    AlertCircle,
     Info,
-    CheckCircle2,
-    SlidersHorizontal,
     RotateCcw
 } from 'lucide-react';
 import {
     TorProject,
-    TorRiskItem,
     getTorRiskScore,
     getTorRiskLevel,
     getTorRiskLevelColor,

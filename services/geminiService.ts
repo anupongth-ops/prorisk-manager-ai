@@ -146,7 +146,6 @@ function robustParseJson(raw: string): any {
 
     // Close all unclosed brackets and braces
     const opens = { '{': 0, '[': 0 };
-    const closes: Record<string, string> = { '{': '}', '[': ']' };
     let inString = false;
     let prevChar = '';
     for (let i = 0; i < repaired.length; i++) {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    Layers,
     FileText,
     ShieldAlert,
     Activity,
@@ -13,19 +12,12 @@ import {
     Plus,
     Trash2,
     ArrowLeft,
-    DollarSign,
-    Percent,
-    AlertCircle,
     CheckCircle2,
     FolderKanban,
     RefreshCw
 } from 'lucide-react';
 import {
     TorProject,
-    TorRiskItem,
-    getTorRiskScore,
-    getTorRiskLevel,
-    calculateEMV,
 } from '../types/torRisk';
 import {
     subscribeToTorProjects,

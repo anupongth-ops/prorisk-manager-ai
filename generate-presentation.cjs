@@ -107,7 +107,7 @@ async function buildPresentation() {
       x: 0.8, y: 7.02, w: 6.0, h: 0.25,
       fontSize: 8, fontFace: THEME.fonts.body, color: '94A3B8', valign: 'middle'
     });
-    slide.addText(`Slide ${slideNum} • E-PO-PM System v0.2.20260717`, {
+    slide.addText(`Slide ${slideNum} • E-PO-PM System v0.3.20261005`, {
       x: 6.8, y: 7.02, w: 5.733, h: 0.25,
       fontSize: 8, fontFace: THEME.fonts.body, color: '94A3B8', align: 'right', valign: 'middle'
     });
@@ -292,7 +292,7 @@ async function buildPresentation() {
       });
     });
 
-    slide.addText('Corporate Project Management Division • E-PO-PM System v0.2.20260717', {
+    slide.addText('Corporate Project Management Division • E-PO-PM System v0.3.20261005', {
       x: 0.8, y: 6.95, w: 11.733, h: 0.3,
       fontSize: 9, fontFace: THEME.fonts.body, color: '64748B', valign: 'middle'
     });

@@ -25,6 +25,7 @@ import { RiskTable } from './components/RiskTable';
 import { RiskGuideModal } from './components/RiskGuideModal';
 
 import { batchSaveRisks } from './services/firebaseService';
+import { APP_VERSION_TAG } from './constants/version';
 
 // Lazy-loaded heavy components (code splitting)
 const RiskForm = lazy(() => import('./components/RiskForm').then(m => ({ default: m.RiskForm })));
@@ -313,7 +314,7 @@ function App() {
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-700 dark:text-slate-300">Smart Risk Management</span>
               <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                v0.2.20260717
+                {APP_VERSION_TAG}
               </span>
             </div>
             <div className="text-gray-500 dark:text-slate-400">
@@ -418,6 +419,10 @@ function App() {
             onChangePassword={() => {
               setShowUserAccount(false);
               setMustChangePassword(true);
+            }}
+            onLogout={handleLogout}
+            onUpdateProfile={(updatedData) => {
+              setUserProfile(prev => prev ? ({ ...prev, ...updatedData }) : null);
             }}
           />
         </Suspense>

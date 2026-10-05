@@ -373,8 +373,8 @@ export function Sidebar({
                             </div>
                             {!isCollapsed && (
                                 <div className="flex-1 text-left min-w-0">
-                                    <p className="text-xs font-semibold text-gray-800 dark:text-slate-200 truncate leading-tight">
-                                        {user?.email?.split('@')[0]}
+                                    <p className="text-xs font-semibold text-gray-800 dark:text-slate-200 truncate leading-tight" title={user?.email || ''}>
+                                        {user?.email}
                                     </p>
                                     <div className="mt-0.5">
                                         <RoleBadge role={userProfile?.role ?? 'User'} />

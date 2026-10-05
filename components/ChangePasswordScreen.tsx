@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Lock, ShieldAlert, Loader2, Save, X, LogOut, RefreshCw } from 'lucide-react';
+import { Lock, ShieldAlert, Loader2, Save, X, LogOut } from 'lucide-react';
 import { updateUserPasswordAndProfile, logoutUser } from '../services/firebaseService';
 
 interface ChangePasswordScreenProps {
@@ -105,6 +105,7 @@ export const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ onSu
                 </div>
                 <input
                   type="password"
+                  autoComplete="current-password"
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#f39c12] outline-none transition bg-white dark:bg-slate-800 dark:text-slate-100 sm:text-sm"
                   placeholder="Enter current password (if prompted)"
                   value={currentPassword}
@@ -122,6 +123,7 @@ export const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ onSu
                 <input
                   type="password"
                   required
+                  autoComplete="new-password"
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#f39c12] outline-none transition bg-white dark:bg-slate-800 dark:text-slate-100 sm:text-sm"
                   placeholder="Enter new password"
                   value={newPassword}
@@ -139,6 +141,7 @@ export const ChangePasswordScreen: React.FC<ChangePasswordScreenProps> = ({ onSu
                 <input
                   type="password"
                   required
+                  autoComplete="new-password"
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#f39c12] outline-none transition bg-white dark:bg-slate-800 dark:text-slate-100 sm:text-sm"
                   placeholder="Confirm new password"
                   value={confirmPassword}
